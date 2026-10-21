@@ -149,10 +149,12 @@ import {
   filterInferenceModeOptions,
   isConversationalAgentEnabled,
   isMnemoStandaloneProduct,
+  isPuraInferenceModeSelectable,
   MNEMO_HIDDEN_LLM_TABS,
   MNEMO_HIDDEN_SETTINGS_SECTIONS,
 } from "../config/mnemoProduct";
 import { requestSignIn } from "../utils/requestSignIn";
+import { ensurePuraLlmAccess } from "../utils/puraLlmAccess";
 import { canManageSystemAudioInApp } from "../utils/systemAudioAccess";
 import WorkspaceSection from "./settings/WorkspaceSection";
 import { enterpriseTileCta, type EnterpriseTileCta } from "../lib/workspaceBilling";
@@ -165,7 +167,7 @@ import { useAiSetupLane } from "../contexts/AiSetupLaneContext";
 import {
   isAiSetupLaneLocked,
   resolveTranscriptionUiMode,
-  transcriptionPickerModeForSetupLane,
+  showsTranscriptionModelPicker,
 } from "../helpers/aiSetupLanePolicy";
 import { useAlignTranscriptionWithSetupLane } from "../hooks/useAlignTranscriptionWithSetupLane";
 import { formatAmount } from "../utils/formatAmount";
@@ -569,7 +571,8 @@ function TranscriptionSection({
   setShowTranscriptionPreview,
   toast,
 }: TranscriptionSectionProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const puraSelectable = isPuraInferenceModeSelectable(isSignedIn);
   const setupLane = useAiSetupLane();
   const laneLocked = isAiSetupLaneLocked(setupLane);
   const policySnapshot = usePolicySnapshot();
@@ -592,8 +595,12 @@ function TranscriptionSection({
         label: t("settingsPage.transcription.modes.mnemo"),
         description: t("settingsPage.transcription.modes.mnemoCloudDesc"),
         icon: <Cloud className="w-4 h-4" />,
-        disabled: !isSignedIn,
-        badge: !isSignedIn ? t("common.freeAccountRequired") : undefined,
+        disabled: !puraSelectable,
+        badge: !puraSelectable
+          ? isMnemoStandaloneProduct()
+            ? t("settingsPage.puraLlm.notConfiguredBadge")
+            : t("common.freeAccountRequired")
+          : undefined,
       },
       {
         id: "providers",
@@ -643,9 +650,14 @@ function TranscriptionSection({
   const uiTranscriptionMode = resolveTranscriptionUiMode(setupLane, effectiveTranscriptionMode);
   const handleTranscriptionModeSelect = (mode: InferenceMode) => {
     if (!isModeAllowed(mode)) return;
-    if (mode === "pura" && !isSignedIn) {
-      requestSignIn();
-      return;
+    if (mode === "pura") {
+      if (!puraSelectable) return;
+      if (isMnemoStandaloneProduct()) {
+        void ensurePuraLlmAccess(i18n.language?.startsWith("en") ? "en" : "it");
+      } else if (!isSignedIn) {
+        requestSignIn();
+        return;
+      }
     }
     if (mode === effectiveTranscriptionMode) return;
     setTranscriptionMode(mode);
@@ -655,6 +667,7 @@ function TranscriptionSection({
     if (mode === "enterprise") setEnterpriseTranscriptionSetupMode("managed");
 
     const toastKey = {
+      pura: "switchedCloud",
       mnemo: "switchedCloud",
       providers: "switchedProviders",
       local: "switchedLocal",
@@ -831,14 +844,16 @@ function TranscriptionSection({
             />
           )}
 
-          {laneLocked && setupLane
-            ? renderTranscriptionPicker(transcriptionPickerModeForSetupLane(setupLane))
-            : null}
-          {!laneLocked && uiTranscriptionMode === "providers" && renderTranscriptionPicker("cloud")}
-          {!laneLocked && uiTranscriptionMode === "local" && renderTranscriptionPicker("local")}
+          {showsTranscriptionModelPicker(setupLane, uiTranscriptionMode) &&
+            uiTranscriptionMode === "providers" &&
+            renderTranscriptionPicker("cloud")}
+          {showsTranscriptionModelPicker(setupLane, uiTranscriptionMode) &&
+            uiTranscriptionMode === "local" &&
+            renderTranscriptionPicker("local")}
           {previewAvailable && renderPreviewToggle()}
 
-          {!laneLocked && uiTranscriptionMode === "self-hosted" && (
+          {showsTranscriptionModelPicker(setupLane, uiTranscriptionMode) &&
+            uiTranscriptionMode === "self-hosted" && (
             <SelfHostedPanel
               service="transcription"
               url={remoteTranscriptionUrl}

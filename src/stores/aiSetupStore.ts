@@ -5,6 +5,7 @@ import {
   captureAiSetupLocalStorage,
   type AiSetupLane,
 } from "../helpers/aiSetupStorage";
+import { isPuraLlmOfferedOnStandalone } from "../config/mnemoProduct";
 
 const STORAGE_KEY = "mnemoAiSetups_v1";
 
@@ -31,7 +32,10 @@ function newId(): string {
   return `setup-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-function defaultSetup(name: string, lane: AiSetupLane = "providers"): AiSetup {
+function defaultSetup(
+  name: string,
+  lane: AiSetupLane = isPuraLlmOfferedOnStandalone() ? "pura" : "providers"
+): AiSetup {
   return {
     id: newId(),
     name,

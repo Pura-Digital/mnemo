@@ -6,6 +6,7 @@ test("mnemo standalone product hides cloud upsell and hosted inference mode", as
   const {
     isMnemoStandaloneProduct,
     filterInferenceModeOptions,
+    isPuraInferenceModeSelectable,
     isConversationalAgentEnabled,
     isArchiveyeIntegrationEnabled,
     isSemanticSearchEnabled,
@@ -21,8 +22,9 @@ test("mnemo standalone product hides cloud upsell and hosted inference mode", as
   assert.equal(isSemanticSearchEnabled(), false);
   assert.deepEqual(
     filterInferenceModeOptions([{ id: "pura" }, { id: "local" }]),
-    [{ id: "local" }]
+    [{ id: "pura" }, { id: "local" }]
   );
+  assert.equal(isPuraInferenceModeSelectable(false), false);
   assert.equal(
     decideUpsell({
       authLoaded: true,

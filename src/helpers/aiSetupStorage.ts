@@ -218,15 +218,40 @@ export function refreshAiSettingsFromLocalStorage(): void {
   });
 }
 
-const LANE_INFERENCE_MODE: Record<AiSetupLane, InferenceMode> = {
+const LANE_INFERENCE_MODE: Record<Exclude<AiSetupLane, "pura">, InferenceMode> = {
   providers: "providers",
   local: "local",
-  pura: "providers",
 };
 
+const PURA_INFERENCE_MODE = "pura" as InferenceMode;
+
 export function applySetupLaneToInferenceModes(lane: AiSetupLane): void {
-  const mode = LANE_INFERENCE_MODE[lane];
   const state = useSettingsStore.getState();
+
+  if (lane === "pura") {
+    state.setTranscriptionMode(PURA_INFERENCE_MODE);
+    state.setMeetingTranscriptionMode(PURA_INFERENCE_MODE);
+    state.setUploadTranscriptionMode(PURA_INFERENCE_MODE);
+    state.setCleanupMode(PURA_INFERENCE_MODE);
+    state.setNoteFormattingMode(PURA_INFERENCE_MODE);
+    state.setTranslationMode(PURA_INFERENCE_MODE);
+    state.setDictationAgentMode(PURA_INFERENCE_MODE);
+    state.setChatAgentMode(PURA_INFERENCE_MODE);
+    state.setUseLocalWhisper(false);
+    state.setMeetingUseLocalWhisper(false);
+    state.setUploadUseLocalWhisper(false);
+    state.setCloudTranscriptionMode("mnemo");
+    state.setMeetingCloudTranscriptionMode("mnemo");
+    state.setUploadCloudTranscriptionMode("mnemo");
+    state.setCloudTranscriptionProvider("pura");
+    state.setCleanupCloudMode("mnemo");
+    state.setNoteFormattingCloudMode("mnemo");
+    state.setCleanupProvider("pura");
+    state.setNoteFormattingProvider("mnemo");
+    return;
+  }
+
+  const mode = LANE_INFERENCE_MODE[lane];
   state.setTranscriptionMode(mode);
   state.setMeetingTranscriptionMode(mode);
   state.setUploadTranscriptionMode(mode);
@@ -239,14 +264,9 @@ export function applySetupLaneToInferenceModes(lane: AiSetupLane): void {
     state.setUseLocalWhisper(true);
     state.setMeetingUseLocalWhisper(true);
     state.setUploadUseLocalWhisper(true);
-  }
-  if (lane === "providers" || lane === "pura") {
+  } else {
     state.setUseLocalWhisper(false);
     state.setMeetingUseLocalWhisper(false);
     state.setUploadUseLocalWhisper(false);
-    if (lane === "pura") {
-      state.setCloudTranscriptionMode("byok");
-      state.setCleanupCloudMode("byok");
-    }
   }
 }

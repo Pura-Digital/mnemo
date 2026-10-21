@@ -1,8 +1,9 @@
 import { useState, useCallback } from "react";
 import { useShallow } from "zustand/react/shallow";
 import {
-  selectIsCloudCleanupMode,
+  selectIsCloudNoteFormattingMode,
   selectPolicyEffectiveSettings,
+  selectResolvedNoteFormatting,
   useSettingsStore,
 } from "../stores/settingsStore";
 import { useUsage } from "./useUsage";
@@ -21,13 +22,14 @@ export function useNotesOnboarding(): UseNotesOnboardingReturn {
   const isProUser = usage?.hasPaidAccess === true;
   const isProLoading = usage !== null && usage.status !== "success";
   const policyState = usePolicySnapshot();
-  const { useCleanupModel, effectiveModel, isCloudCleanup } = useSettingsStore(
+  const { formattingModel, formattingMode, isCloudFormatting } = useSettingsStore(
     useShallow((settings) => {
       const effective = selectPolicyEffectiveSettings(settings, policyState);
+      const formatting = selectResolvedNoteFormatting(effective);
       return {
-        useCleanupModel: effective.useCleanupModel,
-        effectiveModel: effective.cleanupModel,
-        isCloudCleanup: selectIsCloudCleanupMode(effective),
+        formattingModel: formatting.model,
+        formattingMode: formatting.mode,
+        isCloudFormatting: selectIsCloudNoteFormattingMode(effective),
       };
     })
   );
@@ -36,7 +38,11 @@ export function useNotesOnboarding(): UseNotesOnboardingReturn {
     () => localStorage.getItem("notesOnboardingComplete") === "true"
   );
 
-  const isLLMConfigured = isCloudCleanup || (useCleanupModel && !!effectiveModel);
+  const isLLMConfigured =
+    isCloudFormatting ||
+    formattingMode === "pura" ||
+    formattingMode === "mnemo" ||
+    (!!formattingModel && formattingMode !== "pura" && formattingMode !== "mnemo");
 
   const complete = useCallback(() => {
     localStorage.setItem("notesOnboardingComplete", "true");

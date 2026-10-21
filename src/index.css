@@ -484,6 +484,10 @@ body:has(.app-canvas) {
     "Helvetica Neue", Arial, sans-serif;
   font-family: var(--font-family-sans);
   font-optical-sizing: auto;
+}
+
+html:not(.dark) .app-canvas,
+html:not(.dark) body:has(.app-canvas) {
   --onboarding-accent: var(--color-primary);
   --onboarding-accent-foreground: #ffffff;
   --onboarding-accent-hover: color-mix(in srgb, var(--onboarding-accent) 88%, black);
@@ -543,6 +547,12 @@ body.dark:has(.app-canvas) {
   --onboarding-keycap-shadow: #000000;
   --onboarding-mark-monochrome: grayscale(1) brightness(0) invert(1);
   --onboarding-scrim: rgb(0 0 0 / 0.55);
+  /* Align notes shell surfaces with the dark onboarding palette (light block above must not leak). */
+  --color-surface-window: var(--onboarding-surface);
+  --color-surface-0: var(--onboarding-surface);
+  --color-surface-1: var(--onboarding-surface-secondary);
+  --color-surface-2: var(--onboarding-surface-secondary);
+  --color-surface-3: var(--onboarding-surface-tertiary);
 }
 
 .app-canvas {
@@ -550,7 +560,7 @@ body.dark:has(.app-canvas) {
   --color-foreground: var(--onboarding-text-primary);
   --color-card: var(--onboarding-surface);
   --color-card-foreground: var(--onboarding-text-primary);
-  --color-muted: #fafafa;
+  --color-muted: var(--onboarding-surface-secondary);
   --color-muted-foreground: var(--onboarding-text-secondary);
   --color-border: var(--onboarding-control-border);
   --color-ring: var(--onboarding-accent);
@@ -558,9 +568,13 @@ body.dark:has(.app-canvas) {
   color: var(--onboarding-text-primary);
 }
 
-.app-canvas.control-panel-window.bg-surface-window,
-.app-canvas.control-panel-window.glass-chrome-surface {
+html:not(.dark) .app-canvas.control-panel-window.bg-surface-window,
+html:not(.dark) .app-canvas.control-panel-window.glass-chrome-surface {
   background-color: #ffffff;
+}
+
+.dark .app-canvas.control-panel-window.bg-surface-window {
+  background-color: var(--color-surface-window);
 }
 
 /* Nested list surface + rows, per Figma "Onboarding / Frame 37".

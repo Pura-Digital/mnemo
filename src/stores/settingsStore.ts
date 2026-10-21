@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { API_ENDPOINTS } from "../config/constants";
+import { isMnemoStandaloneProduct } from "../config/mnemoProduct";
 import i18n, { normalizeUiLanguage } from "../i18n";
 import { ensureAgentNameInDictionary } from "../utils/agentName";
 import { chooseDictionaryStartupAction } from "../helpers/dictionaryStartup";
@@ -2766,7 +2767,10 @@ export const selectIsCloudTranslationMode = (state: SettingsState) =>
 
 export const selectIsCloudNoteFormattingMode = (state: SettingsState) => {
   const cfg = selectResolvedNoteFormatting(state);
-  return state.isSignedIn && cfg.mode === "pura" && cfg.cloudMode === "pura";
+  const hosted =
+    (cfg.mode === "pura" || cfg.mode === "mnemo") && cfg.cloudMode === "mnemo";
+  if (hosted && isMnemoStandaloneProduct()) return hosted;
+  return state.isSignedIn && hosted;
 };
 
 export interface ResolvedMeetingTranscription {

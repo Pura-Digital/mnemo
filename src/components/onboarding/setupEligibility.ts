@@ -1,4 +1,4 @@
-import { isMnemoStandaloneProduct } from "../../config/mnemoProduct";
+import { isMnemoStandaloneProduct, isPuraLlmOfferedOnStandalone } from "../../config/mnemoProduct";
 import {
   filterByokProviderOptionsByPolicy,
   isModeAllowedByPolicy,
@@ -40,10 +40,12 @@ export function getOnboardingSetupAvailability({
     isModeAllowedByPolicy(policy, "llm", "providers") &&
     filterByokProviderOptionsByPolicy(llmProviders, "llm", policy).length > 0;
 
-  const cloud =
-    !isMnemoStandaloneProduct() &&
+  const cloudHostedByPolicy =
     isModeAllowedByPolicy(policy, "transcription", "mnemo") &&
     (!agentAllowed || isModeAllowedByPolicy(policy, "llm", "mnemo"));
+  const cloud =
+    cloudHostedByPolicy &&
+    (isMnemoStandaloneProduct() ? isPuraLlmOfferedOnStandalone() : true);
   const local =
     isModeAllowedByPolicy(policy, "transcription", "local") &&
     (!agentAllowed || isModeAllowedByPolicy(policy, "llm", "local"));

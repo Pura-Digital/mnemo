@@ -243,6 +243,57 @@ export default function SetupChoiceStep({
     <div className="mx-auto mt-5 flex w-full flex-col items-center gap-4">
       {/* Frame 60: row, gap 16. */}
       <div className="onboarding-stagger flex flex-wrap items-start justify-center gap-3">
+        {cloudAllowed && (
+          <SetupCard>
+            {/* "Vector 1": a 343x183 wash pinned to the bottom of the cloud card.
+                Approximated with a gradient — the Figma vector was not exported. */}
+            <div
+              className="pointer-events-none absolute inset-x-0 bottom-0 h-[183px] bg-gradient-to-t from-[color-mix(in_srgb,var(--onboarding-accent)_12%,transparent)] to-transparent"
+              aria-hidden="true"
+            />
+            <div className="relative z-10 flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                {/* Frame 48: 40px mark on the brand gradient. */}
+                <span className="flex size-9 items-center justify-center rounded-full bg-white ring-1 ring-border">
+                  <img
+                    src={puraLogo}
+                    alt=""
+                    aria-hidden="true"
+                    width={28}
+                    height={28}
+                    decoding="async"
+                    draggable={false}
+                    className="size-7"
+                  />
+                </span>
+                {/* Frame 49: the "Recommended" chip. Figma has white text on a
+                    glass fill over the card's background artwork ("Vector 1",
+                    which was not exported) — on plain white that would be
+                    invisible, so it takes the brand fill until the art lands. */}
+                <span className="rounded-[47px] bg-[var(--onboarding-accent)] px-[9px] py-1 text-[10px] leading-[1.4] text-[var(--onboarding-accent-foreground)]">
+                  {t("common.recommended")}
+                </span>
+              </div>
+
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <h2 className="onboarding-card-title text-[var(--onboarding-text-primary)]">
+                    {t("onboarding.rehaul.setupChoice.cloud.title")}
+                  </h2>
+                  <p className="text-sm leading-[1.4] text-[var(--onboarding-text-secondary)]">
+                    {t("onboarding.rehaul.setupChoice.cloud.description")}
+                  </p>
+                </div>
+              </div>
+            </div>
+            <CardAction brand onClick={chooseCloud}>
+              {isSignedIn
+                ? t("onboarding.rehaul.setupChoice.cloud.continue")
+                : t("onboarding.rehaul.setupChoice.cloud.signIn")}
+            </CardAction>
+          </SetupCard>
+        )}
+
         {byokAllowed && (
           <SetupCard>
             <div className="flex flex-col gap-4">
@@ -329,57 +380,6 @@ export default function SetupChoiceStep({
             </div>
             <CardAction onClick={() => setPending("local")}>
               {t("onboarding.rehaul.setupChoice.local.download")}
-            </CardAction>
-          </SetupCard>
-        )}
-
-        {cloudAllowed && (
-          <SetupCard>
-            {/* "Vector 1": a 343x183 wash pinned to the bottom of the cloud card.
-                Approximated with a gradient — the Figma vector was not exported. */}
-            <div
-              className="pointer-events-none absolute inset-x-0 bottom-0 h-[183px] bg-gradient-to-t from-[color-mix(in_srgb,var(--onboarding-accent)_12%,transparent)] to-transparent"
-              aria-hidden="true"
-            />
-            <div className="relative z-10 flex flex-col gap-4">
-              <div className="flex items-center justify-between">
-                {/* Frame 48: 40px mark on the brand gradient. */}
-                <span className="flex size-9 items-center justify-center rounded-full bg-white ring-1 ring-border">
-                  <img
-                    src={puraLogo}
-                    alt=""
-                    aria-hidden="true"
-                    width={28}
-                    height={28}
-                    decoding="async"
-                    draggable={false}
-                    className="size-7"
-                  />
-                </span>
-                {/* Frame 49: the "Recommended" chip. Figma has white text on a
-                    glass fill over the card's background artwork ("Vector 1",
-                    which was not exported) — on plain white that would be
-                    invisible, so it takes the brand fill until the art lands. */}
-                <span className="rounded-[47px] bg-[var(--onboarding-accent)] px-[9px] py-1 text-[10px] leading-[1.4] text-[var(--onboarding-accent-foreground)]">
-                  {t("common.recommended")}
-                </span>
-              </div>
-
-              <div className="flex flex-col gap-4">
-                <div className="flex flex-col gap-1.5">
-                  <h2 className="onboarding-card-title text-[var(--onboarding-text-primary)]">
-                    {t("onboarding.rehaul.setupChoice.cloud.title")}
-                  </h2>
-                  <p className="text-sm leading-[1.4] text-[var(--onboarding-text-secondary)]">
-                    {t("onboarding.rehaul.setupChoice.cloud.description")}
-                  </p>
-                </div>
-              </div>
-            </div>
-            <CardAction brand onClick={chooseCloud}>
-              {isSignedIn
-                ? t("onboarding.rehaul.setupChoice.cloud.continue")
-                : t("onboarding.rehaul.setupChoice.cloud.signIn")}
             </CardAction>
           </SetupCard>
         )}

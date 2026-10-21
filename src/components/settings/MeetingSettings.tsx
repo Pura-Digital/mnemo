@@ -4,8 +4,13 @@ import { Cloud, Key, Cpu, Network } from "../icons";
 import { useSettingsStore } from "../../stores/settingsStore";
 import { usePolicyModeOptions, usePolicySnapshot } from "../../hooks/usePolicy";
 import { isModeAllowedByPolicy } from "../../stores/policyRules";
-import { filterInferenceModeOptions } from "../../config/mnemoProduct";
+import {
+  filterInferenceModeOptions,
+  isMnemoStandaloneProduct,
+  isPuraInferenceModeSelectable,
+} from "../../config/mnemoProduct";
 import { requestSignIn } from "../../utils/requestSignIn";
+import { ensurePuraLlmAccess } from "../../utils/puraLlmAccess";
 import { InferenceModeSelector, SettingsRow } from "../ui/SettingsSection";
 import type { InferenceModeOption } from "../ui/SettingsSection";
 import { Toggle } from "../ui/toggle";
@@ -16,7 +21,7 @@ import { useAiSetupLane } from "../../contexts/AiSetupLaneContext";
 import {
   isAiSetupLaneLocked,
   resolveTranscriptionUiMode,
-  transcriptionPickerModeForSetupLane,
+  showsTranscriptionModelPicker,
 } from "../../helpers/aiSetupLanePolicy";
 import { useAlignTranscriptionWithSetupLane } from "../../hooks/useAlignTranscriptionWithSetupLane";
 
@@ -42,7 +47,7 @@ export function MeetingSpeakerDetectionRow() {
 const noop = () => {};
 
 export function MeetingTranscriptionPanel() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const setupLane = useAiSetupLane();
   const laneLocked = isAiSetupLaneLocked(setupLane);
   const policySnapshot = usePolicySnapshot();
@@ -68,6 +73,7 @@ export function MeetingTranscriptionPanel() {
     setMeetingCloudTranscriptionBaseUrl,
     setMeetingCloudTranscriptionMode,
   } = useSettingsStore();
+  const puraSelectable = isPuraInferenceModeSelectable(isSignedIn);
   const {
     modes: transcriptionModes,
     effectiveMode: effectiveTranscriptionMode,
@@ -79,8 +85,12 @@ export function MeetingTranscriptionPanel() {
         label: t("settingsPage.transcription.modes.mnemo"),
         description: t("settingsPage.transcription.modes.mnemoCloudDesc"),
         icon: <Cloud className="w-4 h-4" />,
-        disabled: !isSignedIn,
-        badge: !isSignedIn ? t("common.freeAccountRequired") : undefined,
+        disabled: !puraSelectable,
+        badge: !puraSelectable
+          ? isMnemoStandaloneProduct()
+            ? t("settingsPage.puraLlm.notConfiguredBadge")
+            : t("common.freeAccountRequired")
+          : undefined,
       },
       {
         id: "providers",
@@ -117,9 +127,14 @@ export function MeetingTranscriptionPanel() {
   const handleTranscriptionModeSelect = (mode: InferenceMode) => {
     if (!isModeAllowed(mode)) return;
     if (mode === "self-hosted") return;
-    if (mode === "pura" && !isSignedIn) {
-      requestSignIn();
-      return;
+    if (mode === "pura") {
+      if (!puraSelectable) return;
+      if (isMnemoStandaloneProduct()) {
+        void ensurePuraLlmAccess(i18n.language?.startsWith("en") ? "en" : "it");
+      } else if (!isSignedIn) {
+        requestSignIn();
+        return;
+      }
     }
     if (mode === effectiveTranscriptionMode) return;
     setMeetingTranscriptionMode(mode);
@@ -195,11 +210,12 @@ export function MeetingTranscriptionPanel() {
         />
       )}
 
-      {laneLocked && setupLane
-        ? renderTranscriptionPicker(transcriptionPickerModeForSetupLane(setupLane))
-        : null}
-      {!laneLocked && uiTranscriptionMode === "providers" && renderTranscriptionPicker("cloud")}
-      {!laneLocked && uiTranscriptionMode === "local" && renderTranscriptionPicker("local")}
+      {showsTranscriptionModelPicker(setupLane, uiTranscriptionMode) &&
+        uiTranscriptionMode === "providers" &&
+        renderTranscriptionPicker("cloud")}
+      {showsTranscriptionModelPicker(setupLane, uiTranscriptionMode) &&
+        uiTranscriptionMode === "local" &&
+        renderTranscriptionPicker("local")}
       <MeetingSpeakerDetectionRow />
     </div>
   );

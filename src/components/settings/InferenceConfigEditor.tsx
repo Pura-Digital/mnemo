@@ -1,7 +1,8 @@
 import { useCallback, useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { useTranslation } from "react-i18next";
-import { Cloud, Key, Cpu, Network, Building2, ShieldCheck, AlertTriangle } from "../icons";
+import { Key, Cpu, Network, Building2, ShieldCheck, AlertTriangle } from "../icons";
+import puraLogo from "../../assets/pura_logo.svg";
 import {
   LLM_ENTERPRISE_POLICY_PROVIDER_IDS,
   LLM_POLICY_PROVIDER_IDS,
@@ -31,10 +32,19 @@ import {
   enterpriseProviderName,
 } from "../../models/ModelRegistry";
 import { useManagedScopeResolution } from "../../stores/enterpriseIdentityStore";
-import { filterInferenceModeOptions } from "../../config/mnemoProduct";
+import {
+  filterInferenceModeOptions,
+  isMnemoStandaloneProduct,
+  isPuraInferenceModeSelectable,
+} from "../../config/mnemoProduct";
 import { useAiSetupLane } from "../../contexts/AiSetupLaneContext";
-import { llmModeForcedBySetupLane, mergeAllowedInferenceModes } from "../../helpers/aiSetupLanePolicy";
+import {
+  llmModeForcedBySetupLane,
+  mergeAllowedInferenceModes,
+  showsLlmModelPicker,
+} from "../../helpers/aiSetupLanePolicy";
 import { requestSignIn } from "../../utils/requestSignIn";
+import { ensurePuraLlmAccess } from "../../utils/puraLlmAccess";
 import TestConnectionButton from "../TestConnectionButton";
 import { getEnterpriseCallSettings } from "../../services/ai/enterpriseSettings";
 import { Button } from "../ui/button";
@@ -60,7 +70,7 @@ export default function InferenceConfigEditor({
   onModeChange,
   allowedModes,
 }: InferenceConfigEditorProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const setupLane = useAiSetupLane();
   const resolvedAllowedModes = mergeAllowedInferenceModes(setupLane, allowedModes);
   const forcedLlmMode = llmModeForcedBySetupLane(setupLane);
@@ -77,6 +87,7 @@ export default function InferenceConfigEditor({
     })
   );
   const isSignedIn = useSettingsStore((s) => s.isSignedIn);
+  const puraSelectable = isPuraInferenceModeSelectable(isSignedIn);
   const enterpriseSetupMode = useSettingsStore((s) => s.enterpriseSetupMode);
   const setEnterpriseSetupMode = useSettingsStore((s) => s.setEnterpriseSetupMode);
   const managed = useManagedScopeResolution(scope, enterpriseSetupMode);
@@ -94,9 +105,23 @@ export default function InferenceConfigEditor({
           id: "pura",
           label: t(`${prefix}.mnemo`),
           description: t(`${prefix}.mnemoCloudDesc`),
-          icon: <Cloud className="w-4 h-4" />,
-          disabled: !isSignedIn,
-          badge: !isSignedIn ? t("common.freeAccountRequired") : undefined,
+          icon: (
+            <img
+              src={puraLogo}
+              width={16}
+              height={16}
+              alt=""
+              aria-hidden="true"
+              decoding="async"
+              draggable={false}
+            />
+          ),
+          disabled: !puraSelectable,
+          badge: !puraSelectable
+            ? isMnemoStandaloneProduct()
+              ? t("settingsPage.puraLlm.notConfiguredBadge")
+              : t("common.freeAccountRequired")
+            : undefined,
         },
         {
           id: "providers",
@@ -143,9 +168,14 @@ export default function InferenceConfigEditor({
   const handleModeSelect = useCallback(
     (mode: InferenceMode) => {
       if (!isModeAllowed(mode)) return;
-      if (mode === "pura" && !isSignedIn) {
-        requestSignIn();
-        return;
+      if (mode === "pura") {
+        if (!puraSelectable) return;
+        if (isMnemoStandaloneProduct()) {
+          void ensurePuraLlmAccess(i18n.language?.startsWith("en") ? "en" : "it");
+        } else if (!isSignedIn) {
+          requestSignIn();
+          return;
+        }
       }
       if (mode === effectiveMode) return;
 
@@ -160,7 +190,16 @@ export default function InferenceConfigEditor({
       setResolvedLLMConfig(scope, patch);
       onModeChange?.(mode);
     },
-    [scope, config.provider, effectiveMode, isSignedIn, onModeChange, isModeAllowed]
+    [
+      scope,
+      config.provider,
+      effectiveMode,
+      isSignedIn,
+      i18n.language,
+      onModeChange,
+      isModeAllowed,
+      puraSelectable,
+    ]
   );
 
   const setMode = setField("mode");
@@ -183,13 +222,15 @@ export default function InferenceConfigEditor({
   );
 
   const uiEffectiveMode = forcedLlmMode ?? effectiveMode;
+  const showModelPickers = showsLlmModelPicker(setupLane, uiEffectiveMode);
   const showThinkingToggle =
-    uiEffectiveMode === "self-hosted" ||
+    showModelPickers &&
+    (uiEffectiveMode === "self-hosted" ||
     (uiEffectiveMode === "providers" &&
       (config.provider === "custom" ||
         config.provider === "openrouter" ||
         !!getCloudModel(config.model)?.supportsThinking)) ||
-    (uiEffectiveMode === "local" && !!getLocalModel(config.model)?.supportsThinking);
+      (uiEffectiveMode === "local" && !!getLocalModel(config.model)?.supportsThinking));
 
   if (managed.kind === "error") {
     return (
@@ -285,10 +326,10 @@ export default function InferenceConfigEditor({
         />
       )}
 
-      {uiEffectiveMode === "providers" && renderModelSelector("cloud")}
-      {uiEffectiveMode === "local" && renderModelSelector("local")}
+      {showModelPickers && uiEffectiveMode === "providers" && renderModelSelector("cloud")}
+      {showModelPickers && uiEffectiveMode === "local" && renderModelSelector("local")}
 
-      {uiEffectiveMode === "self-hosted" && (
+      {showModelPickers && uiEffectiveMode === "self-hosted" && (
         <OpenAICompatiblePanel
           baseUrl={config.remoteUrl ?? ""}
           setBaseUrl={setField("remoteUrl")}

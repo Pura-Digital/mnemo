@@ -1,14 +1,8 @@
 import { useState, useEffect, useCallback } from "react";
-import { useShallow } from "zustand/react/shallow";
 import { useTranslation } from "react-i18next";
 import { Sparkles, Plus, ChevronRight, Zap, Loader2, Check, Monitor } from "../icons";
 import { Button } from "../ui/button";
 import { cn } from "../lib/utils";
-import {
-  selectPolicyEffectiveSettings,
-  selectResolvedLLMConfig,
-  useSettingsStore,
-} from "../../stores/settingsStore";
 import { useNotesOnboarding } from "../../hooks/useNotesOnboarding";
 import {
   useActions,
@@ -19,11 +13,10 @@ import {
 import { notesInputClass, notesTextareaClass } from "./shared";
 import { useDialogs } from "../../hooks/useDialogs";
 import { AlertDialog } from "../ui/dialog";
-import ReasoningModelSelector from "../ReasoningModelSelector";
+import InferenceConfigEditor from "../settings/InferenceConfigEditor";
+import { isMnemoStandaloneProduct } from "../../config/mnemoProduct";
 import { useSystemAudioPermission } from "../../hooks/useSystemAudioPermission";
 import { canManageSystemAudioInApp } from "../../utils/systemAudioAccess";
-import { usePolicySnapshot } from "../../hooks/usePolicy";
-
 interface NotesOnboardingProps {
   onComplete: () => void;
 }
@@ -32,28 +25,17 @@ export default function NotesOnboarding({ onComplete }: NotesOnboardingProps) {
   const { t } = useTranslation();
   const { isProUser, isProLoading, isLLMConfigured, complete } = useNotesOnboarding();
   const actions = useActions();
-  const [llmExpanded, setLlmExpanded] = useState(!isLLMConfigured && !isProUser);
+  const showActionsLlmSetup =
+    isMnemoStandaloneProduct() || (!isProLoading && !isProUser);
+  const [llmExpanded, setLlmExpanded] = useState(
+    () => !isLLMConfigured && (isMnemoStandaloneProduct() || !isProUser)
+  );
   const [createExpanded, setCreateExpanded] = useState(false);
   const [actionName, setActionName] = useState("");
   const [actionDescription, setActionDescription] = useState("");
   const [actionPrompt, setActionPrompt] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [justCreated, setJustCreated] = useState(false);
-
-  const policyState = usePolicySnapshot();
-  const cleanupConfig = useSettingsStore(
-    useShallow((settings) =>
-      selectResolvedLLMConfig(
-        selectPolicyEffectiveSettings(settings, policyState),
-        "dictationCleanup"
-      )
-    )
-  );
-  const setCleanupModel = useSettingsStore((s) => s.setCleanupModel);
-  const setCleanupProvider = useSettingsStore((s) => s.setCleanupProvider);
-  const setCleanupMode = useSettingsStore((s) => s.setCleanupMode);
-  const setCleanupCloudBaseUrl = useSettingsStore((s) => s.setCleanupCloudBaseUrl);
-  const setCleanupCustomApiKey = useSettingsStore((s) => s.setCleanupCustomApiKey);
 
   const { alertDialog, hideAlertDialog } = useDialogs();
   const {
@@ -124,8 +106,8 @@ export default function NotesOnboarding({ onComplete }: NotesOnboardingProps) {
           </p>
         </div>
 
-        {/* LLM Configuration — non-Pro only, deferred until pro status is known */}
-        {!isProLoading && !isProUser && (
+        {/* LLM configuration — standalone always; cloud app only when not on hosted Pro */}
+        {showActionsLlmSetup && (
           <div
             className={cn(
               "rounded-lg border transition-colors duration-200",
@@ -169,17 +151,7 @@ export default function NotesOnboarding({ onComplete }: NotesOnboardingProps) {
                   {t("notes.onboarding.llm.description")}
                 </p>
 
-                <ReasoningModelSelector
-                  reasoningModel={cleanupConfig.model}
-                  setReasoningModel={setCleanupModel}
-                  localReasoningProvider={cleanupConfig.provider}
-                  setLocalReasoningProvider={setCleanupProvider}
-                  cloudReasoningBaseUrl={cleanupConfig.cloudBaseUrl ?? ""}
-                  setCloudReasoningBaseUrl={setCleanupCloudBaseUrl}
-                  customReasoningApiKey={cleanupConfig.customApiKey ?? ""}
-                  setCustomReasoningApiKey={setCleanupCustomApiKey}
-                  setReasoningMode={setCleanupMode}
-                />
+                <InferenceConfigEditor scope="noteFormatting" />
               </div>
             )}
           </div>

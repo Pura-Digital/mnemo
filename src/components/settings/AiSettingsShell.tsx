@@ -21,9 +21,9 @@ interface AiSettingsShellProps {
 }
 
 const LANE_OPTIONS: { id: AiSetupLane; icon: typeof KeyRound }[] = [
+  { id: "pura", icon: Sparkles },
   { id: "providers", icon: KeyRound },
   { id: "local", icon: Cpu },
-  { id: "pura", icon: Sparkles },
 ];
 
 export default function AiSettingsShell({

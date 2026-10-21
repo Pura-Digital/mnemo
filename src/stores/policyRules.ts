@@ -136,13 +136,21 @@ export function maxAudioRetentionDays(state: PolicyDecisionSnapshot): number | n
   return managedPolicy(state)?.dataRetention.audioRetentionMaxDays ?? null;
 }
 
+/** Policy catalogs use `mnemo`; settings/UI often use `pura` for the same hosted lane. */
+function policyHostedModeIds(mode: InferenceMode): InferenceMode[] {
+  if (mode === "mnemo" || (mode as string) === "pura") return ["mnemo"];
+  return [mode];
+}
+
 /** Whether a transcription/LLM mode is allowed. Unmanaged users allow everything. */
 export function isModeAllowedByPolicy(
   state: PolicyDecisionSnapshot,
   scope: PolicyScope,
   mode: InferenceMode
 ): boolean {
-  return managedPolicyDecision(state, (policy) => policy[scope].allowedModes.includes(mode));
+  return managedPolicyDecision(state, (policy) =>
+    policyHostedModeIds(mode).some((id) => policy[scope].allowedModes.includes(id))
+  );
 }
 
 /** Whether a BYOK provider id is allowed for a scope. Unmanaged users allow everything. */

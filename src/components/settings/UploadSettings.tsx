@@ -8,8 +8,13 @@ import {
 } from "../../stores/settingsStore";
 import { usePolicyModeOptions, usePolicySnapshot } from "../../hooks/usePolicy";
 import { isEnterpriseTranscriptionOfferable } from "../../stores/policyRules";
-import { filterInferenceModeOptions } from "../../config/mnemoProduct";
+import {
+  filterInferenceModeOptions,
+  isMnemoStandaloneProduct,
+  isPuraInferenceModeSelectable,
+} from "../../config/mnemoProduct";
 import { requestSignIn } from "../../utils/requestSignIn";
+import { ensurePuraLlmAccess } from "../../utils/puraLlmAccess";
 import { InferenceModeSelector } from "../ui/SettingsSection";
 import type { InferenceModeOption } from "../ui/SettingsSection";
 import TranscriptionModelPicker from "../TranscriptionModelPicker";
@@ -19,12 +24,12 @@ import { useAiSetupLane } from "../../contexts/AiSetupLaneContext";
 import {
   isAiSetupLaneLocked,
   resolveTranscriptionUiMode,
-  transcriptionPickerModeForSetupLane,
+  showsTranscriptionModelPicker,
 } from "../../helpers/aiSetupLanePolicy";
 import { useAlignTranscriptionWithSetupLane } from "../../hooks/useAlignTranscriptionWithSetupLane";
 
 export function UploadTranscriptionPanel() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const setupLane = useAiSetupLane();
   const laneLocked = isAiSetupLaneLocked(setupLane);
   const policySnapshot = usePolicySnapshot();
@@ -55,6 +60,7 @@ export function UploadTranscriptionPanel() {
     uploadRemoteTranscriptionModel,
     setUploadRemoteTranscriptionModel,
   } = useSettingsStore();
+  const puraSelectable = isPuraInferenceModeSelectable(isSignedIn);
   const {
     modes: transcriptionModes,
     effectiveMode: effectiveTranscriptionMode,
@@ -66,8 +72,12 @@ export function UploadTranscriptionPanel() {
         label: t("settingsPage.transcription.modes.mnemo"),
         description: t("settingsPage.transcription.modes.mnemoCloudDesc"),
         icon: <Cloud className="w-4 h-4" />,
-        disabled: !isSignedIn,
-        badge: !isSignedIn ? t("common.freeAccountRequired") : undefined,
+        disabled: !puraSelectable,
+        badge: !puraSelectable
+          ? isMnemoStandaloneProduct()
+            ? t("settingsPage.puraLlm.notConfiguredBadge")
+            : t("common.freeAccountRequired")
+          : undefined,
       },
       {
         id: "providers",
@@ -114,9 +124,14 @@ export function UploadTranscriptionPanel() {
   const uiTranscriptionMode = resolveTranscriptionUiMode(setupLane, effectiveTranscriptionMode);
   const handleTranscriptionModeSelect = (mode: InferenceMode) => {
     if (!isModeAllowed(mode)) return;
-    if (mode === "pura" && !isSignedIn) {
-      requestSignIn();
-      return;
+    if (mode === "pura") {
+      if (!puraSelectable) return;
+      if (isMnemoStandaloneProduct()) {
+        void ensurePuraLlmAccess(i18n.language?.startsWith("en") ? "en" : "it");
+      } else if (!isSignedIn) {
+        requestSignIn();
+        return;
+      }
     }
     if (mode === effectiveTranscriptionMode) return;
     setUploadTranscriptionMode(mode);
@@ -180,12 +195,14 @@ export function UploadTranscriptionPanel() {
         />
       )}
 
-      {laneLocked && setupLane
-        ? renderTranscriptionPicker(transcriptionPickerModeForSetupLane(setupLane))
-        : null}
-      {!laneLocked && uiTranscriptionMode === "providers" && renderTranscriptionPicker("cloud")}
-      {!laneLocked && uiTranscriptionMode === "local" && renderTranscriptionPicker("local")}
-      {!laneLocked && uiTranscriptionMode === "self-hosted" && (
+      {showsTranscriptionModelPicker(setupLane, uiTranscriptionMode) &&
+        uiTranscriptionMode === "providers" &&
+        renderTranscriptionPicker("cloud")}
+      {showsTranscriptionModelPicker(setupLane, uiTranscriptionMode) &&
+        uiTranscriptionMode === "local" &&
+        renderTranscriptionPicker("local")}
+      {showsTranscriptionModelPicker(setupLane, uiTranscriptionMode) &&
+        uiTranscriptionMode === "self-hosted" && (
         <SelfHostedPanel
           service="transcription"
           url={uploadRemoteTranscriptionUrl}
