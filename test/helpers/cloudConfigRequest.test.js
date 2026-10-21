@@ -6,10 +6,10 @@ const { withPolicyRequestHeaders } = require("../../src/helpers/policyRequestHea
 
 test("the config handler preserves policy and upgrade response metadata", async () => {
   const handler = createCloudConfigRequestHandler({
-    getApiUrl: () => "https://api.openwhispr.test",
+    getApiUrl: () => "https://api.mnemo.test",
     getAuthHeader: async () => ({ Authorization: "Bearer token-a" }),
     proxyFetch: async (_url, options) => {
-      assert.equal(options.headers["x-openwhispr-policy-version"], "1");
+      assert.equal(options.headers["x-mnemo-policy-version"], "1");
       return new Response(
         JSON.stringify({
           error: "Update required",
@@ -19,7 +19,7 @@ test("the config handler preserves policy and upgrade response metadata", async 
         { status: 426 }
       );
     },
-    withPolicyHeaders: (headers) => ({ ...headers, "x-openwhispr-policy-version": "1" }),
+    withPolicyHeaders: (headers) => ({ ...headers, "x-mnemo-policy-version": "1" }),
     logger: { error() {} },
     configPath: "stt-config",
   });
@@ -40,7 +40,7 @@ test("the config handler keeps successful and legacy auth results compatible", a
     new Response("{}", { status: 401 }),
   ];
   const handler = createCloudConfigRequestHandler({
-    getApiUrl: () => "https://api.openwhispr.test",
+    getApiUrl: () => "https://api.mnemo.test",
     getAuthHeader: async () => ({ Authorization: "Bearer token-a" }),
     proxyFetch: async () => responses.shift(),
     withPolicyHeaders: (headers) => headers,
@@ -63,25 +63,25 @@ test("the config handler keeps successful and legacy auth results compatible", a
 test("the note-recording-config handler applies policy headers to its route", async () => {
   let requestedUrl = null;
   const handler = createCloudConfigRequestHandler({
-    getApiUrl: () => "https://api.openwhispr.test",
+    getApiUrl: () => "https://api.mnemo.test",
     getAuthHeader: async () => ({ Authorization: "Bearer token-a" }),
     proxyFetch: async (url, options) => {
       requestedUrl = url;
-      assert.equal(options.headers["x-openwhispr-policy-version"], "1");
+      assert.equal(options.headers["x-mnemo-policy-version"], "1");
       return new Response(JSON.stringify({ providers: [] }), { status: 200 });
     },
-    withPolicyHeaders: (headers) => ({ ...headers, "x-openwhispr-policy-version": "1" }),
+    withPolicyHeaders: (headers) => ({ ...headers, "x-mnemo-policy-version": "1" }),
     logger: { error() {} },
     configPath: "note-recording-config",
   });
 
   assert.deepEqual(await handler({ sender: {} }), { success: true, providers: [] });
-  assert.equal(requestedUrl, "https://api.openwhispr.test/api/note-recording-config");
+  assert.equal(requestedUrl, "https://api.mnemo.test/api/note-recording-config");
 });
 
 test("the note-recording-config handler returns a structured policy failure instead of null", async () => {
   const handler = createCloudConfigRequestHandler({
-    getApiUrl: () => "https://api.openwhispr.test",
+    getApiUrl: () => "https://api.mnemo.test",
     getAuthHeader: async () => ({ Authorization: "Bearer token-a" }),
     proxyFetch: async () =>
       new Response(
@@ -104,7 +104,7 @@ test("every config refetch bypasses the HTTP cache and declares the client capab
   const requests = [];
   for (const configPath of ["stt-config", "note-recording-config"]) {
     const handler = createCloudConfigRequestHandler({
-      getApiUrl: () => "https://api.openwhispr.test",
+      getApiUrl: () => "https://api.mnemo.test",
       getAuthHeader: async () => ({ Authorization: "Bearer token-a" }),
       proxyFetch: async (url, options) => {
         requests.push({ url, cache: options.cache, headers: options.headers });
@@ -118,10 +118,10 @@ test("every config refetch bypasses the HTTP cache and declares the client capab
   }
 
   assert.deepEqual(
-    requests.map(({ url, cache, headers }) => [url, cache, headers["x-openwhispr-capabilities"]]),
+    requests.map(({ url, cache, headers }) => [url, cache, headers["x-mnemo-capabilities"]]),
     [
-      ["https://api.openwhispr.test/api/stt-config", "no-store", "orukeet"],
-      ["https://api.openwhispr.test/api/note-recording-config", "no-store", "orukeet"],
+      ["https://api.mnemo.test/api/stt-config", "no-store", "orukeet"],
+      ["https://api.mnemo.test/api/note-recording-config", "no-store", "orukeet"],
     ]
   );
 });

@@ -56,7 +56,7 @@ async function renderChatStreaming(
   installBrowserGlobals(t, { window: { electronAPI } });
   const container = live ? installHookDom(t) : null;
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-chat-streaming-cancellation-test-",
+    cachePrefix: "mnemo-chat-streaming-cancellation-test-",
   });
   const [{ default: viteI18next }, { initReactI18next }] = await Promise.all([
     vite.ssrLoadModule("i18next"),
@@ -436,8 +436,8 @@ test("cloud screen context is sent without claiming the screenshot is already at
   const { captured } = await renderChatStreaming(t, {
     electronAPI,
     settings: {
-      chatAgentMode: "openwhispr",
-      chatAgentCloudMode: "openwhispr",
+      chatAgentMode: "mnemo",
+      chatAgentCloudMode: "mnemo",
       isSignedIn: true,
     },
   });

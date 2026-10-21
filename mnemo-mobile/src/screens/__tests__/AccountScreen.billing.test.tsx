@@ -248,7 +248,7 @@ describe('AccountScreen billing management', () => {
     await waitFor(() =>
       expect(alertSpy).toHaveBeenCalledWith(
         'Manage Subscription',
-        "You can't make changes to your plan in the app. We know it's not ideal. Contact OpenWhispr Support for help with cancellation or billing.",
+        "You can't make changes to your plan in the app. We know it's not ideal. Contact mnemo Support for help with cancellation or billing.",
         expect.arrayContaining([
           expect.objectContaining({ text: 'Contact Support', onPress: expect.any(Function) }),
           expect.objectContaining({ text: 'Done', style: 'cancel' }),
@@ -296,7 +296,7 @@ describe('AccountScreen billing management', () => {
       await waitFor(() =>
         expect(alertSpy).toHaveBeenCalledWith(
           'Manage Subscription',
-          "You can't make changes to your plan in the app. We know it's not ideal. Contact OpenWhispr Support for help with cancellation or billing.",
+          "You can't make changes to your plan in the app. We know it's not ideal. Contact mnemo Support for help with cancellation or billing.",
           expect.arrayContaining([
             expect.objectContaining({ text: 'Contact Support', onPress: expect.any(Function) }),
             expect.objectContaining({ text: 'Done', style: 'cancel' }),
@@ -307,10 +307,7 @@ describe('AccountScreen billing management', () => {
       const contactSupport = buttons?.find((button) => button.text === 'Contact Support');
       contactSupport?.onPress?.();
 
-      expect(mockOpenMail).toHaveBeenCalledWith(
-        'support@openwhispr.com',
-        'OpenWhispr Billing Support',
-      );
+      expect(mockOpenMail).toHaveBeenCalledWith('support@mnemo.com', 'mnemo Billing Support');
       expect(mockCreateStripeBillingPortalSession).not.toHaveBeenCalled();
       expect(mockShowAppStoreManageSubscriptions).not.toHaveBeenCalled();
       expect(mockOpenExternal).not.toHaveBeenCalled();

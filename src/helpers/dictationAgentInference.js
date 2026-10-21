@@ -80,7 +80,7 @@ export function resolveDictationAgentInference(settings, { isCloudAgent = false 
 export function resolveDictationAgentVisionInference(settings, { isSignedIn = false } = {}) {
   const resolved = selectResolvedLLMConfig(settings, "dictationAgentVision");
   const mode = resolved.mode;
-  const isCloud = isSignedIn && mode === "openwhispr" && resolved.cloudMode === "openwhispr";
+  const isCloud = isSignedIn && mode === "pura" && resolved.cloudMode === "pura";
   const model = resolved.model?.trim() || "";
   const storedProvider = resolved.provider?.trim() || "";
   const providerForMode = isProviderValidForMode(storedProvider, mode) ? storedProvider : undefined;
@@ -138,7 +138,7 @@ export function resolveDictationAgentVisionInference(settings, { isSignedIn = fa
  * override that cannot drops the screenshot rather than redirecting it to a
  * model the user did not choose; the base scope attaches only where its
  * provider is image-wired and the registry says its model has vision, or on
- * OpenWhispr Cloud, which vision-routes server-side.
+ * Pura LLM, which vision-routes server-side.
  *
  * `isProviderImageWired` is injected: the provider registry reads Vite env at
  * load, which this helper's callers and tests do not all have.
@@ -171,7 +171,7 @@ export function resolveChatStreamingInference(
     settings,
     onAgentScope ? "dictationAgent" : "chatIntelligence"
   );
-  const isCloud = !!settings.isSignedIn && config.mode === "openwhispr";
+  const isCloud = !!settings.isSignedIn && config.mode === "pura";
   const vision =
     onAgentScope && hasScreenContext
       ? resolveDictationAgentVisionInference(settings, { isSignedIn: !!settings.isSignedIn })

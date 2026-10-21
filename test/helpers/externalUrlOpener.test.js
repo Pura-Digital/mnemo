@@ -129,7 +129,7 @@ test("win32 query-string URLs go to shell.openExternal — explorer.exe opens Fi
   setPlatform("win32");
 
   const oauthUrl =
-    "https://auth.openwhispr.com/api/desktop-signin/google?callbackURL=openwhispr%3A%2F%2Fauth";
+    "https://auth.mnemo.com/api/desktop-signin/google?callbackURL=mnemo%3A%2F%2Fauth";
   await openExternalUrl(oauthUrl);
 
   assert.equal(spawnCalls.length, 0);
@@ -152,10 +152,10 @@ test("win32 fragment URLs go to shell.openExternal — explorer.exe mishandles t
   const { openExternalUrl, spawnCalls, openExternalCalls } = loadOpener();
   setPlatform("win32");
 
-  await openExternalUrl("https://docs.openwhispr.com/changelog#windows");
+  await openExternalUrl("https://docs.mnemo.com/changelog#windows");
 
   assert.equal(spawnCalls.length, 0);
-  assert.deepEqual(openExternalCalls, ["https://docs.openwhispr.com/changelog#windows"]);
+  assert.deepEqual(openExternalCalls, ["https://docs.mnemo.com/changelog#windows"]);
 });
 
 test("win32 URLs with explorer's = or , argv separators go to shell.openExternal", async () => {

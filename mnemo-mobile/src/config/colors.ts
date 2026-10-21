@@ -1,14 +1,14 @@
 import { PlatformColor } from 'react-native';
 
-export const BRAND = '#007AFF';
+export const BRAND = '#C81038';
 
-// OpenWhispr brand gradient for primary surfaces (buttons, avatar). Mirrors
-// the logo gradient: #5B81E4 → #154BD4 → #163992. Mirrors the keyboard extension's dictation
+// mnemo brand gradient for primary surfaces (buttons, avatar). Mirrors
+// the logo gradient: #DF103C → #BB0730 → #790821. Mirrors the keyboard extension's dictation
 // button (Swift `Palette.brandGradientStart` / `brandGradientMiddle` / `brandGradientEnd` in
 // KeyboardViewController.swift) so the app and keyboard stay visually identical.
 // Rendered diagonally (top-left → bottom-right) to match that button. Single
 // source of truth for every gradient-glass surface.
-export const BRAND_GRADIENT = ['#5B81E4', '#154BD4', '#163992'] as const;
+export const BRAND_GRADIENT = ['#DF103C', '#BB0730', '#790821'] as const;
 
 // App-wide page background. Overrides iOS `systemBackground` so the warm tone
 // appears uniformly across screens and components that read this token.

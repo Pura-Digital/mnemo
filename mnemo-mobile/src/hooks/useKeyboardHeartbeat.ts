@@ -15,7 +15,7 @@ function readHeartbeat(): number {
 }
 
 /**
- * Watches for the OpenWhispr keyboard appearing. The extension stamps
+ * Watches for the mnemo keyboard appearing. The extension stamps
  * KEYBOARD_SHOWN_AT_MS on every appearance and that write only lands with Full
  * Access granted, so a value newer than the one present at mount proves both that
  * the keyboard was raised and that the permission is live.

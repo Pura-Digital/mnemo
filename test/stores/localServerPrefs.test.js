@@ -10,11 +10,11 @@ const UNMANAGED = { status: "unmanaged", policy: null, appVersion: null };
 const ALL_CLOUD = {
   _llmScopeKeysMigrated: "1",
   _dictationAgentSeeded: "1",
-  cleanupMode: "openwhispr",
-  dictationAgentMode: "openwhispr",
-  noteFormattingMode: "openwhispr",
-  chatAgentMode: "openwhispr",
-  translationMode: "openwhispr",
+  cleanupMode: "mnemo",
+  dictationAgentMode: "mnemo",
+  noteFormattingMode: "mnemo",
+  chatAgentMode: "mnemo",
+  translationMode: "mnemo",
 };
 
 async function loadStore(t, initialStorage, cachePrefix) {
@@ -41,10 +41,10 @@ test("typed chat on a local model keeps the server once cleanup moves to the clo
       chatAgentProvider: "qwen",
       chatAgentModel: MODEL,
     },
-    "openwhispr-local-server-prefs-chat-test-"
+    "mnemo-local-server-prefs-chat-test-"
   );
 
-  s.setResolvedLLMConfig("dictationCleanup", { mode: "openwhispr", cloudMode: "openwhispr" });
+  s.setResolvedLLMConfig("dictationCleanup", { mode: "mnemo", cloudMode: "mnemo" });
   const needs = s.resolveLocalServerNeeds(
     s.selectLocalServerPrefs(s.useSettingsStore.getState(), UNMANAGED)
   );
@@ -63,7 +63,7 @@ test("note formatting counts the local model it inherits from cleanup", async (t
       cleanupModel: MODEL,
       noteFormattingMode: "local",
     },
-    "openwhispr-local-server-prefs-notes-test-"
+    "mnemo-local-server-prefs-notes-test-"
   );
 
   const prefs = s.selectLocalServerPrefs(s.useSettingsStore.getState(), UNMANAGED);
@@ -76,10 +76,10 @@ test("the server stops once the last local scope leaves", async (t) => {
   const s = await loadStore(
     t,
     { ...ALL_CLOUD, dictationAgentMode: "local", dictationAgentModel: MODEL },
-    "openwhispr-local-server-prefs-last-test-"
+    "mnemo-local-server-prefs-last-test-"
   );
 
-  s.setResolvedLLMConfig("dictationAgent", { mode: "openwhispr", cloudMode: "openwhispr" });
+  s.setResolvedLLMConfig("dictationAgent", { mode: "mnemo", cloudMode: "mnemo" });
   const needs = s.resolveLocalServerNeeds(
     s.selectLocalServerPrefs(s.useSettingsStore.getState(), UNMANAGED)
   );
@@ -92,15 +92,15 @@ test("a policy that forbids local inference reports the clamped mode", async (t)
   const s = await loadStore(
     t,
     { ...ALL_CLOUD, cleanupMode: "local", cleanupProvider: "qwen", cleanupModel: MODEL },
-    "openwhispr-local-server-prefs-policy-test-"
+    "mnemo-local-server-prefs-policy-test-"
   );
   const cloudOnly = {
     status: "managed",
     policy: {
       version: 1,
-      transcription: { allowedModes: ["openwhispr"], allowedByokProviders: [] },
+      transcription: { allowedModes: ["mnemo"], allowedByokProviders: [] },
       llm: {
-        allowedModes: ["openwhispr"],
+        allowedModes: ["mnemo"],
         allowedByokProviders: [],
         allowedEnterpriseProviders: [],
       },

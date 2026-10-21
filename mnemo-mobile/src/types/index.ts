@@ -4,7 +4,7 @@ export type KeyboardTone = 'default' | 'formal' | 'casual' | 'very_casual' | 'ex
 // Currently only the two wired modes are exposed. When SOON modes (providers,
 // self-hosted, enterprise) get wired in, widen this union and add matching
 // entries to `BASE` + `SCOPE_MODES` in lib/inferenceModes.ts.
-export type InferenceMode = 'openwhispr' | 'local';
+export type InferenceMode = 'mnemo' | 'local';
 
 export interface UserConfig {
   defaultMode: ProcessingMode;
@@ -35,7 +35,7 @@ export function inferenceToProcessingMode(mode: InferenceMode): ProcessingMode {
 }
 
 export function processingToInferenceMode(mode: ProcessingMode): InferenceMode {
-  return mode === 'private' ? 'local' : 'openwhispr';
+  return mode === 'private' ? 'local' : 'mnemo';
 }
 
 export interface Transcript {
@@ -67,7 +67,7 @@ export interface ReasoningRequest {
   signal?: AbortSignal;
   timeoutMs?: number;
   // When systemPrompt is omitted, the API resolves a localized cleanup prompt
-  // from these fields via openwhispr-api/lib/prompts.ts.
+  // from these fields via mnemo-api/lib/prompts.ts.
   language?: string;
   locale?: string;
   customDictionary?: string[];

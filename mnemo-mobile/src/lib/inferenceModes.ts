@@ -1,4 +1,5 @@
 import type { LucideIconName } from '@/components/ui/SystemIcon';
+import { filterInferenceModes } from '@/config/mnemoProduct';
 import type { InferenceMode } from '@/types';
 
 export type ModeDescriptor = {
@@ -12,11 +13,11 @@ export type ModeDescriptor = {
 export type InferenceScope = 'speech';
 
 const BASE: Record<InferenceMode, Omit<ModeDescriptor, 'description'>> = {
-  openwhispr: {
-    mode: 'openwhispr',
+  mnemo: {
+    mode: 'mnemo',
     icon: 'cloud',
     mdIcon: 'Cloud',
-    title: 'OpenWhispr Cloud',
+    title: 'Pura LLM',
   },
   local: {
     mode: 'local',
@@ -27,7 +28,7 @@ const BASE: Record<InferenceMode, Omit<ModeDescriptor, 'description'>> = {
 };
 
 const SPEECH_DESCRIPTIONS: Record<InferenceMode, string> = {
-  openwhispr: 'Hosted by OpenWhispr. Requires sign-in.',
+  mnemo: 'Pura LLM requires sign-in.',
   local: 'Audio never leaves this phone.',
 };
 
@@ -36,11 +37,11 @@ const SPEECH_TITLES: Partial<Record<InferenceMode, string>> = {
 };
 
 const SCOPE_MODES: Record<InferenceScope, InferenceMode[]> = {
-  speech: ['openwhispr', 'local'],
+  speech: ['mnemo', 'local'],
 };
 
 export function getInferenceModes(scope: InferenceScope): ModeDescriptor[] {
-  return SCOPE_MODES[scope].map((mode) => {
+  return filterInferenceModes(SCOPE_MODES[scope]).map((mode) => {
     const base = BASE[mode];
     return {
       ...base,
@@ -51,6 +52,6 @@ export function getInferenceModes(scope: InferenceScope): ModeDescriptor[] {
 }
 
 export const MODE_LABELS: Record<InferenceMode, string> = {
-  openwhispr: 'OpenWhispr Cloud',
+  mnemo: 'Pura LLM',
   local: 'On-Device',
 };

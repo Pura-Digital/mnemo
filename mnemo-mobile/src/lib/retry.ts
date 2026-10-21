@@ -1,4 +1,4 @@
-// Ported from openwhispr/src/utils/retry.ts. Same exponential-backoff semantics
+// Ported from mnemo/src/utils/retry.ts. Same exponential-backoff semantics
 // so mobile cleanup tolerates flaky networks the way desktop does.
 
 const RETRY_CONFIG = {

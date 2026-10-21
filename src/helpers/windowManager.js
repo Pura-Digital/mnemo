@@ -1,4 +1,5 @@
-const { app, screen, BrowserWindow, dialog, ipcMain, Menu } = require("electron");
+const os = require("os");
+const { app, screen, BrowserWindow, dialog, ipcMain, Menu, nativeTheme } = require("electron");
 const debugLogger = require("./debugLogger");
 const { createLinuxWindowInputRegion } = require("./linuxWindowInputRegion");
 // Aliased: this class has an openExternalUrl method wrapping the helper.
@@ -13,7 +14,12 @@ const { isAllowedAppNavigation, isExternalBrowserUrl } = require("./navigationGu
 const { pathToFileURL } = require("url");
 const dockManager = require("./dockManager");
 const { i18nMain } = require("./i18nMain");
-const { NotificationDismissTimer, getNotificationTimeoutMs } = require("./notificationTimer");
+const {
+  NotificationDismissTimer,
+  getNotificationTimeoutMs,
+  PILL_PROMPT_MS,
+  PILL_PROMPT_FOLD_MS,
+} = require("./notificationTimer");
 const {
   DICTATION_LIFECYCLE,
   DICTATION_INPUT_KIND,
@@ -43,6 +49,12 @@ const AGENT_DICTATION_PILL_SIZE = Object.freeze({ ...WINDOW_SIZES.BASE });
 const { centeredBounds, clampedBounds } = require("./onboardingWindowBounds");
 const { ONBOARDING_DEMO_KINDS, isOnboardingInputAllowed } = require("./onboardingInputPolicy");
 const { createHotkeyRepeatGate } = require("./hotkeyRepeatGate");
+const {
+  isNativeGlassSupported,
+  withNativeGlassBrowserConfig,
+  applyNativeGlassToBrowserWindow,
+  appearanceFromNativeTheme,
+} = require("./nativeWindowGlassPolicy");
 
 class WindowManager {
   constructor() {
@@ -63,6 +75,10 @@ class WindowManager {
     // Set by main.js so the tray's listen item rebuilds with dictation state.
     this.onDictationStateChanged = null;
     this.notificationWindow = null;
+    this._meetingPromptInPill = false;
+    this._meetingPromptSurfacedPill = false;
+    this._meetingPromptHideTimer = null;
+    this._pillPromptDetectionId = null;
     this.agentDictationPillWindow = null;
     this._agentDictationPillReady = false;
     this._agentDictationPillSize = AGENT_DICTATION_PILL_SIZE;
@@ -100,11 +116,63 @@ class WindowManager {
     this._assistantPanelBusy = false;
     this._pendingMeetingNoteNavigation = null;
     this._pendingNoteNavigation = null;
+    /** @type {'light' | 'dark' | null} */
+    this._nativeGlassAppearance = null;
 
     app.on("before-quit", () => {
       this.isQuitting = true;
       this.hotkeyManager.unregisterAll();
     });
+  }
+
+  _nativeGlassContext() {
+    const appearance =
+      this._nativeGlassAppearance ?? appearanceFromNativeTheme(nativeTheme.shouldUseDarkColors);
+    return {
+      platform: process.platform,
+      osRelease: os.release(),
+      appearance,
+    };
+  }
+
+  _buildBrowserWindowOptions(baseConfig, extra = {}, { windowRole = "chrome" } = {}) {
+    return {
+      ...withNativeGlassBrowserConfig(baseConfig, {
+        ...this._nativeGlassContext(),
+        windowRole,
+      }),
+      ...extra,
+    };
+  }
+
+  _registerNativeGlassWindow(win, { windowRole = "chrome" } = {}) {
+    applyNativeGlassToBrowserWindow(win, {
+      ...this._nativeGlassContext(),
+      windowRole,
+    });
+  }
+
+  getNativeGlassCapabilities() {
+    return { supported: isNativeGlassSupported(process.platform) };
+  }
+
+  /**
+   * @param {'light' | 'dark'} appearance
+   */
+  syncNativeGlassAppearance(appearance) {
+    if (appearance !== "light" && appearance !== "dark") {
+      return;
+    }
+    this._nativeGlassAppearance = appearance;
+    const ctx = this._nativeGlassContext();
+    for (const [win, windowRole] of [
+      [this.mainWindow, "overlay"],
+      [this.controlPanelWindow, "chrome"],
+      [this.notificationWindow, "overlay"],
+      [this.agentDictationPillWindow, "overlay"],
+    ]) {
+      applyNativeGlassToBrowserWindow(win, { ...ctx, windowRole });
+    }
   }
 
   async createMainWindow() {
@@ -116,10 +184,10 @@ class WindowManager {
       this._panelStartPosition
     );
 
-    this.mainWindow = new BrowserWindow({
-      ...MAIN_WINDOW_CONFIG,
-      ...position,
-    });
+    this.mainWindow = new BrowserWindow(
+      this._buildBrowserWindowOptions(MAIN_WINDOW_CONFIG, position, { windowRole: "overlay" })
+    );
+    this._registerNativeGlassWindow(this.mainWindow, { windowRole: "overlay" });
 
     this.setMainWindowInteractivity(false);
     this.registerMainWindowEvents();
@@ -176,7 +244,9 @@ class WindowManager {
   _updateMainContentProtection() {
     if (!this.mainWindow || this.mainWindow.isDestroyed()) return;
     this.mainWindow.setContentProtection(
-      Boolean(this._screenContextProtection || this._assistantPanelOpen)
+      Boolean(
+        this._screenContextProtection || this._assistantPanelOpen || this._meetingPromptInPill
+      )
     );
   }
 
@@ -200,7 +270,7 @@ class WindowManager {
         if (!this.mainWindow.isVisible()) this.mainWindow.showInactive();
         this.mainWindow.setFocusable(true);
         // macOS: never request app activation for the overlay. focus() calls
-        // NSApp activate, and when another OpenWhispr window (control panel)
+        // NSApp activate, and when another Mnemo window (control panel)
         // lives on a different Space, macOS answers a granted activation by
         // sliding the whole desktop to it — the "massive flash" on panel
         // open/close. The window is a non-activating panel, so clicking its
@@ -211,7 +281,7 @@ class WindowManager {
         }
       } else {
         // On Windows/Linux the pill is a normal/toolbar window, so focus()
-        // activated OpenWhispr — blur before dropping focusability to hand
+        // activated Mnemo — blur before dropping focusability to hand
         // the foreground back to the app the user was in. On macOS nothing
         // was activated, and blur() would only churn key-window state.
         if (process.platform !== "darwin") {
@@ -1280,7 +1350,10 @@ class WindowManager {
       return;
     }
 
-    this.controlPanelWindow = new BrowserWindow(CONTROL_PANEL_CONFIG);
+    this.controlPanelWindow = new BrowserWindow(
+      this._buildBrowserWindowOptions(CONTROL_PANEL_CONFIG, {}, { windowRole: "chrome" })
+    );
+    this._registerNativeGlassWindow(this.controlPanelWindow, { windowRole: "chrome" });
     this._onboardingRestoreBounds = null;
     this._onboardingWindowMode = null;
     this._onboardingWindowState = null;
@@ -1842,10 +1915,12 @@ class WindowManager {
 
     let pillWindow = this.agentDictationPillWindow;
     if (!pillWindow || pillWindow.isDestroyed()) {
-      pillWindow = new BrowserWindow({
-        ...NOTIFICATION_WINDOW_CONFIG,
-        ...AGENT_DICTATION_PILL_SIZE,
-      });
+      pillWindow = new BrowserWindow(
+        this._buildBrowserWindowOptions(NOTIFICATION_WINDOW_CONFIG, AGENT_DICTATION_PILL_SIZE, {
+          windowRole: "overlay",
+        })
+      );
+      this._registerNativeGlassWindow(pillWindow, { windowRole: "overlay" });
       this.agentDictationPillWindow = pillWindow;
       this._agentDictationPillReady = false;
       this._agentDictationPillSize = AGENT_DICTATION_PILL_SIZE;
@@ -2041,13 +2116,21 @@ class WindowManager {
       this._notificationReadyFallback = null;
     }
 
+    if (this._canShowMeetingPromptInPill()) {
+      this._showMeetingPromptInPill(promptData, { autoDismiss });
+      return true;
+    }
+    this._releaseMeetingPromptFromPill();
+
     const display = screen.getPrimaryDisplay();
     const position = WindowPositionUtil.getNotificationPosition(display);
 
-    const win = new BrowserWindow({
-      ...NOTIFICATION_WINDOW_CONFIG,
-      ...position,
-    });
+    const win = new BrowserWindow(
+      this._buildBrowserWindowOptions(NOTIFICATION_WINDOW_CONFIG, position, {
+        windowRole: "overlay",
+      })
+    );
+    this._registerNativeGlassWindow(win, { windowRole: "overlay" });
     this.notificationWindow = win;
 
     // "closed" fires asynchronously, so a replaced prompt's window emits it
@@ -2152,11 +2235,65 @@ class WindowManager {
     const win = this.notificationWindow;
     this.notificationWindow = null;
     if (win && !win.isDestroyed()) win.close();
+    this._releaseMeetingPromptFromPill(notification?.detectionId);
     if (notifyEngine && notification?.detectionId) {
       this.meetingDetectionEngine?.handleDetectionNotificationClosed?.(notification.detectionId, {
         flushQueued,
       });
     }
+  }
+
+  // The prompt morphs the dictation pill instead of opening its own window,
+  // unless the pill is busy hosting the assistant panel or is not loaded yet.
+  _canShowMeetingPromptInPill() {
+    const win = this.mainWindow;
+    return Boolean(
+      win &&
+      !win.isDestroyed() &&
+      !win.webContents.isLoading() &&
+      !this._assistantPanelOpen &&
+      !this._assistantPanelBusy
+    );
+  }
+
+  _showMeetingPromptInPill(promptData, { autoDismiss }) {
+    clearTimeout(this._meetingPromptHideTimer);
+    this._meetingPromptHideTimer = null;
+    this._pendingNotificationData = promptData;
+    this._pillPromptDetectionId = promptData.detectionId;
+    if (!this._meetingPromptInPill) {
+      this._meetingPromptSurfacedPill = !this.mainWindow.isVisible();
+    }
+    this._meetingPromptInPill = true;
+    // Same guarantee as the overlay window: a prompt never shows in a screen share.
+    this._updateMainContentProtection();
+    this.showDictationPanel({ reposition: this._meetingPromptSurfacedPill });
+    this.mainWindow.webContents.send("meeting-notification-data", {
+      ...promptData,
+      pillDurationMs: PILL_PROMPT_MS,
+    });
+    if (autoDismiss) {
+      this._notificationDismissTimer.start(getNotificationTimeoutMs(promptData.source));
+    }
+  }
+
+  _releaseMeetingPromptFromPill(detectionId = this._pillPromptDetectionId) {
+    if (!this._meetingPromptInPill) return;
+    const win = this.mainWindow;
+    const surfacedPill = this._meetingPromptSurfacedPill;
+    this._meetingPromptInPill = false;
+    this._meetingPromptSurfacedPill = false;
+    this._pillPromptDetectionId = null;
+    this._updateMainContentProtection();
+    if (!win || win.isDestroyed()) return;
+    if (detectionId) win.webContents.send("meeting-notification-dismissed", detectionId);
+    if (!surfacedPill) return;
+    // Let the wide pill fold back before the window goes away again.
+    this._meetingPromptHideTimer = setTimeout(() => {
+      this._meetingPromptHideTimer = null;
+      if (this._meetingPromptInPill || this._isDictatingToggle) return;
+      this.hideDictationPanel();
+    }, PILL_PROMPT_FOLD_MS);
   }
 
   sendToControlPanel(channel, data) {

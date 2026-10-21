@@ -13,6 +13,8 @@ import {
 import logoIcon from "../assets/icon.png";
 import { useTranslation } from "react-i18next";
 import { cn } from "./lib/utils";
+import { useNativeGlass } from "../hooks/useNativeGlass";
+import { resolveWindowChromeSurface } from "./ui/glass";
 import SupportDropdown from "./ui/SupportDropdown";
 import { Button } from "./ui/button";
 import type { UpsellDecision } from "../lib/upsell";
@@ -41,6 +43,7 @@ interface ControlPanelSidebarProps {
   isSignedIn?: boolean;
   authLoaded?: boolean;
   upsell: UpsellDecision;
+  standaloneProduct?: boolean;
   updateAction?: React.ReactNode;
 }
 
@@ -58,8 +61,10 @@ export default function ControlPanelSidebar({
   isSignedIn,
   authLoaded,
   upsell,
+  standaloneProduct = false,
   updateAction,
 }: ControlPanelSidebarProps) {
+  const nativeGlass = useNativeGlass();
   const { t } = useTranslation();
   const [upgradeDismissed, setUpgradeDismissed] = useState(
     () => localStorage.getItem("upgradeProDismissed") === "true"
@@ -71,11 +76,21 @@ export default function ControlPanelSidebar({
   const navItems = useControlPanelNavItems();
 
   return (
-    <div className="w-48 h-full shrink-0 flex flex-col bg-surface-window">
+    <div
+      className={cn(
+        "w-48 h-full shrink-0 flex flex-col",
+        resolveWindowChromeSurface(nativeGlass)
+      )}
+    >
       <div
         className="w-full h-10 shrink-0"
         style={{ WebkitAppRegion: "drag" } as React.CSSProperties}
       />
+
+      <div className="flex items-center gap-2 px-4 pb-3" aria-label="mnemo">
+        <img src={logoIcon} alt="" className="size-8 object-contain" />
+        <span className="text-[23px] font-bold tracking-tight text-foreground">mnemo</span>
+      </div>
 
       <nav className="flex flex-col gap-0.5 px-2 pt-2 pb-2">
         {navItems.map((item) => {
@@ -141,7 +156,7 @@ export default function ControlPanelSidebar({
 
       {showUpgradeBanner && (
         <div className="px-2 pb-2">
-          <div className="relative rounded-xl border border-[#6c50e9]/25 dark:border-[#6c50e9]/40 bg-card bg-gradient-to-b from-[#6c50e9]/15 via-[#6c50e9]/5 to-transparent dark:from-[#6c50e9]/30 dark:via-[#6c50e9]/10 p-3">
+          <div className="relative rounded-xl border border-[#c81038]/25 dark:border-[#c81038]/40 bg-card bg-gradient-to-b from-[#c81038]/15 via-[#c81038]/5 to-transparent dark:from-[#c81038]/30 dark:via-[#c81038]/10 p-3">
             <button
               onClick={() => {
                 setUpgradeDismissed(true);
@@ -227,36 +242,43 @@ export default function ControlPanelSidebar({
           }
         />
 
-        <div className="mx-1 h-px bg-border/10 dark:bg-white/6 my-1.5!" />
+        {!standaloneProduct && (
+          <>
+            <div className="mx-1 h-px bg-border/10 dark:bg-white/6 my-1.5!" />
 
-        <div className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md">
-          {userImage ? (
-            <img src={userImage} alt="" className="w-6 h-6 rounded-full shrink-0 object-cover" />
-          ) : (
-            <UserCircle size={18} className="shrink-0 text-foreground/50 dark:text-foreground/45" />
-          )}
-          <div className="flex-1 min-w-0">
-            {isSignedIn && (userName || userEmail) ? (
-              <>
-                <p
-                  dir="auto"
-                  className="text-xs text-foreground/80 dark:text-foreground/80 truncate leading-tight"
-                >
-                  {userName || t("sidebar.defaultUser")}
-                </p>
-                {userEmail && (
-                  <p className="text-xs text-foreground/55 dark:text-foreground/55 truncate leading-tight">
-                    <bdi dir="ltr">{userEmail}</bdi>
+            <div className="flex items-center gap-2.5 px-2.5 py-1.5 rounded-md">
+              {userImage ? (
+                <img src={userImage} alt="" className="w-6 h-6 rounded-full shrink-0 object-cover" />
+              ) : (
+                <UserCircle
+                  size={18}
+                  className="shrink-0 text-foreground/50 dark:text-foreground/45"
+                />
+              )}
+              <div className="flex-1 min-w-0">
+                {isSignedIn && (userName || userEmail) ? (
+                  <>
+                    <p
+                      dir="auto"
+                      className="text-xs text-foreground/80 dark:text-foreground/80 truncate leading-tight"
+                    >
+                      {userName || t("sidebar.defaultUser")}
+                    </p>
+                    {userEmail && (
+                      <p className="text-xs text-foreground/55 dark:text-foreground/55 truncate leading-tight">
+                        <bdi dir="ltr">{userEmail}</bdi>
+                      </p>
+                    )}
+                  </>
+                ) : authLoaded && !isSignedIn ? (
+                  <p className="text-xs text-foreground/45 dark:text-foreground/55">
+                    {t("sidebar.notSignedIn")}
                   </p>
-                )}
-              </>
-            ) : authLoaded && !isSignedIn ? (
-              <p className="text-xs text-foreground/45 dark:text-foreground/55">
-                {t("sidebar.notSignedIn")}
-              </p>
-            ) : null}
-          </div>
-        </div>
+                ) : null}
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

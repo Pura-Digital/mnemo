@@ -12,7 +12,7 @@ const DUPLICATE = `**Cleaned transcript:**\n${CLEAN}\n\n${CLEAN}`;
 
 test("cleanup validates completed provider output using the request's prompt settings", async (t) => {
   const { window } = installBrowserGlobals(t);
-  const vite = await createRendererServer(t, { cachePrefix: "openwhispr-cleanup-output-" });
+  const vite = await createRendererServer(t, { cachePrefix: "mnemo-cleanup-output-" });
   const service = (await vite.ssrLoadModule("/services/ReasoningService.ts")).default;
   t.after(() => service.destroy());
   const { useSettingsStore } = await vite.ssrLoadModule("/stores/settingsStore.ts");
@@ -90,7 +90,7 @@ test("cleanup validates completed provider output using the request's prompt set
           { headers: { "Content-Type": "application/json" } }
         );
       for (const config of [
-        { provider: "openwhispr" },
+        { provider: "mnemo" },
         { provider: "anthropic" },
         { provider: "bedrock" },
         { provider: "gemini" },
@@ -156,7 +156,7 @@ test("cleanup validates completed provider output using the request's prompt set
       isTranscriptionContextAllowed: () => true,
       usePolicyStore,
       useCleanupModel: true,
-      getAgentName: () => "OpenWhispr",
+      getAgentName: () => "Mnemo",
       hasTextContent: (text) => typeof text === "string" && text.trim().length > 0,
       applyChineseScript: async (text) => text,
       resolveChineseScriptTarget: () => null,

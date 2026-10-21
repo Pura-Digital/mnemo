@@ -15,7 +15,7 @@ type GradientGlassSurfaceProps = {
 };
 
 /**
- * Absolute-fill background that layers the OpenWhispr blue gradient with a
+ * Absolute-fill background that layers the mnemo blue gradient with a
  * glossy border highlight for an Apple "liquid glass" sheen. It self-clips to
  * a pill/circle, so place it inside a relatively-positioned, rounded parent that
  * carries a solid fallback background — the parent's opaque layer casts the

@@ -4,6 +4,7 @@ import { Cloud, Key, Cpu, Network } from "../icons";
 import { useSettingsStore } from "../../stores/settingsStore";
 import { usePolicyModeOptions, usePolicySnapshot } from "../../hooks/usePolicy";
 import { isModeAllowedByPolicy } from "../../stores/policyRules";
+import { filterInferenceModeOptions } from "../../config/mnemoProduct";
 import { requestSignIn } from "../../utils/requestSignIn";
 import { InferenceModeSelector, SettingsRow } from "../ui/SettingsSection";
 import type { InferenceModeOption } from "../ui/SettingsSection";
@@ -11,6 +12,13 @@ import { Toggle } from "../ui/toggle";
 import TranscriptionModelPicker from "../TranscriptionModelPicker";
 import type { InferenceMode } from "../../types/electron";
 import { getMeetingStreamingTranscriptionProviders } from "../../models/ModelRegistry";
+import { useAiSetupLane } from "../../contexts/AiSetupLaneContext";
+import {
+  isAiSetupLaneLocked,
+  resolveTranscriptionUiMode,
+  transcriptionPickerModeForSetupLane,
+} from "../../helpers/aiSetupLanePolicy";
+import { useAlignTranscriptionWithSetupLane } from "../../hooks/useAlignTranscriptionWithSetupLane";
 
 const MEETING_BYOK_PROVIDER_IDS = getMeetingStreamingTranscriptionProviders().map(
   (provider) => provider.id
@@ -35,6 +43,8 @@ const noop = () => {};
 
 export function MeetingTranscriptionPanel() {
   const { t } = useTranslation();
+  const setupLane = useAiSetupLane();
+  const laneLocked = isAiSetupLaneLocked(setupLane);
   const policySnapshot = usePolicySnapshot();
 
   const {
@@ -63,11 +73,11 @@ export function MeetingTranscriptionPanel() {
     effectiveMode: effectiveTranscriptionMode,
     isModeAllowed,
   } = usePolicyModeOptions<InferenceModeOption>(
-    [
+    filterInferenceModeOptions([
       {
-        id: "openwhispr",
-        label: t("settingsPage.transcription.modes.openwhispr"),
-        description: t("settingsPage.transcription.modes.openwhisprDesc"),
+        id: "pura",
+        label: t("settingsPage.transcription.modes.mnemo"),
+        description: t("settingsPage.transcription.modes.mnemoCloudDesc"),
         icon: <Cloud className="w-4 h-4" />,
         disabled: !isSignedIn,
         badge: !isSignedIn ? t("common.freeAccountRequired") : undefined,
@@ -92,22 +102,29 @@ export function MeetingTranscriptionPanel() {
         disabled: true,
         badge: t("common.comingSoon"),
       },
-    ],
+    ]),
     "transcription",
     meetingTranscriptionMode,
     { byokProviders: MEETING_BYOK_PROVIDER_IDS }
   );
+  useAlignTranscriptionWithSetupLane(
+    setupLane,
+    meetingTranscriptionMode,
+    setMeetingTranscriptionMode,
+    setMeetingUseLocalWhisper
+  );
+  const uiTranscriptionMode = resolveTranscriptionUiMode(setupLane, effectiveTranscriptionMode);
   const handleTranscriptionModeSelect = (mode: InferenceMode) => {
     if (!isModeAllowed(mode)) return;
     if (mode === "self-hosted") return;
-    if (mode === "openwhispr" && !isSignedIn) {
+    if (mode === "pura" && !isSignedIn) {
       requestSignIn();
       return;
     }
     if (mode === effectiveTranscriptionMode) return;
     setMeetingTranscriptionMode(mode);
     setMeetingUseLocalWhisper(mode === "local");
-    setMeetingCloudTranscriptionMode(mode === "openwhispr" ? "openwhispr" : "byok");
+    setMeetingCloudTranscriptionMode(mode === "pura" ? "mnemo" : "byok");
   };
 
   const handleLocalTranscriptionModelSelect = useCallback(
@@ -170,14 +187,19 @@ export function MeetingTranscriptionPanel() {
           {t("settingsPage.transcription.meetingEnterpriseOnly")}
         </p>
       )}
-      <InferenceModeSelector
-        modes={transcriptionModes}
-        activeMode={effectiveTranscriptionMode}
-        onSelect={handleTranscriptionModeSelect}
-      />
+      {!laneLocked && (
+        <InferenceModeSelector
+          modes={transcriptionModes}
+          activeMode={effectiveTranscriptionMode}
+          onSelect={handleTranscriptionModeSelect}
+        />
+      )}
 
-      {effectiveTranscriptionMode === "providers" && renderTranscriptionPicker("cloud")}
-      {effectiveTranscriptionMode === "local" && renderTranscriptionPicker("local")}
+      {laneLocked && setupLane
+        ? renderTranscriptionPicker(transcriptionPickerModeForSetupLane(setupLane))
+        : null}
+      {!laneLocked && uiTranscriptionMode === "providers" && renderTranscriptionPicker("cloud")}
+      {!laneLocked && uiTranscriptionMode === "local" && renderTranscriptionPicker("local")}
       <MeetingSpeakerDetectionRow />
     </div>
   );

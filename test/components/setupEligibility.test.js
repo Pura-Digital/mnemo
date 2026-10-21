@@ -94,7 +94,7 @@ test("availability reports no setup when policy permits no onboarding mode", asy
 test("dictation-only policies ignore LLM availability when the agent is disabled", async () => {
   const policy = managedPolicy({
     transcription: {
-      allowedModes: ["openwhispr", "local", "providers", "self-hosted"],
+      allowedModes: ["mnemo", "local", "providers", "self-hosted"],
       allowedByokProviders: ["groq", "custom"],
     },
     llm: {

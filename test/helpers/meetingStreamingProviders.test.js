@@ -128,7 +128,7 @@ test("connection identity includes every provider-specific option", async () => 
     mode: "byok",
     environment: "us",
     tenant: "tenant-a",
-    keyterms: ["OpenWhispr"],
+    keyterms: ["Mnemo"],
   };
 
   assert.equal(getMeetingConnectionKey(options), getMeetingConnectionKey({ ...options }));

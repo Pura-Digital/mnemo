@@ -33,7 +33,7 @@ describe('PreferencesScreen — Full Access entry point', () => {
   });
 
   it('opens the recovery screen rather than jumping straight to iOS Settings', () => {
-    // Linking.openSettings() only reaches Settings > OpenWhispr; Full Access is
+    // Linking.openSettings() only reaches Settings > mnemo; Full Access is
     // two levels deeper, so the row must go through the screen that teaches the
     // taps and plays the PiP tutorial over Settings.
     render(<PreferencesScreen />);

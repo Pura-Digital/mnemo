@@ -4,6 +4,7 @@ const os = require("os");
 const path = require("path");
 const { execFileSync } = require("child_process");
 const { downloadFile, parseArgs } = require("./lib/download-utils");
+const { getHomeCacheDir } = require("../src/helpers/cachePaths");
 
 const SEGMENTATION_URL =
   "https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-segmentation-models/sherpa-onnx-pyannote-segmentation-3-0.tar.bz2";
@@ -27,7 +28,7 @@ function getModelDir() {
     return path.resolve(process.env.DIARIZATION_MODEL_DIR);
   }
 
-  return path.join(os.homedir(), ".cache", "openwhispr", "diarization-models");
+  return path.join(getHomeCacheDir(), "diarization-models");
 }
 
 function extractTarBz2(archivePath, destDir) {

@@ -67,7 +67,7 @@ function hasPolicyHeaders(options) {
   return containsPolicyHeaderBuilder(headers?.value);
 }
 
-function inspectDirectOpenWhisprApiCalls(source, fileName) {
+function inspectDirectMnemoApiCalls(source, fileName) {
   const syntaxTree = parse(source, {
     ecmaVersion: "latest",
     sourceType: "module",
@@ -94,4 +94,4 @@ function inspectDirectOpenWhisprApiCalls(source, fileName) {
   return calls.sort((left, right) => left.line - right.line);
 }
 
-module.exports = { inspectDirectOpenWhisprApiCalls };
+module.exports = { inspectDirectMnemoApiCalls };

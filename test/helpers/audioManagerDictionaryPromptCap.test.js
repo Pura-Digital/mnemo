@@ -55,7 +55,7 @@ function buildLongDictionaryPrompt(count = 100) {
 
 test("custom dictionary prompt caps follow the provider's real limit", async (t) => {
   const { setSettings, createManager } = await loadAudioManager(t, {
-    cachePrefix: "openwhispr-dictionary-prompt-cap-test-",
+    cachePrefix: "mnemo-dictionary-prompt-cap-test-",
     settingsKey: "__dictionaryPromptCapSettings",
   });
 
@@ -184,7 +184,7 @@ test("custom dictionary prompt caps follow the provider's real limit", async (t)
 
 test("local whisper receives the dictionary whole, and echo checks see what it sent", async (t) => {
   const { window, setSettings, createManager } = await loadAudioManager(t, {
-    cachePrefix: "openwhispr-dictionary-prompt-cap-local-test-",
+    cachePrefix: "mnemo-dictionary-prompt-cap-local-test-",
     settingsKey: "__dictionaryPromptCapLocalSettings",
   });
   setSettings({ useLocalWhisper: true, localTranscriptionProvider: "whisper" });

@@ -6,11 +6,11 @@ const load = () => import("../../src/stores/policyRules.ts");
 const policy = {
   version: 1,
   transcription: {
-    allowedModes: ["openwhispr", "local"],
+    allowedModes: ["mnemo", "local"],
     allowedByokProviders: ["openai"],
   },
   llm: {
-    allowedModes: ["openwhispr", "providers"],
+    allowedModes: ["mnemo", "providers"],
     allowedByokProviders: ["openai"],
     allowedEnterpriseProviders: [],
   },
@@ -98,7 +98,7 @@ test("mode and provider decisions fail closed for empty allowlists", async () =>
 test("managed mode lists hide denied options while unmanaged lists remain unchanged", async () => {
   const { filterModeOptionsByPolicy } = await load();
   const options = [
-    { id: "openwhispr", label: "Cloud" },
+    { id: "pura", label: "Cloud" },
     { id: "providers", label: "Providers" },
     { id: "local", label: "Local" },
     { id: "self-hosted", label: "Self-hosted" },
@@ -108,7 +108,7 @@ test("managed mode lists hide denied options while unmanaged lists remain unchan
 
   assert.deepEqual(
     filterModeOptionsByPolicy(options, "transcription", managed).map((option) => option.id),
-    ["openwhispr", "local"]
+    ["mnemo", "local"]
   );
   assert.deepEqual(filterModeOptionsByPolicy(options, "transcription", unmanaged), options);
 });
@@ -197,7 +197,7 @@ test("enterprise mode stays hidden when policy allows only unavailable desktop p
 test("denied managed modes fall back in visible catalog order", async () => {
   const { reconcilePolicyModeSelection } = await load();
   const options = [
-    { id: "openwhispr" },
+    { id: "pura" },
     { id: "providers" },
     { id: "local" },
     { id: "self-hosted" },
@@ -206,14 +206,14 @@ test("denied managed modes fall back in visible catalog order", async () => {
 
   assert.equal(
     reconcilePolicyModeSelection(options, "transcription", managed, "providers"),
-    "openwhispr"
+    "mnemo"
   );
   assert.equal(reconcilePolicyModeSelection(options, "transcription", managed, "local"), null);
 });
 
 test("mode fallback skips unavailable choices and never invents an empty-allowlist choice", async () => {
   const { reconcilePolicyModeSelection } = await load();
-  const options = [{ id: "openwhispr", disabled: true }, { id: "local" }];
+  const options = [{ id: "pura", disabled: true }, { id: "local" }];
   const managed = { status: "managed", policy, appVersion: "1.8.1" };
   const emptyPolicy = {
     ...policy,
@@ -337,7 +337,7 @@ test("effective managed selections use allowed modes and providers without chang
   const managed = { status: "managed", policy, appVersion: "1.8.1" };
   const unmanaged = { status: "unmanaged", policy: null, appVersion: "1.8.1" };
   const catalog = {
-    modes: ["openwhispr", "providers", "local", "self-hosted"],
+    modes: ["mnemo", "providers", "local", "self-hosted"],
     byokProviders: ["openai", "groq", "custom"],
   };
 
@@ -348,7 +348,7 @@ test("effective managed selections use allowed modes and providers without chang
       { mode: "providers", provider: "groq" },
       catalog
     ),
-    { mode: "openwhispr", provider: "groq" }
+    { mode: "mnemo", provider: "groq" }
   );
   assert.deepEqual(
     resolveEffectivePolicySelection(
@@ -377,7 +377,7 @@ test("effective managed provider selection falls back inside an allowed provider
       "transcription",
       { mode: "providers", provider: "groq" },
       {
-        modes: ["openwhispr", "providers", "local", "self-hosted"],
+        modes: ["mnemo", "providers", "local", "self-hosted"],
         byokProviders: ["openai", "groq", "custom"],
       }
     ),
@@ -401,7 +401,7 @@ test("effective selection skips policy providers unavailable to a narrower surfa
       "transcription",
       { mode: "providers", provider: "groq" },
       {
-        modes: ["openwhispr", "providers", "local", "self-hosted"],
+        modes: ["mnemo", "providers", "local", "self-hosted"],
         byokProviders: ["openai", "corti", "tinfoil"],
       }
     ),
@@ -414,7 +414,7 @@ test("effective selection skips policy providers unavailable to a narrower surfa
       "transcription",
       { mode: "self-hosted", provider: "openai" },
       {
-        modes: ["openwhispr", "providers", "local"],
+        modes: ["mnemo", "providers", "local"],
         byokProviders: ["openai", "corti", "tinfoil"],
       }
     ),
@@ -918,7 +918,7 @@ test("enterprise transcription resolves through the transcription policy section
     },
   };
   const catalog = {
-    modes: ["openwhispr", "providers", "local", "self-hosted", "enterprise"],
+    modes: ["mnemo", "providers", "local", "self-hosted", "enterprise"],
     byokProviders: ["openai"],
     enterpriseProviders: ["azure"],
   };
@@ -926,7 +926,7 @@ test("enterprise transcription resolves through the transcription policy section
     resolveEffectivePolicySelection(
       enterpriseOnly,
       "transcription",
-      { mode: "openwhispr", provider: "" },
+      { mode: "mnemo", provider: "" },
       catalog
     ),
     { mode: "enterprise", provider: "azure" }
@@ -942,7 +942,7 @@ test("enterprise transcription resolves through the transcription policy section
     ["enterprise"]
   );
   // The meeting catalog has no enterprise lane, so meetings stay unresolvable (documented).
-  const meetingCatalog = { modes: ["openwhispr", "providers", "local"], byokProviders: ["openai"] };
+  const meetingCatalog = { modes: ["mnemo", "providers", "local"], byokProviders: ["openai"] };
   assert.equal(
     resolveEffectivePolicySelection(
       enterpriseOnly,
@@ -963,7 +963,7 @@ test("enterprise transcription resolves through the transcription policy section
 test("the enterprise transcription tile is offered only to a managed policy snapshot", async () => {
   const { isEnterpriseTranscriptionOfferable, filterModeOptionsByPolicy } = await load();
   const baseOptions = [
-    { id: "openwhispr" },
+    { id: "pura" },
     { id: "providers" },
     { id: "local" },
     { id: "self-hosted" },
@@ -983,7 +983,7 @@ test("the enterprise transcription tile is offered only to a managed policy snap
     policy: {
       ...policy,
       transcription: {
-        allowedModes: ["openwhispr", "providers", "local", "self-hosted", "enterprise"],
+        allowedModes: ["mnemo", "providers", "local", "self-hosted", "enterprise"],
         allowedByokProviders: ["openai"],
         allowedEnterpriseProviders: ["azure"],
       },
@@ -998,7 +998,7 @@ test("the enterprise transcription tile is offered only to a managed policy snap
     const options = filterModeOptionsByPolicy(buildOptions(state), "transcription", state, catalog);
     assert.deepEqual(
       options.map((o) => o.id),
-      ["openwhispr", "providers", "local", "self-hosted"],
+      ["mnemo", "providers", "local", "self-hosted"],
       state.status
     );
   }
@@ -1011,7 +1011,7 @@ test("the enterprise transcription tile is offered only to a managed policy snap
   );
   assert.deepEqual(
     managedOptions.map((o) => o.id),
-    ["openwhispr", "providers", "local", "self-hosted", "enterprise"]
+    ["mnemo", "providers", "local", "self-hosted", "enterprise"]
   );
 });
 

@@ -1,3 +1,6 @@
+import { isMnemoStandaloneProduct } from "./config/mnemoProduct";
+import { SIGN_IN_PROMPTED_AT_KEY } from "./utils/requestSignIn";
+import mnemoLogo from "./assets/logo.svg";
 import React, { Suspense, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import App from "./App.jsx";
@@ -14,6 +17,8 @@ import { usePolicyStore } from "./stores/policyStore";
 import { resolveSettledControlPanelWindowMode } from "./utils/controlPanelWindowMode.ts";
 import { resolveMacAccessibilityReadiness } from "./utils/macAccessibilityReadiness.ts";
 import { isControlPanelWindow } from "./utils/windowContext.ts";
+import { isPuraConnectCallbackLocation } from "./config/puraConnect.ts";
+import PuraConnectCallback from "./components/settings/PuraConnectCallback.tsx";
 
 // Either marker means the flow is mid-way: the legacy step key is kept for
 // back-compat, the v2 session is what the rebuilt flow actually persists.
@@ -26,6 +31,13 @@ const OnboardingFlow = React.lazy(() => import("./components/OnboardingFlow.tsx"
 
 export default function AppRouter() {
   useTheme();
+
+  useEffect(() => {
+    void window.electronAPI?.getNativeGlassCapabilities?.().then((caps) => {
+      document.documentElement.dataset.nativeGlass = caps?.supported ? "true" : "false";
+    });
+  }, []);
+
   const params = window.location.search;
 
   if (params.includes("meeting-notification=true")) {
@@ -34,6 +46,10 @@ export default function AppRouter() {
 
   if (params.includes("agent-dictation-pill=true")) {
     return <AgentDictationPillOverlay />;
+  }
+
+  if (isPuraConnectCallbackLocation(window.location.pathname, window.location.search)) {
+    return <PuraConnectCallback />;
   }
 
   return <MainApp />;
@@ -91,9 +107,11 @@ function MainApp() {
     if (!authLoaded) return;
 
     const onboardingCompleted = localStorage.getItem("onboardingCompleted") === "true";
-    const authSkipped =
-      localStorage.getItem("authenticationSkipped") === "true" ||
-      localStorage.getItem("skipAuth") === "true";
+    const explicitlyRequestedSignIn = localStorage.getItem(SIGN_IN_PROMPTED_AT_KEY) !== null;
+    if (!isSignedIn && !explicitlyRequestedSignIn) {
+      localStorage.setItem("authenticationSkipped", "true");
+      localStorage.setItem("skipAuth", "true");
+    }
     const onboardingInProgress = isOnboardingInProgress();
     const isReturningUser =
       !onboardingCompleted && isSignedIn && !isGracePeriodOnly && !onboardingInProgress;
@@ -107,7 +125,11 @@ function MainApp() {
     if (isControlPanel) {
       if (!resolved) {
         setShowOnboarding(true);
-      } else if (!isSignedIn && !authSkipped) {
+      } else if (
+        !isMnemoStandaloneProduct() &&
+        !isSignedIn &&
+        explicitlyRequestedSignIn
+      ) {
         setNeedsReauth(true);
       }
     }
@@ -212,6 +234,7 @@ function MainApp() {
     return (
       <ReauthenticationScreen
         onContinueWithoutAccount={() => {
+          localStorage.removeItem(SIGN_IN_PROMPTED_AT_KEY);
           localStorage.setItem("authenticationSkipped", "true");
           localStorage.setItem("skipAuth", "true");
           setNeedsReauth(false);
@@ -236,19 +259,13 @@ function LoadingFallback({ message }) {
   const fallbackMessage = message || t("common.loading");
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center">
+    <div className="loading-fallback-shell min-h-screen bg-background flex items-center justify-center">
       <div className="flex flex-col items-center gap-4 animate-[scale-in_300ms_ease-out]">
-        <svg
-          viewBox="0 0 1024 1024"
-          className="w-12 h-12 drop-shadow-[0_2px_8px_rgba(37,99,235,0.18)] dark:drop-shadow-[0_2px_12px_rgba(100,149,237,0.25)]"
-          aria-label="OpenWhispr"
-        >
-          <rect width="1024" height="1024" rx="241" fill="#2056DF" />
-          <circle cx="512" cy="512" r="314" fill="#2056DF" stroke="white" strokeWidth="74" />
-          <path d="M512 383V641" stroke="white" strokeWidth="74" strokeLinecap="round" />
-          <path d="M627 457V568" stroke="white" strokeWidth="74" strokeLinecap="round" />
-          <path d="M397 457V568" stroke="white" strokeWidth="74" strokeLinecap="round" />
-        </svg>
+        <img
+          src={mnemoLogo}
+          className="size-12 drop-shadow-[0_2px_8px_rgba(200,16,56,0.18)]"
+          alt="mnemo"
+        />
         <div className="w-7 h-7 rounded-full border-[2.5px] border-transparent border-t-primary animate-[spinner-rotate_0.8s_cubic-bezier(0.4,0,0.2,1)_infinite] motion-reduce:animate-none motion-reduce:border-t-muted-foreground motion-reduce:opacity-50" />
         {fallbackMessage && (
           <p className="text-[13px] font-medium text-muted-foreground dark:text-foreground/60 tracking-[-0.01em]">

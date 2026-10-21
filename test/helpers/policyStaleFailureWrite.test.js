@@ -20,7 +20,7 @@ test("a cleared policy is not clobbered by a stale failure write", async (t) => 
   });
 
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-policy-stale-write-test-",
+    cachePrefix: "mnemo-policy-stale-write-test-",
     mockModules: { "/utils/logger": "export default { error() {} };" },
   });
 

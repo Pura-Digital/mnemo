@@ -8,14 +8,14 @@ Pod::Spec.new do |s|
   s.summary        = package['description']
   s.description    = package['description']
   s.license        = package['license'] || 'MIT'
-  s.author         = 'OpenWhispr Team'
-  s.homepage       = 'https://github.com/OpenWhispr/open-whispr-mobile'
+  s.author         = 'mnemo Team'
+  s.homepage       = 'https://github.com/Pura-Digital/mnemo'
   # FluidAudio requires iOS 17; this also lifts the app's main pod target (see expo-build-properties in app.base.json).
   s.platforms      = {
     :ios => '17.0'
   }
   s.swift_version  = '5.9'
-  s.source         = { git: 'https://github.com/OpenWhispr/open-whispr-mobile.git' }
+  s.source         = { git: 'https://github.com/Pura-Digital/mnemo.git' }
   s.static_framework = true
 
   s.dependency 'ExpoModulesCore'

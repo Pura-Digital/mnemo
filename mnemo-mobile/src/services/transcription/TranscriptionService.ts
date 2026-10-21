@@ -519,11 +519,11 @@ export class TranscriptionService {
     const timeoutSeconds = options.timeoutSeconds ?? CLOUD_TRANSCRIPTION_TIMEOUT_SECONDS;
     const headers: Record<string, string> = {
       Cookie: sessionCookie,
-      'X-OpenWhispr-Client-Timeout-Ms': String(timeoutSeconds * 1000),
-      'X-OpenWhispr-Transcription-Timeout-Ms': String(TRANSCRIPTION_TIMEOUT_MS),
+      'X-Mnemo-Client-Timeout-Ms': String(timeoutSeconds * 1000),
+      'X-Mnemo-Transcription-Timeout-Ms': String(TRANSCRIPTION_TIMEOUT_MS),
       ...getClientVersionHeader(),
       ...(options.requestContext === 'keyboard'
-        ? { 'X-OpenWhispr-Audio-Normalization': 'speech-16k-mono' }
+        ? { 'X-Mnemo-Audio-Normalization': 'speech-16k-mono' }
         : {}),
       ...options.extraHeaders,
     };
@@ -572,7 +572,7 @@ export class TranscriptionService {
       () =>
         useBackgroundSession
           ? BackgroundUploader.upload({
-              url: `${API_ENDPOINTS.OPENWHISPR_API}${endpointPath}`,
+              url: `${API_ENDPOINTS.CLOUD_API}${endpointPath}`,
               fileUri: audioUri,
               fileFieldName: 'file',
               fileMimeType: finalMimeType,
@@ -581,7 +581,7 @@ export class TranscriptionService {
               timeoutSeconds,
               headers,
             })
-          : FileSystem.uploadAsync(`${API_ENDPOINTS.OPENWHISPR_API}${endpointPath}`, audioUri, {
+          : FileSystem.uploadAsync(`${API_ENDPOINTS.CLOUD_API}${endpointPath}`, audioUri, {
               httpMethod: 'POST',
               uploadType: FileSystem.FileSystemUploadType.MULTIPART,
               // uploadAsync defaults to a background NSURLSession on iOS — the
@@ -808,7 +808,7 @@ export class TranscriptionService {
     parameters: Record<string, string>,
     sessionCookie: string,
   ): Promise<{ status: number; body: string }> {
-    const url = `${API_ENDPOINTS.OPENWHISPR_API}${TRANSCRIBE_ENDPOINT}`;
+    const url = `${API_ENDPOINTS.CLOUD_API}${TRANSCRIBE_ENDPOINT}`;
     // Keyboard chunks take the in-process transport for the same reason small
     // inline uploads do: the system schedules background-session transfers
     // lazily while the app is backgrounded, which is exactly when keyboard
@@ -915,7 +915,7 @@ export class TranscriptionService {
           clientTranscriptionId: candidate.clientTranscriptionId,
           fusedCleanup: true,
           extraHeaders: {
-            'X-OpenWhispr-Cleanup-Timeout-Ms': String(CLEANUP_TIMEOUT_MS),
+            'X-Mnemo-Cleanup-Timeout-Ms': String(CLEANUP_TIMEOUT_MS),
           },
         },
       );

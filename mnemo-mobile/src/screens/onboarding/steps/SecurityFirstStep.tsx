@@ -17,7 +17,7 @@ export function SecurityFirstStep() {
     <OnboardingShell
       title="Security-first speech to text"
       titleAccent="Security-first"
-      subtitle="OpenWhispr is designed to keep your dictation private and in your control."
+      subtitle="mnemo is designed to keep your dictation private and in your control."
       ctaLabel="Continue"
       onCta={goNext}
     >

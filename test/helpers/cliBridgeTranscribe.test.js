@@ -47,7 +47,7 @@ function call(bridge, method, pathname, body) {
 }
 
 function audioFile() {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "openwhispr-cli-transcribe-"));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "mnemo-cli-transcribe-"));
   const file = path.join(dir, "memo.wav");
   fs.writeFileSync(file, "RIFF....WAVE");
   return { dir, file };

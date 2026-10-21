@@ -19,7 +19,7 @@ const windowStub = {
     setItem() {},
     removeItem() {},
   },
-  location: { origin: "https://harness.openwhispr.test" },
+  location: { origin: "https://harness.mnemo.test" },
 };
 
 Object.defineProperty(globalThis, "window", {

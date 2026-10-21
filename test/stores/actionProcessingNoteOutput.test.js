@@ -25,7 +25,7 @@ async function loadStore(t) {
 
   const calls = [];
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-action-output-test-",
+    cachePrefix: "mnemo-action-output-test-",
     mockModules: {
       "/services/ReasoningService": `
         export default {
@@ -99,7 +99,7 @@ test("a truncated summary is still saved rather than discarded", async (t) => {
 });
 
 test("a blank result is reported as an error and never saved as the enhanced note", async (t) => {
-  // IPC-bridged providers (local, enterprise, OpenWhispr Cloud) relay whatever
+  // IPC-bridged providers (local, enterprise, Mnemo Cloud) relay whatever
   // the model returned, including nothing at all.
   const { store, updates } = await loadStore(t);
   globalThis.__processTextResult = "   ";

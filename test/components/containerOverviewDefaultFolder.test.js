@@ -22,7 +22,7 @@ async function renderOverview(t, { lng, folder }) {
     interpolation: { escapeValue: false },
   });
   const vite = await createRendererServer(t, {
-    cachePrefix: `openwhispr-container-overview-${lng}-`,
+    cachePrefix: `mnemo-container-overview-${lng}-`,
     mockModules: {
       "/stores/workspaceStore": "export const useWorkspaceStore = (selector) => selector({ workspaces: [] });",
       "/stores/noteStore": `

@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { useShallow } from "zustand/react/shallow";
 import { useTranslation } from "react-i18next";
 import { Cloud, Key, Cpu, Network, Building2, ShieldCheck, AlertTriangle } from "../icons";
@@ -31,6 +31,9 @@ import {
   enterpriseProviderName,
 } from "../../models/ModelRegistry";
 import { useManagedScopeResolution } from "../../stores/enterpriseIdentityStore";
+import { filterInferenceModeOptions } from "../../config/mnemoProduct";
+import { useAiSetupLane } from "../../contexts/AiSetupLaneContext";
+import { llmModeForcedBySetupLane, mergeAllowedInferenceModes } from "../../helpers/aiSetupLanePolicy";
 import { requestSignIn } from "../../utils/requestSignIn";
 import TestConnectionButton from "../TestConnectionButton";
 import { getEnterpriseCallSettings } from "../../services/ai/enterpriseSettings";
@@ -58,6 +61,9 @@ export default function InferenceConfigEditor({
   allowedModes,
 }: InferenceConfigEditorProps) {
   const { t } = useTranslation();
+  const setupLane = useAiSetupLane();
+  const resolvedAllowedModes = mergeAllowedInferenceModes(setupLane, allowedModes);
+  const forcedLlmMode = llmModeForcedBySetupLane(setupLane);
   const policyState = usePolicySnapshot();
   const config = useSettingsStore(
     useShallow((settings): ResolvedLLMConfig => {
@@ -77,13 +83,17 @@ export default function InferenceConfigEditor({
   const managedAvailable = useManagedScopeResolution(scope, "managed");
 
   const prefix = MODE_LABEL_PREFIX[scope];
+  useEffect(() => {
+    if (!forcedLlmMode || config.mode === forcedLlmMode) return;
+    setResolvedLLMConfig(scope, { mode: forcedLlmMode });
+  }, [forcedLlmMode, config.mode, scope]);
   const { modes, effectiveMode, isModeAllowed } = usePolicyModeOptions<InferenceModeOption>(
-    (
+    filterInferenceModeOptions(
       [
         {
-          id: "openwhispr",
-          label: t(`${prefix}.openwhispr`),
-          description: t(`${prefix}.openwhisprDesc`),
+          id: "pura",
+          label: t(`${prefix}.mnemo`),
+          description: t(`${prefix}.mnemoCloudDesc`),
           icon: <Cloud className="w-4 h-4" />,
           disabled: !isSignedIn,
           badge: !isSignedIn ? t("common.freeAccountRequired") : undefined,
@@ -113,7 +123,7 @@ export default function InferenceConfigEditor({
           icon: <Building2 className="w-4 h-4" />,
         },
       ] as InferenceModeOption[]
-    ).filter((mode) => !allowedModes || allowedModes.includes(mode.id)),
+    ).filter((mode) => !resolvedAllowedModes || resolvedAllowedModes.includes(mode.id)),
     "llm",
     config.mode,
     {
@@ -133,7 +143,7 @@ export default function InferenceConfigEditor({
   const handleModeSelect = useCallback(
     (mode: InferenceMode) => {
       if (!isModeAllowed(mode)) return;
-      if (mode === "openwhispr" && !isSignedIn) {
+      if (mode === "pura" && !isSignedIn) {
         requestSignIn();
         return;
       }
@@ -141,7 +151,7 @@ export default function InferenceConfigEditor({
 
       const patch: Parameters<typeof setResolvedLLMConfig>[1] = {
         mode,
-        cloudMode: mode === "openwhispr" ? "openwhispr" : "byok",
+        cloudMode: mode === "pura" ? "mnemo" : "byok",
       };
       if (!isProviderValidForMode(config.provider, mode)) {
         patch.provider = "";
@@ -172,13 +182,14 @@ export default function InferenceConfigEditor({
     />
   );
 
+  const uiEffectiveMode = forcedLlmMode ?? effectiveMode;
   const showThinkingToggle =
-    effectiveMode === "self-hosted" ||
-    (effectiveMode === "providers" &&
+    uiEffectiveMode === "self-hosted" ||
+    (uiEffectiveMode === "providers" &&
       (config.provider === "custom" ||
         config.provider === "openrouter" ||
         !!getCloudModel(config.model)?.supportsThinking)) ||
-    (effectiveMode === "local" && !!getLocalModel(config.model)?.supportsThinking);
+    (uiEffectiveMode === "local" && !!getLocalModel(config.model)?.supportsThinking);
 
   if (managed.kind === "error") {
     return (
@@ -266,7 +277,7 @@ export default function InferenceConfigEditor({
           </Button>
         </div>
       )}
-      {modes.length > 1 && (
+      {!forcedLlmMode && modes.length > 1 && (
         <InferenceModeSelector
           modes={modes}
           activeMode={effectiveMode}
@@ -274,10 +285,10 @@ export default function InferenceConfigEditor({
         />
       )}
 
-      {effectiveMode === "providers" && renderModelSelector("cloud")}
-      {effectiveMode === "local" && renderModelSelector("local")}
+      {uiEffectiveMode === "providers" && renderModelSelector("cloud")}
+      {uiEffectiveMode === "local" && renderModelSelector("local")}
 
-      {effectiveMode === "self-hosted" && (
+      {uiEffectiveMode === "self-hosted" && (
         <OpenAICompatiblePanel
           baseUrl={config.remoteUrl ?? ""}
           setBaseUrl={setField("remoteUrl")}
@@ -306,7 +317,7 @@ export default function InferenceConfigEditor({
         </div>
       )}
 
-      {effectiveMode === "enterprise" && (
+      {uiEffectiveMode === "enterprise" && (
         <EnterpriseSection
           currentProvider={config.provider}
           reasoningModel={config.model}

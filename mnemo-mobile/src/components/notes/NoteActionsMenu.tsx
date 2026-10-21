@@ -7,6 +7,7 @@ import { useNotesStore } from '@/store/useNotesStore';
 import { safeHaptics } from '@/lib/utils';
 import { BRAND } from '@/config/colors';
 import type { Action } from '@/data';
+import { isConversationalAgentEnabled } from '@/config/mnemoProduct';
 
 interface NoteActionsMenuProps {
   noteId: number;
@@ -21,6 +22,7 @@ interface NoteActionsMenuProps {
   onCopyGeneratedNote?: () => void;
   onCopyTranscript?: () => void;
   onShare: () => void;
+  onSendToArchivEye?: () => void;
   onDelete: () => void;
 }
 
@@ -31,6 +33,7 @@ const COPY_TRANSCRIPT_ID = '__copy_transcript';
 const SHARE_ID = '__share';
 const PRIVACY_ID = '__privacy';
 const DELETE_ID = '__delete';
+const ARCHIVEYE_ID = '__archiveye';
 
 export function NoteActionsMenu({
   noteId,
@@ -45,6 +48,7 @@ export function NoteActionsMenu({
   onCopyGeneratedNote,
   onCopyTranscript,
   onShare,
+  onSendToArchivEye,
   onDelete,
 }: NoteActionsMenuProps) {
   const isPrivate = useNotesStore((s) => s.notes.find((n) => n.id === noteId)?.isPrivate === 1);
@@ -69,13 +73,28 @@ export function NoteActionsMenu({
       image: 'slider.horizontal.3',
       imageColor: iconColor,
     },
-    {
-      id: ASK_NOTE_ID,
-      title: 'Ask about this note',
-      image: 'message',
-      imageColor: iconColor,
-      attributes: { disabled: !hasContent || askNoteDisabled },
-    },
+    ...(isConversationalAgentEnabled()
+      ? [
+          {
+            id: ASK_NOTE_ID,
+            title: 'Ask about this note',
+            image: 'message',
+            imageColor: iconColor,
+            attributes: { disabled: !hasContent || askNoteDisabled },
+          },
+        ]
+      : []),
+    ...(onSendToArchivEye
+      ? [
+          {
+            id: ARCHIVEYE_ID,
+            title: 'Send to ArchivEye',
+            image: 'arrow.up.doc',
+            imageColor: iconColor,
+            attributes: { disabled: !hasContent },
+          },
+        ]
+      : []),
     ...(onCopyGeneratedNote
       ? [
           {
@@ -145,13 +164,17 @@ export function NoteActionsMenu({
       onShare();
       return;
     }
+    if (id === ARCHIVEYE_ID) {
+      onSendToArchivEye?.();
+      return;
+    }
     if (id === PRIVACY_ID) {
       safeHaptics('selection');
       setNotePrivacy(noteId, !isPrivate).catch((err) => {
         Sentry.captureException(err, { tags: { sync: 'setNotePrivacy.toggle' } });
         Alert.alert(
           'Cloud copy removal pending',
-          'The note stays private on this device. Its cloud copy could not be removed yet; OpenWhispr will retry when sync is available.',
+          'The note stays private on this device. Its cloud copy could not be removed yet; mnemo will retry when sync is available.',
         );
       });
       return;

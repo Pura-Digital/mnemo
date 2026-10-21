@@ -41,7 +41,7 @@ The module is iOS-only. All methods no-op on Android (`requireNativeModule` is g
 
 ## Environments
 
-The App Group identifier is derived at runtime as `group.<main app bundle id>`. `app.config.js` and `plugins/keyboard-extension/withKeyboardExtension.js` apply the matching entitlement during prebuild, and `OPENWHISPR_APP_ENV=development` switches to the dev identifiers defined in `config/openwhispr-environments.js`.
+The App Group identifier is derived at runtime as `group.<main app bundle id>`. `app.config.js` and `plugins/keyboard-extension/withKeyboardExtension.js` apply the matching entitlement during prebuild, and `MNEMO_APP_ENV=development` switches to the dev identifiers defined in `config/mnemo-environments.js`.
 
 ## Build and test
 

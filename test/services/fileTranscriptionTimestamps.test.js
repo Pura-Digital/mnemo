@@ -12,7 +12,7 @@ function byokConfig() {
     localTranscriptionProvider: "whisper",
     whisperModel: "base",
     parakeetModel: "parakeet-tdt-0.6b-v3",
-    isOpenWhisprCloud: false,
+    isMnemoCloud: false,
     getApiKey: () => "sk-test",
     cloudTranscriptionProvider: "openai",
     cloudTranscriptionBaseUrl: "",
@@ -25,7 +25,7 @@ function byokConfig() {
 test("timestamps opt-in reaches the BYOK IPC call and segments flow back", async (t) => {
   const { window } = installBrowserGlobals(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-file-timestamps-test-",
+    cachePrefix: "mnemo-file-timestamps-test-",
     mockModules: {
       "/lib/auth": "export const withSessionRefresh = (fn) => fn();",
     },

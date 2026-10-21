@@ -19,7 +19,7 @@ function cleanApiKey(value: string | undefined): string | undefined {
   return trimmed ? trimmed : undefined;
 }
 
-export function OpenWhisprSuperwallProvider({ children }: Props) {
+export function MnemoSuperwallProvider({ children }: Props) {
   const apiKeys = useMemo(
     () => ({
       ios: cleanApiKey(process.env.EXPO_PUBLIC_SUPERWALL_IOS_API_KEY),

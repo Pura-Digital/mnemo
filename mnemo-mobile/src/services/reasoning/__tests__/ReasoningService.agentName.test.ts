@@ -13,8 +13,8 @@ beforeEach(() => jest.clearAllMocks());
 
 describe('ReasoningService agentName on the wire', () => {
   it('sends agentName when provided', async () => {
-    await ReasoningService.processText({ text: 'hi', language: 'en', agentName: 'OpenWhispr' });
-    expect((mockPost.mock.calls[0][1] as Record<string, unknown>).agentName).toBe('OpenWhispr');
+    await ReasoningService.processText({ text: 'hi', language: 'en', agentName: 'mnemo' });
+    expect((mockPost.mock.calls[0][1] as Record<string, unknown>).agentName).toBe('mnemo');
   });
 
   it('omits agentName when not provided', async () => {

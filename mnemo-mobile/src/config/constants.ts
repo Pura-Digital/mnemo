@@ -1,5 +1,5 @@
 export const API_ENDPOINTS = {
-  OPENWHISPR_API: process.env.EXPO_PUBLIC_API_URL || 'https://api.openwhispr.com',
+  CLOUD_API: process.env.EXPO_PUBLIC_API_URL?.trim() || '',
 };
 
 export const DEFAULT_MODELS = {
@@ -14,10 +14,10 @@ export const DEFAULT_MODELS = {
 };
 
 export const STORAGE_KEYS = {
-  USER_CONFIG: '@openwhispr:user_config',
-  TRANSCRIPTS: '@openwhispr:transcripts',
-  AUTH_TOKEN: '@openwhispr:auth_token',
-  AGENT_SESSIONS: '@openwhispr:agent_sessions',
+  USER_CONFIG: '@mnemo:user_config',
+  TRANSCRIPTS: '@mnemo:transcripts',
+  AUTH_TOKEN: '@mnemo:auth_token',
+  AGENT_SESSIONS: '@mnemo:agent_sessions',
 };
 
 export const MAX_RECORDING_DURATION = 600000; // 10 minutes in ms

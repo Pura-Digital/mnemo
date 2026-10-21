@@ -5,9 +5,9 @@ const { createRendererServer, installBrowserGlobals } = require("../lib/renderer
 test("managed policy gates preserve the user's raw preferences", async (t) => {
   const policy = {
     version: 1,
-    transcription: { allowedModes: ["openwhispr"], allowedByokProviders: [] },
+    transcription: { allowedModes: ["mnemo"], allowedByokProviders: [] },
     llm: {
-      allowedModes: ["openwhispr"],
+      allowedModes: ["mnemo"],
       allowedByokProviders: [],
       allowedEnterpriseProviders: [],
     },
@@ -48,7 +48,7 @@ test("managed policy gates preserve the user's raw preferences", async (t) => {
   });
 
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-policy-prefs-test-",
+    cachePrefix: "mnemo-policy-prefs-test-",
   });
 
   const { usePolicyStore } = await vite.ssrLoadModule("/stores/policyStore.ts");

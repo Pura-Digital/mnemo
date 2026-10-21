@@ -59,7 +59,7 @@ test("openai cloud mints per-stream client secrets and validates the dual pair",
       return { clientSecret: "cs-single", clientSecrets: ["cs-a", "cs-b"] };
     },
   });
-  const options = { mode: "openwhispr", model: "gpt-4o-mini-transcribe", language: "en" };
+  const options = { mode: "mnemo", model: "gpt-4o-mini-transcribe", language: "en" };
 
   assert.equal(
     await fetchRealtimeTokenForProvider("openai-realtime", cloudDeps, options),
@@ -129,7 +129,7 @@ test("deepgram byok duplicates the key; cloud mints per stream", async () => {
     await fetchRealtimeTokenForProvider(
       "deepgram-realtime",
       cloudDeps,
-      { mode: "openwhispr" },
+      { mode: "mnemo" },
       { streams: 2 }
     ),
     ["dg-1", "dg-2"]
@@ -157,14 +157,14 @@ test("gemini byok duplicates the raw key; cloud mints one token per stream", asy
     await fetchRealtimeTokenForProvider(
       "gemini-realtime",
       cloudDeps,
-      { mode: "openwhispr" },
+      { mode: "mnemo" },
       { streams: 2 }
     ),
     ["gm-1", "gm-2"]
   );
   await assert.rejects(
     fetchRealtimeTokenForProvider("gemini-realtime", deps({ postServerToken: async () => ({}) }), {
-      mode: "openwhispr",
+      mode: "mnemo",
     }),
     /No Gemini token received/
   );
@@ -218,12 +218,12 @@ test('wire bodies: dictation posts the bare {"streams":1}; meetings post model+l
   });
 
   // Dictation: ipcHandlers' connectDictationStreaming passes only { mode, provider }.
-  await fetchRealtimeTokenForProvider("openai-realtime", cloudDeps, { mode: "openwhispr" });
+  await fetchRealtimeTokenForProvider("openai-realtime", cloudDeps, { mode: "mnemo" });
   // Meeting with system audio.
   await fetchRealtimeTokenForProvider(
     "openai-realtime",
     cloudDeps,
-    { mode: "openwhispr", model: "gpt-4o-mini-transcribe", language: "en" },
+    { mode: "mnemo", model: "gpt-4o-mini-transcribe", language: "en" },
     { streams: 2 }
   );
   // Meeting whose system audio is unsupported (connectRealtimeStreaming's single-stream
@@ -231,12 +231,12 @@ test('wire bodies: dictation posts the bare {"streams":1}; meetings post model+l
   await fetchRealtimeTokenForProvider(
     "openai-realtime",
     cloudDeps,
-    { mode: "openwhispr", model: "gpt-4o-mini-transcribe", language: undefined },
+    { mode: "mnemo", model: "gpt-4o-mini-transcribe", language: undefined },
     { streams: 1 }
   );
 
   // Gemini's endpoint reads nothing from the request; it must post a bare body.
-  await fetchRealtimeTokenForProvider("gemini-realtime", cloudDeps, { mode: "openwhispr" });
+  await fetchRealtimeTokenForProvider("gemini-realtime", cloudDeps, { mode: "mnemo" });
 
   assert.deepEqual(wire, [
     { path: "/api/openai-realtime-token", json: '{"streams":1}' },

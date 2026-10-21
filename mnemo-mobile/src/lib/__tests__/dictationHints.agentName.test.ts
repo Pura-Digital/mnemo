@@ -48,7 +48,7 @@ describe('buildDictationHints agentName', () => {
     mockConfig = { defaultMode: 'cloud', dictationAgentEnabled: true };
 
     const hints = buildDictationHints(false);
-    expect(hints).toContain('OpenWhispr');
+    expect(hints).toContain('mnemo');
   });
 
   it('excludes the agent name when agent is disabled', () => {

@@ -89,7 +89,7 @@ function withStoreKitConfiguration(config) {
     (cfg) => {
       const projectRoot = cfg.modRequest.projectRoot;
       const platformProjectRoot = cfg.modRequest.platformProjectRoot;
-      const projectName = cfg.modRequest.projectName ?? 'OpenWhispr';
+      const projectName = cfg.modRequest.projectName ?? 'Mnemo';
       const canonicalProducts = readJson(path.join(projectRoot, CANONICAL_PRODUCTS_PATH));
       const storeKitConfiguration = readJson(path.join(projectRoot, STOREKIT_FILE_NAME));
       validateStoreKitProductIds(storeKitConfiguration, canonicalProducts);

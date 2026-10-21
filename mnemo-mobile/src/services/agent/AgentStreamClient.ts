@@ -206,7 +206,7 @@ export async function streamAgentText(options: StreamAgentTextOptions): Promise<
           );
           if (res.status === 403 && code === 'POLICY_MODE_BLOCKED') {
             throw new ApiError(
-              "Your organization's policy doesn't allow OpenWhispr cloud AI.",
+              "Your organization's policy doesn't allow Pura LLM AI.",
               res.status,
               code,
             );

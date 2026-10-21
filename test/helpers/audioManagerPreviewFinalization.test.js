@@ -5,7 +5,7 @@ const { loadAudioManager } = require("./harness/audioManager");
 for (const streamingCommit of [false, true]) {
   test(`${streamingCommit ? "uncommitted online" : "offline"} preview stop preserves the complete final recording`, async (t) => {
     const { window, createManager } = await loadAudioManager(t, {
-      cachePrefix: "openwhispr-preview-finalization-test-",
+      cachePrefix: "mnemo-preview-finalization-test-",
       settingsKey: "__previewFinalizationSettings",
       settings: {
         useLocalWhisper: true,

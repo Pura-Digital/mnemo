@@ -43,12 +43,14 @@ try {
 }
 
 const VALID_CHANNELS = new Set(["development", "staging", "production"]);
-const DEFAULT_OAUTH_PROTOCOL_BY_CHANNEL = {
-  development: "openwhispr-dev",
-  staging: "openwhispr-staging",
-  production: "openwhispr",
-};
-const BASE_WINDOWS_APP_ID = "com.gizmolabs.openwhispr";
+const {
+  getOAuthProtocol,
+  getAcceptedOAuthProtocols,
+  matchOAuthProtocolUrl,
+  stripOAuthProtocolPrefix,
+  findOAuthProtocolUrl,
+} = require("./src/helpers/oauthProtocol");
+const BASE_WINDOWS_APP_ID = "com.pura.mnemo";
 const DEFAULT_AUTH_BRIDGE_PORT = 5199;
 
 function isElectronBinaryExec() {
@@ -68,7 +70,7 @@ function inferDefaultChannel() {
 }
 
 function resolveAppChannel() {
-  const rawChannel = (process.env.OPENWHISPR_CHANNEL || process.env.VITE_OPENWHISPR_CHANNEL || "")
+  const rawChannel = (process.env.MNEMO_CHANNEL || process.env.VITE_MNEMO_CHANNEL || "")
     .trim()
     .toLowerCase();
 
@@ -80,14 +82,16 @@ function resolveAppChannel() {
 }
 
 const APP_CHANNEL = resolveAppChannel();
-process.env.OPENWHISPR_CHANNEL = APP_CHANNEL;
+process.env.MNEMO_CHANNEL = APP_CHANNEL;
 
 function configureChannelUserDataPath() {
   if (APP_CHANNEL === "production") {
+    // Keep the existing profile when the product display name changes.
+    app.setPath("userData", path.join(app.getPath("appData"), "Mnemo"));
     return;
   }
 
-  const isolatedPath = path.join(app.getPath("appData"), `OpenWhispr-${APP_CHANNEL}`);
+  const isolatedPath = path.join(app.getPath("appData"), `Mnemo-${APP_CHANNEL}`);
   app.setPath("userData", isolatedPath);
 }
 
@@ -125,7 +129,7 @@ if (process.platform === "linux" && process.env.XDG_SESSION_TYPE === "wayland") 
 // Set desktop filename so Wayland compositors can match windows to the .desktop entry.
 // This allows XDG portals (e.g. PipeWire) to persist permissions across sessions.
 if (process.platform === "linux") {
-  app.setDesktopName("open-whispr.desktop");
+  app.setDesktopName("mnemo.desktop");
 }
 
 // Group all windows under single taskbar entry on Windows
@@ -133,20 +137,6 @@ if (process.platform === "win32") {
   const windowsAppId =
     APP_CHANNEL === "production" ? BASE_WINDOWS_APP_ID : `${BASE_WINDOWS_APP_ID}.${APP_CHANNEL}`;
   app.setAppUserModelId(windowsAppId);
-}
-
-function getOAuthProtocol() {
-  const fromEnv = (process.env.VITE_OPENWHISPR_PROTOCOL || process.env.OPENWHISPR_PROTOCOL || "")
-    .trim()
-    .toLowerCase();
-
-  if (/^[a-z][a-z0-9+.-]*$/.test(fromEnv)) {
-    return fromEnv;
-  }
-
-  return (
-    DEFAULT_OAUTH_PROTOCOL_BY_CHANNEL[APP_CHANNEL] || DEFAULT_OAUTH_PROTOCOL_BY_CHANNEL.production
-  );
 }
 
 const OAUTH_PROTOCOL = getOAuthProtocol();
@@ -186,7 +176,7 @@ function restoreHtmlHandlerIfChanged(original) {
   }
 }
 
-// True source of truth for whether openwhispr:// resolves on Linux — the same
+// True source of truth for whether mnemo:// resolves on Linux — the same
 // MIME database xdg-open consults. Returns true for deb/rpm/flatpak/AUR installs
 // (scheme registered via the packaged .desktop MimeType; registerLinuxUrlSchemeHandler
 // first takes it back from an AppImage/tar.gz entry) and false for AppImage/tar.gz
@@ -215,7 +205,7 @@ function getProtocolAppArgs() {
 }
 
 // Register custom protocol for OAuth callbacks.
-function registerOpenWhisprProtocol() {
+function registerMnemoProtocol() {
   const protocol = OAUTH_PROTOCOL;
   const htmlHandler = process.platform === "linux" ? getDefaultHtmlHandler() : null;
   const appArgs = getProtocolAppArgs();
@@ -234,7 +224,7 @@ function registerOpenWhisprProtocol() {
   return result;
 }
 
-// On Linux, setAsDefaultProtocolClient can only name open-whispr.desktop, which
+// On Linux, setAsDefaultProtocolClient can only name mnemo.desktop, which
 // AppImage and tar.gz installs don't have, so those (and development) register
 // their own handler entry first and skip it. Otherwise it runs as before, and
 // since it returns a false negative on KDE/Wayland, fall back to probing the
@@ -245,7 +235,7 @@ const linuxSchemeHandler =
     ? registerLinuxUrlSchemeHandler(OAUTH_PROTOCOL, getProtocolAppArgs())
     : null;
 const protocolRegistered =
-  linuxSchemeHandler?.registered || registerOpenWhisprProtocol() || isOAuthSchemeRegistered();
+  linuxSchemeHandler?.registered || registerMnemoProtocol() || isOAuthSchemeRegistered();
 if (!protocolRegistered) {
   console.warn(`[Auth] Failed to register ${OAUTH_PROTOCOL}:// protocol handler`);
 }
@@ -258,10 +248,8 @@ if (!gotSingleInstanceLock) {
 
 const isLiveWindow = (window) => window && !window.isDestroyed();
 
-// Ensure macOS menus use the proper casing for the app name
-if (process.platform === "darwin" && app.getName() !== "OpenWhispr") {
-  app.setName("OpenWhispr");
-}
+// Use the brand display name on every platform; profile paths stay compatible.
+app.setName("mnemo");
 
 // Add global error handling for uncaught exceptions
 process.on("uncaughtException", (error) => {
@@ -303,6 +291,8 @@ const WhisperVulkanManager = require("./src/helpers/whisperVulkanManager");
 const { migrateLegacyBinDir, detectOrphanedGpuPacks } = require("./src/helpers/gpuBinaryManager");
 const { resetWhisperGpuFailureOnUpgrade } = require("./src/helpers/whisperGpuUpgradeReset");
 const GoogleCalendarManager = require("./src/helpers/googleCalendarManager");
+const ArchivEyeManager = require("./src/helpers/archiveyeManager");
+const { isConversationalAgentEnabled } = require("./src/helpers/mnemoProductBridge");
 const MicrosoftCalendarManager = require("./src/helpers/microsoftCalendarManager");
 const AppleCalendarManager = require("./src/helpers/appleCalendarManager");
 const CalendarReminderScheduler = require("./src/helpers/calendarReminderScheduler");
@@ -312,12 +302,13 @@ const {
   collectAudioCaptureHelperPids,
   createExcludedProcessIdProvider,
 } = require("./src/helpers/electronProcessIds");
+const { resolveProcessAppKey } = require("./src/helpers/processAppIdentity");
 const AudioTapManager = require("./src/helpers/audioTapManager");
 const LinuxPortalAudioManager = require("./src/helpers/linuxPortalAudioManager");
 const WindowsLoopbackAudioManager = require("./src/helpers/windowsLoopbackAudioManager");
 const MeetingAecManager = require("./src/helpers/meetingAecManager");
 const MeetingDetectionEngine = require("./src/helpers/meetingDetectionEngine");
-const { applyOpenWhisprOriginHeader } = require("./src/helpers/sessionHeaders");
+const { applyMnemoOriginHeader } = require("./src/helpers/sessionHeaders");
 const { i18nMain, changeLanguage } = require("./src/helpers/i18nMain");
 const { ensureYdotool } = require("./src/helpers/ensureYdotool");
 const sidecarRegistry = require("./src/helpers/sidecarRegistry");
@@ -343,6 +334,7 @@ let selectionManager = null;
 let whisperCudaManager = null;
 let whisperVulkanManager = null;
 let googleCalendarManager = null;
+let archiveyeManager = null;
 let microsoftCalendarManager = null;
 let appleCalendarManager = null;
 let calendarReminderScheduler = null;
@@ -365,7 +357,7 @@ const WHISPER_WAKE_REWARM_DELAY_MS = 3000;
 let wakeRewarmTimer = null;
 
 function parseAuthBridgePort() {
-  const raw = (process.env.OPENWHISPR_AUTH_BRIDGE_PORT || "").trim();
+  const raw = (process.env.MNEMO_AUTH_BRIDGE_PORT || "").trim();
   if (!raw) return DEFAULT_AUTH_BRIDGE_PORT;
 
   const parsed = Number(raw);
@@ -509,6 +501,7 @@ function initializeCoreManagers() {
     windowManager,
     calendarReminderScheduler
   );
+  archiveyeManager = new ArchivEyeManager(databaseManager);
   microsoftCalendarManager = new MicrosoftCalendarManager(
     databaseManager,
     calendarReminderScheduler
@@ -528,7 +521,8 @@ function initializeCoreManagers() {
           windowsLoopbackAudioManager,
         ])
       ),
-      () => meetingProcessDetector.getDetectedProcesses().length > 0
+      () => meetingProcessDetector.getDetectedProcesses().length > 0,
+      resolveProcessAppKey
     ),
     windowManager,
     databaseManager
@@ -575,6 +569,7 @@ function initializeCoreManagers() {
     whisperCudaManager,
     whisperVulkanManager,
     googleCalendarManager,
+    archiveyeManager,
     microsoftCalendarManager,
     appleCalendarManager,
     meetingDetectionEngine,
@@ -654,7 +649,7 @@ function initializeDeferredManagers() {
 
 app.on("open-url", (event, url) => {
   event.preventDefault();
-  if (!url.startsWith(`${OAUTH_PROTOCOL}://`)) return;
+  if (!matchOAuthProtocolUrl(url)) return;
 
   if (url.includes("upgrade-success")) {
     handleUpgradeDeepLink();
@@ -681,7 +676,8 @@ app.on("open-url", (event, url) => {
 });
 
 function isInvitationDeepLink(url) {
-  return url.slice(`${OAUTH_PROTOCOL}://`.length).startsWith("invitations/");
+  const path = stripOAuthProtocolPrefix(url);
+  return Boolean(path?.startsWith("invitations/"));
 }
 
 // Deep links can arrive before windowManager exists (cold start) or before the
@@ -697,7 +693,8 @@ ipcMain.handle("get-pending-invitation-token", () => {
 });
 
 function isNoteDeepLink(url) {
-  return url.slice(`${OAUTH_PROTOCOL}://`.length).startsWith("notes/");
+  const path = stripOAuthProtocolPrefix(url);
+  return Boolean(path?.startsWith("notes/"));
 }
 
 function parseNoteCloudId(deepLinkUrl) {
@@ -801,14 +798,14 @@ function resolveAuthUrl() {
     process.env.AUTH_URL ||
     process.env.VITE_AUTH_URL ||
     runtimeEnv.VITE_AUTH_URL ||
-    "https://auth.openwhispr.com"
+    "https://auth.mnemo.com"
   );
 }
 
 function getOauthCookieName() {
   return process.env.NODE_ENV === "production"
-    ? "__Secure-openwhispr.session_token"
-    : "openwhispr.session_token";
+    ? "__Secure-mnemo.session_token"
+    : "mnemo.session_token";
 }
 
 // Older website builds send the signed cookie value as `?token=`; trade it
@@ -895,6 +892,14 @@ async function applySessionTokenAndRefresh(token) {
 
 async function handleOAuthDeepLink(deepLinkUrl) {
   try {
+    const puraOAuthManager = require("./src/helpers/puraOAuthManager");
+    const puraResult = await puraOAuthManager.completeFromDeepLink(deepLinkUrl, OAUTH_PROTOCOL);
+    if (puraResult.handled) {
+      const { broadcastToWindows } = require("./src/helpers/windowBroadcast");
+      broadcastToWindows("pura-connection-changed");
+      return;
+    }
+
     const parsed = new URL(deepLinkUrl);
     const bearerToken = parsed.searchParams.get("bearer_token");
     if (bearerToken) {
@@ -991,7 +996,7 @@ function startAuthBridgeServer() {
 
     res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
     res.end(
-      "<html><body><h3>OpenWhispr sign-in complete.</h3><p>You can close this tab.</p></body></html>"
+      "<html><body><h3>mnemo sign-in complete.</h3><p>You can close this tab.</p></body></html>"
     );
   });
 
@@ -1033,7 +1038,7 @@ async function startApp() {
 
   await migrateCookieToBearerToken();
 
-  applyOpenWhisprOriginHeader(session.defaultSession);
+  applyMnemoOriginHeader(session.defaultSession);
 
   await windowManager.setActivationModeCache(environmentManager.getActivationMode());
   windowManager.setFloatingIconAutoHide(environmentManager.getFloatingIconAutoHide());
@@ -1118,7 +1123,7 @@ async function startApp() {
 
   // Windows/Linux cold start delivers protocol URLs via argv (macOS uses
   // open-url); without this scan a deep link that launches the app is lost.
-  const initialProtocolUrl = process.argv.find((arg) => arg.startsWith(`${OAUTH_PROTOCOL}://`));
+  const initialProtocolUrl = findOAuthProtocolUrl(process.argv);
   if (initialProtocolUrl && isNoteDeepLink(initialProtocolUrl)) {
     await handleNoteDeepLink(initialProtocolUrl);
   } else {
@@ -1147,7 +1152,7 @@ async function startApp() {
   windowManager._voiceAgentHotkeyCallback = voiceAgentHotkeyCallback;
 
   const savedVoiceAgentKey = environmentManager.getVoiceAgentKey?.() || "";
-  if (savedVoiceAgentKey) {
+  if (savedVoiceAgentKey && isConversationalAgentEnabled()) {
     const result = await hotkeyManager.registerSlot(
       "voiceAgent",
       savedVoiceAgentKey,
@@ -1859,7 +1864,7 @@ if (gotSingleInstanceLock) {
     }
 
     // Check for OAuth protocol URL in command line arguments (Windows/Linux)
-    const url = commandLine.find((arg) => arg.startsWith(`${OAUTH_PROTOCOL}://`));
+    const url = findOAuthProtocolUrl(commandLine);
     if (url) {
       if (url.includes("upgrade-success")) {
         handleUpgradeDeepLink();

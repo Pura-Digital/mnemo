@@ -30,7 +30,7 @@ test("a warm connection is reused only within the same credential mode", async (
     streaming.buildWebSocketUrl = () => url;
 
     try {
-      await streaming.warmup({ token: "managed-token", mode: "openwhispr" });
+      await streaming.warmup({ token: "managed-token", mode: "mnemo" });
       assert.equal(streaming.getCachedToken(), "managed-token");
 
       // The main-process singleton serves BYOK and managed dictation alike: a
@@ -56,8 +56,8 @@ test("a warm connection is reused only within the same credential mode", async (
     streaming.buildWebSocketUrl = () => url;
 
     try {
-      await streaming.warmup({ token: "managed-token", mode: "openwhispr" });
-      await streaming.connect({ token: "managed-token", mode: "openwhispr" });
+      await streaming.warmup({ token: "managed-token", mode: "mnemo" });
+      await streaming.connect({ token: "managed-token", mode: "mnemo" });
 
       assert.equal(connections.length, 1, "same-mode start rides the warm socket");
       assert.equal(streaming.isConnected, true);
@@ -156,7 +156,7 @@ test("adopting a different mode before a warmup drops the other mode's token", a
       await streaming.warmup({ token: "byok-key", mode: "byok" });
       // ipcHandlers adopts the incoming mode before consulting the token cache
       // for a managed start, so the BYOK key can never be replayed as a token.
-      streaming.adoptMode({ mode: "openwhispr" });
+      streaming.adoptMode({ mode: "mnemo" });
 
       assert.equal(streaming.getCachedToken(), null);
       assert.equal(streaming.hasWarmConnection(), false);
@@ -187,7 +187,7 @@ test("a managed grant token authenticates under the Bearer scheme", async () => 
     streaming.buildWebSocketUrl = () => url;
 
     try {
-      await streaming.connect({ token: "grant-token", mode: "openwhispr" });
+      await streaming.connect({ token: "grant-token", mode: "mnemo" });
 
       assert.deepEqual(authHeaders, ["Bearer grant-token"]);
     } finally {
@@ -258,5 +258,5 @@ test("a re-warm whose options were dropped does not re-authenticate as managed",
 // export stays green for a week.
 test("the authorization scheme is exported for the canary to reuse", () => {
   assert.equal(DeepgramStreaming.authorizationHeader("byok", "k"), "Token k");
-  assert.equal(DeepgramStreaming.authorizationHeader("openwhispr", "k"), "Bearer k");
+  assert.equal(DeepgramStreaming.authorizationHeader("mnemo", "k"), "Bearer k");
 });

@@ -7,7 +7,7 @@ test("cleanup failure details ride the raw result instead of notifying before pa
   t.after(() => delete globalThis.__cleanupFallbackImmediateNotifications);
 
   const { createManager } = await loadAudioManager(t, {
-    cachePrefix: "openwhispr-audio-cleanup-fallback-",
+    cachePrefix: "mnemo-audio-cleanup-fallback-",
     settingsKey: "__audioCleanupFallbackSettings",
     settings: {
       useCleanupModel: true,
@@ -62,7 +62,7 @@ test("cleanup failure details ride the raw result instead of notifying before pa
   };
   const failure = Object.assign(
     new Error(
-      "AWS Bedrock is temporarily unavailable due to high demand. This is an AWS service issue, not an OpenWhispr outage. Please try again in a few minutes."
+      "AWS Bedrock is temporarily unavailable due to high demand. This is an AWS service issue, not an Mnemo outage. Please try again in a few minutes."
     ),
     {
       messageKey: "reasoning.enterprise.errors.bedrock.serviceUnavailable",
@@ -105,7 +105,7 @@ test("cleanup failure details ride the raw result instead of notifying before pa
 // has to reach the same toast the plain cleanup route raises (#2091).
 test("a truncated cleanup inside the translation chain still reports the failure", async (t) => {
   const { createManager } = await loadAudioManager(t, {
-    cachePrefix: "openwhispr-audio-translation-cleanup-",
+    cachePrefix: "mnemo-audio-translation-cleanup-",
     settingsKey: "__audioTranslationCleanupSettings",
     settings: {
       useCleanupModel: true,
@@ -185,7 +185,7 @@ test("a truncated cleanup inside the translation chain still reports the failure
 
 test("safePaste returns false when the preload reports that no text was pasted", async (t) => {
   const { createManager, window } = await loadAudioManager(t, {
-    cachePrefix: "openwhispr-audio-cleanup-paste-outcome-",
+    cachePrefix: "mnemo-audio-cleanup-paste-outcome-",
     settingsKey: "__audioCleanupPasteOutcomeSettings",
   });
   const manager = createManager({
@@ -198,7 +198,7 @@ test("safePaste returns false when the preload reports that no text was pasted",
 
 test("safePaste returns true only when the preload reports a completed paste", async (t) => {
   const { createManager, window } = await loadAudioManager(t, {
-    cachePrefix: "openwhispr-audio-cleanup-paste-success-",
+    cachePrefix: "mnemo-audio-cleanup-paste-success-",
     settingsKey: "__audioCleanupPasteSuccessSettings",
   });
   const manager = createManager({
@@ -211,7 +211,7 @@ test("safePaste returns true only when the preload reports a completed paste", a
 
 test("translation cleanup failures survive successful and skipped translation for post-paste warnings", async (t) => {
   const { createManager } = await loadAudioManager(t, {
-    cachePrefix: "openwhispr-translation-cleanup-warning-",
+    cachePrefix: "mnemo-translation-cleanup-warning-",
     settingsKey: "__translationCleanupWarningSettings",
   });
   const rawText = "Full first sentence. Full final sentence.";

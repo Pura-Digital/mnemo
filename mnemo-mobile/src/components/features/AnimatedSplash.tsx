@@ -1,5 +1,6 @@
+import { MnemoMark } from '@/components/ui/MnemoMark';
 import React, { useEffect, useCallback, useRef } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -11,16 +12,9 @@ import Animated, {
 } from 'react-native-reanimated';
 import * as SplashScreen from 'expo-splash-screen';
 import { LinearGradient } from 'expo-linear-gradient';
-import { BRAND_GRADIENT } from '@/config/colors';
 import { SpaceGrotesk } from '@/lib/fonts';
 
 const LOGO_SIZE = 120;
-const RING_THICKNESS = 6;
-const BAR_WIDTH = 12;
-const BAR_RADIUS = BAR_WIDTH / 2;
-const CENTER_BAR_HEIGHT = 40;
-const SIDE_BAR_HEIGHT = 28;
-const BAR_GAP = 6;
 
 interface AnimatedSplashProps {
   appReady: boolean;
@@ -30,9 +24,6 @@ interface AnimatedSplashProps {
 export function AnimatedSplash({ appReady, onFinish }: AnimatedSplashProps) {
   const logoScale = useSharedValue(0.85);
   const logoOpacity = useSharedValue(0);
-  const centerBarHeight = useSharedValue(0);
-  const leftBarHeight = useSharedValue(0);
-  const rightBarHeight = useSharedValue(0);
   const textOpacity = useSharedValue(0);
   const textTranslateY = useSharedValue(8);
   const containerOpacity = useSharedValue(1);
@@ -46,19 +37,6 @@ export function AnimatedSplash({ appReady, onFinish }: AnimatedSplashProps) {
   useEffect(() => {
     logoOpacity.value = withTiming(1, { duration: 400, easing: Easing.out(Easing.cubic) });
     logoScale.value = withSpring(1, { damping: 18, stiffness: 200 });
-
-    centerBarHeight.value = withDelay(
-      250,
-      withSpring(CENTER_BAR_HEIGHT, { damping: 12, stiffness: 180 }),
-    );
-    leftBarHeight.value = withDelay(
-      350,
-      withSpring(SIDE_BAR_HEIGHT, { damping: 12, stiffness: 180 }),
-    );
-    rightBarHeight.value = withDelay(
-      450,
-      withSpring(SIDE_BAR_HEIGHT, { damping: 12, stiffness: 180 }),
-    );
 
     textOpacity.value = withDelay(
       650,
@@ -107,18 +85,6 @@ export function AnimatedSplash({ appReady, onFinish }: AnimatedSplashProps) {
     transform: [{ scale: logoScale.value }],
   }));
 
-  const centerBarStyle = useAnimatedStyle(() => ({
-    height: centerBarHeight.value,
-  }));
-
-  const leftBarStyle = useAnimatedStyle(() => ({
-    height: leftBarHeight.value,
-  }));
-
-  const rightBarStyle = useAnimatedStyle(() => ({
-    height: rightBarHeight.value,
-  }));
-
   const textStyle = useAnimatedStyle(() => ({
     opacity: textOpacity.value,
     transform: [{ translateY: textTranslateY.value }],
@@ -127,22 +93,16 @@ export function AnimatedSplash({ appReady, onFinish }: AnimatedSplashProps) {
   return (
     <Animated.View style={[styles.container, containerStyle]} onLayout={handleLayout}>
       <LinearGradient
-        colors={BRAND_GRADIENT}
+        colors={['#FFFFFF', '#FFF1F2', '#FFFFFF']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={StyleSheet.absoluteFill}
       />
       <Animated.View style={[styles.content, contentStyle]}>
         <Animated.View style={logoStyle}>
-          <View style={styles.ring}>
-            <View style={styles.barsContainer}>
-              <Animated.View style={[styles.bar, leftBarStyle]} />
-              <Animated.View style={[styles.bar, centerBarStyle]} />
-              <Animated.View style={[styles.bar, rightBarStyle]} />
-            </View>
-          </View>
+          <MnemoMark size={LOGO_SIZE} />
         </Animated.View>
-        <Animated.Text style={[styles.wordmark, textStyle]}>OpenWhispr</Animated.Text>
+        <Animated.Text style={[styles.wordmark, textStyle]}>mnemo</Animated.Text>
       </Animated.View>
     </Animated.View>
   );
@@ -151,7 +111,7 @@ export function AnimatedSplash({ appReady, onFinish }: AnimatedSplashProps) {
 const styles = StyleSheet.create({
   container: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: BRAND_GRADIENT[2],
+    backgroundColor: '#FFFFFF',
     zIndex: 999,
   },
   content: {
@@ -159,33 +119,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  ring: {
-    width: LOGO_SIZE,
-    height: LOGO_SIZE,
-    borderRadius: LOGO_SIZE / 2,
-    borderWidth: RING_THICKNESS,
-    borderColor: 'rgba(255, 255, 255, 0.95)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    boxShadow: '0px 2px 8px rgba(0, 0, 0, 0.1)',
-  },
-  barsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: BAR_GAP,
-  },
-  bar: {
-    width: BAR_WIDTH,
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: BAR_RADIUS,
-  },
   wordmark: {
     marginTop: 24,
     fontFamily: SpaceGrotesk.semibold,
-    fontSize: 24,
+    fontSize: 36,
     fontWeight: '600',
-    letterSpacing: 1,
-    color: 'rgba(255, 255, 255, 0.95)',
+    letterSpacing: -1,
+    color: '#29282E',
   },
 });

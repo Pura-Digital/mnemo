@@ -100,7 +100,7 @@ async function createSetupHarness(
   });
   const container = installHookDom(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-local-setup-test-",
+    cachePrefix: "mnemo-local-setup-test-",
     noExternal: ["react-i18next"],
     mockModules: {
       "react-i18next": `

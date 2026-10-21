@@ -126,7 +126,7 @@ test("agent is reachable in cloud mode without an explicit model", async () => {
   assert.equal(
     resolveDictationAgentReachability({
       useDictationAgent: true,
-      dictationAgentMode: "openwhispr",
+      dictationAgentMode: "mnemo",
       dictationAgentProvider: undefined,
       dictationAgentModel: "",
       isCloudAgent: true,
@@ -190,7 +190,7 @@ test("disabling the dictation agent overrides cloud reachability", async () => {
   assert.equal(
     resolveDictationAgentReachability({
       useDictationAgent: false,
-      dictationAgentMode: "openwhispr",
+      dictationAgentMode: "mnemo",
       dictationAgentProvider: undefined,
       dictationAgentModel: "",
       isCloudAgent: true,
@@ -289,7 +289,7 @@ test("translation is unreachable when disabled", async () => {
     resolveDictationTranslationReachability({
       useDictationTranslation: false,
       translationTargetLanguage: "it",
-      translationMode: "openwhispr",
+      translationMode: "mnemo",
       translationProvider: undefined,
       translationModel: "gpt-5-mini",
       isCloudTranslation: true,
@@ -306,7 +306,7 @@ test("translation is unreachable without a target language", async () => {
     resolveDictationTranslationReachability({
       useDictationTranslation: true,
       translationTargetLanguage: "   ",
-      translationMode: "openwhispr",
+      translationMode: "mnemo",
       translationProvider: undefined,
       translationModel: "gpt-5-mini",
       isCloudTranslation: true,
@@ -323,7 +323,7 @@ test("translation is reachable in cloud mode without an explicit model", async (
     resolveDictationTranslationReachability({
       useDictationTranslation: true,
       translationTargetLanguage: "it",
-      translationMode: "openwhispr",
+      translationMode: "mnemo",
       translationProvider: undefined,
       translationModel: "",
       isCloudTranslation: true,
@@ -380,16 +380,16 @@ test("translation needs a model on model-required providers", async () => {
   );
 });
 
-test("available managed mode resolves the OpenWhispr provider", async () => {
+test("available managed mode resolves the Mnemo provider", async () => {
   const { resolveDictationAgentProvider } = await load();
 
   assert.equal(
     resolveDictationAgentProvider({
       isCloudAgent: true,
-      dictationAgentMode: "openwhispr",
+      dictationAgentMode: "mnemo",
       dictationAgentProvider: "anthropic",
     }),
-    "openwhispr"
+    "mnemo"
   );
 });
 
@@ -438,7 +438,7 @@ test("managed mode fails closed when its cloud session is unavailable", async ()
   assert.equal(
     resolveDictationAgentProvider({
       isCloudAgent: false,
-      dictationAgentMode: "openwhispr",
+      dictationAgentMode: "mnemo",
       dictationAgentProvider: "openai",
     }),
     undefined
@@ -524,16 +524,16 @@ test("display provider follows the active mode instead of stale state", async ()
   );
 });
 
-test("translation provider: available managed mode routes to openwhispr", async () => {
+test("translation provider: available managed mode routes to mnemo", async () => {
   const { resolveTranslationProviderId } = await load();
 
   assert.equal(
     resolveTranslationProviderId({
       isCloudTranslation: true,
-      translationMode: "openwhispr",
+      translationMode: "mnemo",
       translationProvider: "openai",
     }),
-    "openwhispr"
+    "mnemo"
   );
 });
 
@@ -573,7 +573,7 @@ test("translation provider: empty local provider routes to llama.cpp", async () 
 test("translation provider: incomplete managed and provider modes fail closed", async () => {
   const { resolveTranslationProviderId } = await load();
 
-  for (const translationMode of ["openwhispr", "providers", "enterprise"]) {
+  for (const translationMode of ["mnemo", "providers", "enterprise"]) {
     assert.equal(
       resolveTranslationProviderId({
         isCloudTranslation: false,

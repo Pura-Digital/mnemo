@@ -1,3 +1,4 @@
+import { isConversationalAgentEnabled, isMnemoStandaloneProduct } from "../../config/mnemoProduct";
 import { SIGN_IN_PROMPTED_AT_KEY } from "../../utils/requestSignIn";
 import { PENDING_LOCAL_MODELS_KEY } from "./pendingLocalModels";
 
@@ -199,9 +200,9 @@ export function createOnboardingResumeState(): OnboardingResumeState {
 export function createOnboardingSession(): OnboardingSession {
   return {
     version: ONBOARDING_FLOW_VERSION,
-    currentStepId: "auth",
+    currentStepId: "permissions",
     history: [],
-    authPath: null,
+    authPath: "guest",
     setupMode: null,
     selfHostedRequested: false,
     screenContextRequested: false,
@@ -224,20 +225,26 @@ export function resetOnboardingProgress(storage: OnboardingStorage): void {
 }
 
 export function getOnboardingRoute(context: OnboardingRouteContext): OnboardingStepId[] {
-  if (context.authPath === null) return ["auth"];
+  if (
+    !isMnemoStandaloneProduct() &&
+    context.authPath === null &&
+    context.setupMode === "cloud"
+  ) {
+    return ["auth"];
+  }
 
   const setupChoice = context.skipSetupChoice ? [] : (["setup-choice"] as OnboardingStepId[]);
 
   const route =
-    context.authPath === "guest"
+    context.authPath !== "account"
       ? // Guests still need the permission grants and a hotkey they have seen:
         // finalizeOnboarding registers dictationHotkey either way, and skipping
         // these steps shipped users who neither granted the mic nor knew their
         // trigger key.
-        (["auth", "permissions", "dictation-hotkey", "setup-choice"] as OnboardingStepId[])
+        (["permissions", "dictation-hotkey", "setup-choice"] as OnboardingStepId[])
       : [
           ...ACCOUNT_ROUTE,
-          ...(context.agentAllowed
+          ...(context.agentAllowed && isConversationalAgentEnabled()
             ? (["assistant-hotkey", "assistant-demo"] as OnboardingStepId[])
             : []),
           ...setupChoice,
@@ -250,7 +257,8 @@ export function getOnboardingRoute(context: OnboardingRouteContext): OnboardingS
   if (context.setupMode && context.setupMode !== "cloud") {
     route.push(
       ...SETUP_ROUTES[context.setupMode].filter(
-        (stepId) => context.agentAllowed || !stepId.endsWith("assistant")
+        (stepId) =>
+          (context.agentAllowed && isConversationalAgentEnabled()) || !stepId.endsWith("assistant")
       )
     );
   }
@@ -459,12 +467,14 @@ export function isRequiredModelsOnboardingStepActive(sessionValue: string | null
 }
 
 export function migrateLegacyOnboardingStep(value: string | null): OnboardingStepId {
-  if (!value) return "auth";
+  if (!value) return "permissions";
   if (isOnboardingStepId(value)) return value;
 
   const index = Number.parseInt(value, 10);
-  if (!Number.isFinite(index) || index < 0) return "auth";
-  return LEGACY_STEP_MAP[Math.min(index, LEGACY_STEP_MAP.length - 1)] ?? "auth";
+  if (!Number.isFinite(index) || index < 0) return "permissions";
+  return LEGACY_STEP_MAP[Math.min(index, LEGACY_STEP_MAP.length - 1)] === "auth"
+    ? "permissions"
+    : (LEGACY_STEP_MAP[Math.min(index, LEGACY_STEP_MAP.length - 1)] ?? "permissions");
 }
 
 /**

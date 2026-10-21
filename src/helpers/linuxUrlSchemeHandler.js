@@ -5,7 +5,7 @@ const { execFileSync } = require("child_process");
 const { quoteExecPath, resolveExecutablePath } = require("./linuxAutostart");
 
 const XDG_TOOL_TIMEOUT_MS = 3000;
-const PACKAGED_DESKTOP_FILE = "open-whispr.desktop";
+const PACKAGED_DESKTOP_FILE = "mnemo.desktop";
 
 // Characters the Desktop Entry spec says must be quoted in an Exec argument.
 const EXEC_RESERVED_CHARACTERS = /[\s"'\\><~|&;$*?#()`]/;
@@ -24,7 +24,7 @@ function buildHandlerEntry(protocol, launchCommand) {
   return [
     "[Desktop Entry]",
     "Type=Application",
-    "Name=OpenWhispr",
+    "Name=mnemo",
     `Exec=${[...launchCommand.map(formatExecArg), "%U"].join(" ")}`,
     "Terminal=false",
     "NoDisplay=true",
@@ -57,14 +57,14 @@ function reclaimFromOwnHandler(fileName, mimeType) {
       runXdgTool("xdg-mime", ["default", PACKAGED_DESKTOP_FILE, mimeType]);
     }
   } catch {
-    // xdg-mime unavailable; registerOpenWhisprProtocol reports the outcome.
+    // xdg-mime unavailable; registerMnemoProtocol reports the outcome.
   }
 }
 
 // Only AppImage and unpacked runs (tar.gz, development) lack a desktop entry for
 // the scheme, so only they write one. Flatpak and Nix install their own entry
 // from a sandbox or read-only store. Named after the scheme, not
-// open-whispr.desktop: a user entry with the packaged name would shadow a
+// mnemo.desktop: a user entry with the packaged name would shadow a
 // deb/rpm install's entry, and staging/dev keep their own.
 function registerLinuxUrlSchemeHandler(protocol, appArgs) {
   const fileName = `${protocol}-url-handler.desktop`;

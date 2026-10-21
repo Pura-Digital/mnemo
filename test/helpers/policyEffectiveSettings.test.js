@@ -38,7 +38,7 @@ test("runtime settings use managed fallbacks without overwriting raw preferences
     },
   });
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-policy-effective-settings-test-",
+    cachePrefix: "mnemo-policy-effective-settings-test-",
   });
   const { usePolicyStore } = await vite.ssrLoadModule("/stores/policyStore.ts");
   const { isLlmSelectionAllowed, isTranscriptionContextAllowed } =
@@ -116,7 +116,7 @@ test("managed transcription fallback binds known providers to their canonical en
     },
   });
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-policy-effective-endpoint-test-",
+    cachePrefix: "mnemo-policy-effective-endpoint-test-",
   });
   const { usePolicyStore } = await vite.ssrLoadModule("/stores/policyStore.ts");
   const { getSettings, useSettingsStore } = await vite.ssrLoadModule("/stores/settingsStore.ts");
@@ -168,7 +168,7 @@ test("automatic Custom fallbacks never inherit another provider's endpoint", asy
     },
   });
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-policy-effective-custom-endpoint-test-",
+    cachePrefix: "mnemo-policy-effective-custom-endpoint-test-",
   });
   const { usePolicyStore } = await vite.ssrLoadModule("/stores/policyStore.ts");
   const { getSettings, useSettingsStore } = await vite.ssrLoadModule("/stores/settingsStore.ts");
@@ -216,7 +216,7 @@ test("Note Recording never inherits an unsupported self-hosted policy fallback",
     },
   });
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-policy-effective-meeting-self-hosted-test-",
+    cachePrefix: "mnemo-policy-effective-meeting-self-hosted-test-",
   });
   const { usePolicyStore } = await vite.ssrLoadModule("/stores/policyStore.ts");
   const { getSettings } = await vite.ssrLoadModule("/stores/settingsStore.ts");
@@ -247,7 +247,7 @@ test("a managed screen-context denial forces the effective setting off without t
     initialStorage: { voiceAgentScreenContext: "true" },
   });
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-policy-screen-context-test-",
+    cachePrefix: "mnemo-policy-screen-context-test-",
   });
   const { usePolicyStore } = await vite.ssrLoadModule("/stores/policyStore.ts");
   const { getSettings, useSettingsStore } = await vite.ssrLoadModule("/stores/settingsStore.ts");
@@ -290,7 +290,7 @@ test("an enterprise-only transcription policy resolves for dictation and upload"
     },
   });
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-policy-effective-transcription-enterprise-test-",
+    cachePrefix: "mnemo-policy-effective-transcription-enterprise-test-",
   });
   const { usePolicyStore } = await vite.ssrLoadModule("/stores/policyStore.ts");
   const { getSettings, useSettingsStore } = await vite.ssrLoadModule("/stores/settingsStore.ts");

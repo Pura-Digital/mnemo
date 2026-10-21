@@ -7,6 +7,13 @@ const CALENDAR_TIMEOUT_MS = 2 * 60 * 1000;
 // vanish right as the pointer leaves it — or mid-click, while the renderer's
 // 200ms dismiss animation delays the response IPC.
 const MIN_RESUME_MS = 5 * 1000;
+// The pill is borrowed, not owned: it returns to the dictation pill quickly.
+// Its renderer runs this countdown (pausing on hover); the main-process timer
+// for the source stays armed only as a backstop if the renderer never reports.
+const PILL_PROMPT_MS = 10 * 1000;
+// Covers the renderer's fold-back (content fade + collapse in
+// MEETING_PROMPT_TIMING) before a pill surfaced only for the prompt is hidden.
+const PILL_PROMPT_FOLD_MS = 700;
 
 function getNotificationTimeoutMs(source) {
   return source === "calendar" ? CALENDAR_TIMEOUT_MS : DETECTION_TIMEOUT_MS;
@@ -60,4 +67,9 @@ class NotificationDismissTimer {
   }
 }
 
-module.exports = { NotificationDismissTimer, getNotificationTimeoutMs };
+module.exports = {
+  NotificationDismissTimer,
+  getNotificationTimeoutMs,
+  PILL_PROMPT_MS,
+  PILL_PROMPT_FOLD_MS,
+};

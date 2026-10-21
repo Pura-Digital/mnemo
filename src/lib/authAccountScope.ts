@@ -1,6 +1,6 @@
-const ACCOUNT_SCOPE_USER_KEY = "openwhispr:accountScopeUserId";
-const ACCOUNT_SCOPE_VALIDATED_KEY = "openwhispr:accountScopeValidated";
-const ACCOUNT_SCOPE_PURGE_REQUIRED_KEY = "openwhispr:accountScopePurgeRequired";
+const ACCOUNT_SCOPE_USER_KEY = "mnemo:accountScopeUserId";
+const ACCOUNT_SCOPE_VALIDATED_KEY = "mnemo:accountScopeValidated";
+const ACCOUNT_SCOPE_PURGE_REQUIRED_KEY = "mnemo:accountScopePurgeRequired";
 
 export type AccountScopeAction = "none" | "remember-user" | "verify" | "purge";
 

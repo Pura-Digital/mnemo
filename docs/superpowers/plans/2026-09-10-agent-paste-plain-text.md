@@ -12,7 +12,7 @@
 
 ## Global Constraints
 
-- Branch `fix/agent-paste-plain-text`, based on `origin/main` at `a2c76ef9`. Work in a scratchpad worktree, never by switching branches in the shared `~/dev/openwhispr-desktop` clone.
+- Branch `fix/agent-paste-plain-text`, based on `origin/main` at `a2c76ef9`. Work in a scratchpad worktree, never by switching branches in the shared `~/dev/mnemo-desktop` clone.
 - **Never merge.** Open the PR, stop. (Josh's standing rule.)
 - **Do not edit `DEFAULT_CHAT_AGENT_PROMPT`** in `src/config/prompts/registry.ts`, and do not touch `src/config/retiredPrompts.js`. The instruction is a conditional suffix; the hash protocol is deliberately not triggered.
 - **Do not reuse or "generalise" `stripMarkdownPreview`** in `src/components/CommandSearch.tsx`. It collapses newlines into spaces.
@@ -828,7 +828,7 @@ Then append:
 ```js
 test("a caret in a markdown-friendly app carries that verdict with the session id", async (t) => {
   const { createManager } = await loadAudioManagerHarness(t, {
-    cachePrefix: "openwhispr-assistant-caret-markdown-",
+    cachePrefix: "mnemo-assistant-caret-markdown-",
     settingsKey: "__assistantCaretMarkdownSettings",
     settings: { autoPasteEnabled: true },
     mockModules: {
@@ -1673,7 +1673,7 @@ Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>"
 
 ### Task 9: full verification, manual check, PR
 
-**Files:** none new. Uses the `openwhispr-dev-build` skill for the manual check.
+**Files:** none new. Uses the `mnemo-dev-build` skill for the manual check.
 
 - [ ] **Step 1: Full suite and quality gate**
 
@@ -1694,7 +1694,7 @@ git push -u origin fix/agent-paste-plain-text
 
 - [ ] **Step 3: Manual verification on a dev build (macOS)**
 
-Stand the branch up with the `openwhispr-dev-build` skill (it isolates a throwaway profile against the production API). Enable debug logging in the app's settings and note the log file it names. Then:
+Stand the branch up with the `mnemo-dev-build` skill (it isolates a throwaway profile against the production API). Enable debug logging in the app's settings and note the log file it names. Then:
 
 1. **Plain-text target.** Open TextEdit in plain-text mode (Format → Make Plain Text) and place the caret in the document. Trigger a voice command that invites structure, e.g. "give me three reasons to drink more water". **Pass:** prose lands at the caret with no `*`, `#`, `` ` `` or `|`; items, if listed, sit on their own lines without markers; the log carries `Assistant response pasted` with `acceptsMarkdown: false`.
 2. **Markdown-friendly target.** Open the ChatGPT desktop app (native, so paste works today; Obsidian and other Electron apps do not receive agent paste on macOS until PR #1952 lands) and place the caret in its prompt box. Trigger "give me a markdown table of three fruits and their colours". **Pass:** the table lands with its pipes intact and no stripping; the log carries `acceptsMarkdown: true`. Do not send the prompt.
@@ -1708,7 +1708,7 @@ Tear the dev build down when finished (the skill's `teardown`), and never trust 
 - [ ] **Step 4: Open the PR, never merge it**
 
 ```bash
-gh pr create --repo OpenWhispr/openwhispr --base main --head fix/agent-paste-plain-text \
+gh pr create --repo Pura-Digital/mnemo --base main --head fix/agent-paste-plain-text \
   --title "fix(assistant): paste caret-bound answers as plain text unless the app keeps markdown" \
   --body-file - <<'PRBODY'
 ## Problem
@@ -1745,8 +1745,8 @@ Stop here. Do not merge, do not enable auto-merge, do not request a merge.
 
 ```bash
 rm <worktree>/node_modules            # the symlink only
-git -C ~/dev/openwhispr-desktop worktree remove <worktree>
-git -C ~/dev/openwhispr-desktop status --short   # must be clean
+git -C ~/dev/mnemo-desktop worktree remove <worktree>
+git -C ~/dev/mnemo-desktop status --short   # must be clean
 ```
 
 ---

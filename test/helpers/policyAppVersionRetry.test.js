@@ -4,9 +4,9 @@ const { createRendererServer, installBrowserGlobals } = require("../lib/renderer
 
 const managedPolicy = {
   version: 1,
-  transcription: { allowedModes: ["openwhispr", "local"], allowedByokProviders: ["openai"] },
+  transcription: { allowedModes: ["mnemo", "local"], allowedByokProviders: ["openai"] },
   llm: {
-    allowedModes: ["openwhispr"],
+    allowedModes: ["mnemo"],
     allowedByokProviders: [],
     allowedEnterpriseProviders: [],
   },
@@ -47,7 +47,7 @@ test("a failed app-version read is retried instead of denying the session", asyn
   });
 
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-policy-app-version-test-",
+    cachePrefix: "mnemo-policy-app-version-test-",
     mockModules: { "/utils/logger": "export default { error() {} };" },
   });
 

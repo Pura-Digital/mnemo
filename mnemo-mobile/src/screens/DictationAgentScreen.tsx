@@ -12,7 +12,7 @@ import { safeHaptics } from '@/lib/utils';
 import { iosColor } from '@/config/colors';
 import { SpaceGrotesk } from '@/lib/fonts';
 
-const DEFAULT_AGENT_NAME = 'OpenWhispr';
+const DEFAULT_AGENT_NAME = 'mnemo';
 
 export function DictationAgentScreen(): React.JSX.Element {
   const config = useConfigStore((state) => state.config);
@@ -44,9 +44,8 @@ export function DictationAgentScreen(): React.JSX.Element {
       <SettingsScreen keyboardShouldPersistTaps="handled">
         <View className="mx-4 mb-2 px-4">
           <Text className="text-[13px] text-secondaryLabel">
-            When you say your assistant’s name while dictating, OpenWhispr rewrites what you said
-            into polished, ready-to-use text instead of inserting it word for word. Requires Cloud
-            mode.
+            When you say your assistant’s name while dictating, mnemo rewrites what you said into
+            polished, ready-to-use text instead of inserting it word for word. Requires Cloud mode.
           </Text>
         </View>
 
@@ -70,7 +69,7 @@ export function DictationAgentScreen(): React.JSX.Element {
             icon="person.wave.2"
             mdIcon="UserRoundCog"
             title="Enable Voice Assistant"
-            description="Say your assistant’s name while dictating to have OpenWhispr rewrite what you said."
+            description="Say your assistant’s name while dictating to have mnemo rewrite what you said."
             rightElement={
               <SettingsSwitch
                 value={enabled}

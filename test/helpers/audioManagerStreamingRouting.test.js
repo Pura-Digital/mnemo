@@ -4,7 +4,7 @@ const { loadAudioManager } = require("./harness/audioManager");
 
 async function loadManager(t) {
   const { createManager } = await loadAudioManager(t, {
-    cachePrefix: "openwhispr-streaming-routing-test-",
+    cachePrefix: "mnemo-streaming-routing-test-",
     settingsKey: "__streamingRoutingSettings",
   });
   return createManager();
@@ -109,10 +109,10 @@ test("Gemini streaming needs a streaming model, plus a key (byok) or an account 
   gemini({ geminiApiKey: "" });
   assert.equal(manager.shouldUseStreaming(), false);
 
-  gemini({ cloudTranscriptionMode: "openwhispr", isSignedIn: true });
+  gemini({ cloudTranscriptionMode: "mnemo", isSignedIn: true });
   assert.equal(manager.shouldUseStreaming(), true);
 
-  gemini({ cloudTranscriptionMode: "openwhispr", isSignedIn: false });
+  gemini({ cloudTranscriptionMode: "mnemo", isSignedIn: false });
   assert.equal(manager.shouldUseStreaming(), false);
 
   // The batch Gemini model on the same provider stays on HTTP.
@@ -146,12 +146,12 @@ test("deepgram/assemblyai byok stream on the key alone, never on the batch path"
   }
 });
 
-test("managed OpenWhispr Cloud still respects its batch configuration", async (t) => {
+test("managed Mnemo Cloud still respects its batch configuration", async (t) => {
   const manager = await loadManager(t);
   manager.sttConfig = { dictation: { mode: "batch" } };
   setSettings({
-    transcriptionMode: "openwhispr",
-    cloudTranscriptionMode: "openwhispr",
+    transcriptionMode: "mnemo",
+    cloudTranscriptionMode: "mnemo",
   });
 
   assert.equal(manager.shouldUseStreaming(), false);
@@ -183,7 +183,7 @@ test("managed Orukeet rollout overrides stale personal provider and model withou
   const manager = await loadManager(t);
   manager.sttConfig = { dictation: { mode: "streaming" }, streamingProvider: "orukeet" };
   setSettings({
-    cloudTranscriptionMode: "openwhispr",
+    cloudTranscriptionMode: "mnemo",
     cloudTranscriptionProvider: "gemini",
     cloudTranscriptionModel: "gemini-3.5-transcribe",
   });
@@ -195,13 +195,13 @@ test("managed Orukeet rollout overrides stale personal provider and model withou
     return { success: true };
   };
   await manager.warmupStreamingConnection();
-  assert.equal(calls[0].mode, "openwhispr");
+  assert.equal(calls[0].mode, "mnemo");
   assert.equal(calls[0].provider, "orukeet");
   assert.equal(calls[0].model, "orukeet-v0.1.0");
   assert.equal(calls[0].baseUrl, undefined);
-  setSettings({ cloudTranscriptionMode: "openwhispr", isSignedIn: false });
+  setSettings({ cloudTranscriptionMode: "mnemo", isSignedIn: false });
   assert.equal(manager.shouldUseStreaming(), false);
-  setSettings({ cloudTranscriptionMode: "openwhispr" });
+  setSettings({ cloudTranscriptionMode: "mnemo" });
   manager.sttConfig.dictation.mode = "batch";
   assert.equal(manager.shouldUseStreaming(), false);
   setSettings({ cloudTranscriptionMode: "byok" });
@@ -210,7 +210,7 @@ test("managed Orukeet rollout overrides stale personal provider and model withou
 
 const orukeetConfig = { dictation: { mode: "streaming" }, streamingProvider: "orukeet" };
 const managedSettings = (overrides) =>
-  setSettings({ cloudTranscriptionMode: "openwhispr", isSignedIn: true, ...overrides });
+  setSettings({ cloudTranscriptionMode: "mnemo", isSignedIn: true, ...overrides });
 
 test("managed Orukeet only streams languages the model covers", async (t) => {
   const manager = await loadManager(t);
@@ -274,7 +274,7 @@ test("a refused managed Orukeet session starts a batch recording instead of fail
 
 test("the weekly word quota on a managed Orukeet start opens the upgrade prompt", async (t) => {
   const { createManager, window } = await loadAudioManager(t, {
-    cachePrefix: "openwhispr-streaming-routing-test-",
+    cachePrefix: "mnemo-streaming-routing-test-",
     settingsKey: "__streamingRoutingSettings",
   });
   const manager = createManager();
@@ -351,7 +351,7 @@ test("a cloud upload reports why it was batch instead of the managed Orukeet str
   };
   const upload = () =>
     manager
-      .processWithOpenWhisprCloud(new Blob([new Uint8Array(16)], { type: "audio/webm" }))
+      .processWithMnemoCloud(new Blob([new Uint8Array(16)], { type: "audio/webm" }))
       .catch((error) => {
         if (error.message !== "stop here") throw error;
       });
@@ -366,7 +366,7 @@ test("a cloud upload reports why it was batch instead of the managed Orukeet str
   await upload();
   // The stream came up but produced no final; the stop path names that itself.
   await manager
-    .processWithOpenWhisprCloud(new Blob([new Uint8Array(16)]), {
+    .processWithMnemoCloud(new Blob([new Uint8Array(16)]), {
       streamingFallbackReason: "stream_no_final",
     })
     .catch((error) => {
@@ -391,10 +391,10 @@ async function loadCloudPipeline(
   { translationRequested, useCleanupModel, cleanupCloudMode, preferredLanguage = "en" }
 ) {
   const { createManager, window } = await loadAudioManager(t, {
-    cachePrefix: "openwhispr-fallback-cleanup-",
+    cachePrefix: "mnemo-fallback-cleanup-",
     settingsKey: "__fallbackCleanupSettings",
     settings: {
-      cloudTranscriptionMode: "openwhispr",
+      cloudTranscriptionMode: "mnemo",
       isSignedIn: true,
       useCleanupModel,
       cleanupCloudMode,
@@ -407,8 +407,8 @@ async function loadCloudPipeline(
       "/stores/settingsStore": `
         export const getSettings = () => globalThis.__fallbackCleanupSettings;
         export const getEffectiveCleanupModel = () => "cleanup-model";
-        export const selectResolvedLLMConfig = () => ({ model: "cleanup-model", provider: "openwhispr" });
-        export const isCloudCleanupMode = () => globalThis.__fallbackCleanupSettings.cleanupCloudMode === "openwhispr";
+        export const selectResolvedLLMConfig = () => ({ model: "cleanup-model", provider: "mnemo" });
+        export const isCloudCleanupMode = () => globalThis.__fallbackCleanupSettings.cleanupCloudMode === "mnemo";
         export const isCloudDictationAgentMode = () => false;
         export const isCloudTranslationMode = () => true;
       `,
@@ -422,7 +422,7 @@ async function loadCloudPipeline(
       `,
       "/dictationTranslationInference": `
         export const resolveDictationTranslationInference = () => ({
-          reachable: true, model: "translation-model", config: { provider: "openwhispr" }
+          reachable: true, model: "translation-model", config: { provider: "mnemo" }
         });
       `,
     },
@@ -453,19 +453,19 @@ for (const { name, translationRequested, useCleanupModel, cleanupCloudMode } of 
     name: "cloud cleanup",
     translationRequested: false,
     useCleanupModel: true,
-    cleanupCloudMode: "openwhispr",
+    cleanupCloudMode: "mnemo",
   },
   {
     name: "cloud translation cleanup",
     translationRequested: true,
     useCleanupModel: true,
-    cleanupCloudMode: "openwhispr",
+    cleanupCloudMode: "mnemo",
   },
   {
     name: "cloud translation without cleanup",
     translationRequested: true,
     useCleanupModel: false,
-    cleanupCloudMode: "openwhispr",
+    cleanupCloudMode: "mnemo",
   },
   {
     name: "cloud translation with BYOK cleanup",
@@ -490,7 +490,7 @@ for (const { name, translationRequested, useCleanupModel, cleanupCloudMode } of 
       cleanupRequests.push(opts);
       return { success: true, text: "clean transcript" };
     };
-    const combinedLog = useCleanupModel && cleanupCloudMode === "openwhispr";
+    const combinedLog = useCleanupModel && cleanupCloudMode === "mnemo";
     for (const reason of [
       "feature_disabled",
       "rate_limited",
@@ -499,7 +499,7 @@ for (const { name, translationRequested, useCleanupModel, cleanupCloudMode } of 
       "stream_no_final",
       undefined,
     ]) {
-      const result = await manager.processWithOpenWhisprCloud(new Blob([new Uint8Array(16)]), {
+      const result = await manager.processWithMnemoCloud(new Blob([new Uint8Array(16)]), {
         streamingFallbackReason: reason,
       });
       assert.equal(
@@ -526,7 +526,7 @@ test("the language fallback upload declares auto, never the detected language", 
   const { manager, window } = await loadCloudPipeline(t, {
     translationRequested: false,
     useCleanupModel: false,
-    cleanupCloudMode: "openwhispr",
+    cleanupCloudMode: "mnemo",
     preferredLanguage: "auto",
   });
   const captured = [];
@@ -534,7 +534,7 @@ test("the language fallback upload declares auto, never the detected language", 
     captured.push(opts);
     return { success: true, text: "日本語のテキスト", sttProvider: "openai" };
   };
-  const result = await manager.processWithOpenWhisprCloud(new Blob([new Uint8Array(100)]), {
+  const result = await manager.processWithMnemoCloud(new Blob([new Uint8Array(100)]), {
     streamingFallbackReason: "language_detected_unsupported",
     detectedLanguageFields: JA_DETECTION,
   });
@@ -551,7 +551,7 @@ test("a voice assistant upload writes its own log, since no cleanup call does", 
   const { manager, window } = await loadCloudPipeline(t, {
     translationRequested: false,
     useCleanupModel: true,
-    cleanupCloudMode: "openwhispr",
+    cleanupCloudMode: "mnemo",
     preferredLanguage: "auto",
   });
   const agentCommands = [];
@@ -573,7 +573,7 @@ test("a voice assistant upload writes its own log, since no cleanup call does", 
     reasonCalls.push(args);
     return { success: true, text: "" };
   };
-  await manager.processWithOpenWhisprCloud(new Blob([new Uint8Array(16)]), {
+  await manager.processWithMnemoCloud(new Blob([new Uint8Array(16)]), {
     streamingFallbackReason: "language_detected_unsupported",
     detectedLanguageFields: JA_DETECTION,
   });
@@ -588,7 +588,7 @@ for (const translationRequested of [false, true]) {
     const { manager, window } = await loadCloudPipeline(t, {
       translationRequested,
       useCleanupModel: true,
-      cleanupCloudMode: "openwhispr",
+      cleanupCloudMode: "mnemo",
       preferredLanguage: "auto",
     });
     const reasonOpts = [];
@@ -601,7 +601,7 @@ for (const translationRequested of [false, true]) {
       reasonOpts.push(opts);
       return { success: true, text: "日本語。" };
     };
-    await manager.processWithOpenWhisprCloud(new Blob([new Uint8Array(100)]), {
+    await manager.processWithMnemoCloud(new Blob([new Uint8Array(100)]), {
       streamingFallbackReason: "language_detected_unsupported",
       detectedLanguageFields: JA_DETECTION,
     });

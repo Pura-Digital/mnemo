@@ -16,7 +16,7 @@ const {
   WINDOWS_MSVC_RUNTIME_LIBRARIES,
 } = require("../src/helpers/whisperCppRelease");
 
-const WHISPER_CPP_REPO = "OpenWhispr/whisper.cpp";
+const WHISPER_CPP_REPO = "Mnemo/whisper.cpp";
 
 // Pinned to a tested build. Tracking the latest release let an upstream whisper.cpp bump
 // change transcription output between app releases with no diff to review. See #1348.

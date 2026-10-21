@@ -75,6 +75,10 @@ export default function AccountLayout() {
         options={{ title: 'Google Calendar', headerLargeTitle: false }}
       />
       <Stack.Screen
+        name="archiveye"
+        options={{ title: 'ArchivEye', headerLargeTitle: false }}
+      />
+      <Stack.Screen
         name="transcription-language"
         options={{ title: 'Transcription Language', headerLargeTitle: false }}
       />

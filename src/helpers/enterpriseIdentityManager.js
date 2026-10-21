@@ -181,7 +181,7 @@ function createEnterpriseIdentityManager({
       );
     }
     const apiUrl = getApiUrl()?.replace(/\/+$/, "");
-    if (!apiUrl) throw new Error("OpenWhispr API URL not configured");
+    if (!apiUrl) throw new Error("Cloud API URL not configured");
     const authHeaders = normalizeAuthHeaders(request.authHeaders, tokenState.token);
     if (!Object.keys(authHeaders).length) {
       throw new AuthContextError("Not authenticated", "AUTH_CONTEXT_UNVALIDATED");
@@ -217,7 +217,7 @@ function createEnterpriseIdentityManager({
   function requestHeaders(identity, json = false) {
     return {
       ...identity.authHeaders,
-      "x-openwhispr-version": getAppVersion(),
+      "x-mnemo-version": getAppVersion(),
       ...(json ? { "Content-Type": "application/json" } : {}),
     };
   }
@@ -437,7 +437,7 @@ function createEnterpriseIdentityManager({
             const assertion = await fetchAssertion(identity, "bedrock", resolution.inferenceScope);
             const credentials = await createAwsWebIdentityProvider({
               roleArn: record.config.roleArn,
-              roleSessionName: `openwhispr-${identity.workspaceId.slice(0, 8)}`,
+              roleSessionName: `mnemo-${identity.workspaceId.slice(0, 8)}`,
               webIdentityToken: assertion,
               durationSeconds: 900,
               clientConfig: { region: record.config.region },

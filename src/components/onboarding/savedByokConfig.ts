@@ -80,7 +80,7 @@ function resolveSavedAssistant(s: SavedByokSnapshot): SavedByokConfig | null {
 
 /**
  * The provider setup already saved for a BYOK step, as the draft the step opens on. Null
- * when there is nothing to reopen: a first run, OpenWhispr Cloud, local or enterprise.
+ * when there is nothing to reopen: a first run, Pura LLM, local or enterprise.
  * The draft never carries a key; the step reads keys from the store.
  */
 export function resolveSavedByokConfig(

@@ -26,7 +26,7 @@ async function createDownloadRenderer(t, electronAPI) {
   });
   const container = installHookDom(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-model-download-errors-",
+    cachePrefix: "mnemo-model-download-errors-",
     noExternal: ["react-i18next"],
     mockModules: {
       "react-i18next": `

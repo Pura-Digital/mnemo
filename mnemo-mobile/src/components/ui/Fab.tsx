@@ -15,7 +15,7 @@ import { GradientGlassSurface } from '@/components/ui/GradientGlassSurface';
 import { Glass } from '@/components/ui/Glass';
 import { safeHaptics } from '@/lib/utils';
 
-const BRAND = '#007AFF';
+const BRAND = '#C81038';
 
 const SIZE = 56;
 const MINI_SIZE = 44;

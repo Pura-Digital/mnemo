@@ -4,20 +4,20 @@ const fs = require("node:fs");
 const os = require("node:os");
 const path = require("node:path");
 
-test("OpenWhispr reasoning labels only dictation-agent requests for server enforcement", async (t) => {
+test("Mnemo reasoning labels only dictation-agent requests for server enforcement", async (t) => {
   const originalWindow = globalThis.window;
   const requests = [];
   globalThis.window = {
     electronAPI: {
       cloudReason: async (_text, options) => {
         requests.push(options);
-        return { success: true, text: "result", model: "model", provider: "openwhispr" };
+        return { success: true, text: "result", model: "model", provider: "mnemo" };
       },
     },
   };
 
   const { createServer } = await import("vite");
-  const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), "openwhispr-reason-purpose-test-"));
+  const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), "mnemo-reason-purpose-test-"));
   const vite = await createServer({
     root: path.resolve(__dirname, "../../src"),
     cacheDir,
@@ -27,7 +27,7 @@ test("OpenWhispr reasoning labels only dictation-agent requests for server enfor
     optimizeDeps: { noDiscovery: true },
     plugins: [
       {
-        name: "openwhispr-reason-purpose-dependencies",
+        name: "mnemo-reason-purpose-dependencies",
         enforce: "pre",
         resolveId(source) {
           if (source.endsWith("/lib/auth")) return "\0reason-purpose-auth";
@@ -58,8 +58,8 @@ test("OpenWhispr reasoning labels only dictation-agent requests for server enfor
     else globalThis.window = originalWindow;
   });
 
-  const { openwhisprProvider } = await vite.ssrLoadModule(
-    "/services/ai/inferenceProviders/openwhispr.ts"
+  const { puraCloudProvider } = await vite.ssrLoadModule(
+    "/services/ai/inferenceProviders/mnemo.ts"
   );
   const context = {
     getCustomDictionary: () => [],
@@ -67,7 +67,7 @@ test("OpenWhispr reasoning labels only dictation-agent requests for server enfor
     getUiLanguage: () => "en",
   };
 
-  await openwhisprProvider.call({
+  await puraCloudProvider.call({
     text: "do this",
     model: "",
     agentName: "Whisper",
@@ -78,14 +78,14 @@ test("OpenWhispr reasoning labels only dictation-agent requests for server enfor
     },
     ctx: context,
   });
-  await openwhisprProvider.call({
+  await puraCloudProvider.call({
     text: "clean this",
     model: "",
     agentName: "Whisper",
     config: { inferenceScope: "dictationCleanup" },
     ctx: context,
   });
-  await openwhisprProvider.call({
+  await puraCloudProvider.call({
     text: "bonjour",
     model: "",
     agentName: "Whisper",

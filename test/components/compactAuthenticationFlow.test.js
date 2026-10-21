@@ -11,7 +11,7 @@ test("returning-user authentication renders the complete compact onboarding surf
     window: { electronAPI: { getPlatform: () => "linux" } },
   });
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-compact-reauthentication-",
+    cachePrefix: "mnemo-compact-reauthentication-",
     noExternal: ["react-i18next"],
     mockModules: {
       "react-i18next": `
@@ -23,14 +23,13 @@ test("returning-user authentication renders the complete compact onboarding surf
       "onboarding-hero-dither-dark.webp": `export default "hero-dark.webp";`,
       "onboarding-bg-light.svg": `export default "background-light.svg";`,
       "onboarding-bg-dark.svg": `export default "background-dark.svg";`,
-      "/config/constants": `export const OPENWHISPR_API_URL = "";`,
       "/hooks/useAuth": `
         export function useAuth() {
           return { isLoaded: true, isSignedIn: false, user: null };
         }
       `,
       "/lib/auth": `
-        export const AUTH_URL = "https://auth.openwhispr.test";
+        export const AUTH_URL = "https://auth.mnemo.test";
         export const authClient = {};
         export async function signInWithSocial() { return {}; }
         export async function signInWithSSO() { return {}; }
@@ -71,7 +70,7 @@ test("verification success completes auth and backing out signs out before retur
   });
 
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-compact-authentication-state-",
+    cachePrefix: "mnemo-compact-authentication-state-",
     noExternal: ["react"],
     mockModules: {
       react: `
@@ -142,7 +141,7 @@ test("verification success completes auth and backing out signs out before retur
 
 test("a restored verification screen offers its recovery actions immediately", async (t) => {
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-email-verification-resumed-",
+    cachePrefix: "mnemo-email-verification-resumed-",
     noExternal: ["react-i18next"],
     mockModules: {
       "react-i18next": `
@@ -150,7 +149,6 @@ test("a restored verification screen offers its recovery actions immediately", a
           return { t(key) { return key; } };
         }
       `,
-      "/config/constants": `export const OPENWHISPR_API_URL = "";`,
       "/lib/auth": `export const authClient = { getSession: async () => ({}) };`,
       "/onboarding/OnboardingShell": `
         export function CompactOnboardingFrame({ children }) { return children; }
@@ -189,7 +187,7 @@ test("only an address restored from a saved session opens verification as resume
   });
 
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-compact-authentication-resume-",
+    cachePrefix: "mnemo-compact-authentication-resume-",
     noExternal: ["react"],
     mockModules: {
       react: `

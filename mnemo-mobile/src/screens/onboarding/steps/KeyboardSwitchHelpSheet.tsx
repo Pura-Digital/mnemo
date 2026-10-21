@@ -16,7 +16,7 @@ interface Props {
 const FIXES: { problem: string; fix: string }[] = [
   {
     problem: 'Not in the list?',
-    fix: 'Turn on OpenWhispr in Settings → Keyboards, then come back.',
+    fix: 'Turn on mnemo in Settings → Keyboards, then come back.',
   },
   {
     problem: 'Can’t find the globe?',
@@ -54,7 +54,7 @@ export function KeyboardSwitchHelpSheet({ visible, onClose, onDismissed }: Props
           >
             <View className="mb-4 h-1 w-9 self-center rounded-full bg-separator" />
             <Text accessibilityRole="header" className="text-[22px] font-bold text-label">
-              Can’t switch to OpenWhispr?
+              Can’t switch to mnemo?
             </Text>
 
             <View className="mt-4 gap-3">

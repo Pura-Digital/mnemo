@@ -4,11 +4,11 @@ import { withSessionRefresh } from "../../../lib/auth";
 import { getSettings } from "../../../stores/settingsStore";
 import logger from "../../../utils/logger";
 
-export const openwhisprProvider: InferenceProvider = {
-  id: "openwhispr",
+export const puraCloudProvider: InferenceProvider = {
+  id: "pura",
   supportsImages: true,
   async call({ text, model, agentName, config, ctx }) {
-    logger.logReasoning("OPENWHISPR_START", {
+    logger.logReasoning("PURA_CLOUD_START", {
       model,
       agentName,
       hasScreenContext: !!config.screenContext,
@@ -47,7 +47,7 @@ export const openwhisprProvider: InferenceProvider = {
 
       if (!res?.success) {
         const err: Error & { code?: string } = new Error(
-          res?.error || "OpenWhispr cloud reasoning failed"
+          res?.error || "Pura LLM reasoning failed"
         );
         err.code = res?.code;
         throw err;
@@ -56,7 +56,7 @@ export const openwhisprProvider: InferenceProvider = {
       return res;
     });
 
-    logger.logReasoning("OPENWHISPR_SUCCESS", {
+    logger.logReasoning("PURA_CLOUD_SUCCESS", {
       model: result.model,
       provider: result.provider,
       resultLength: result.text.length,

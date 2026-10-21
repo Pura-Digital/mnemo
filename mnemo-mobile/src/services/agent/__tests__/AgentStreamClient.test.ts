@@ -353,8 +353,8 @@ describe('request shape', () => {
 
     const [, init] = mockFetch.mock.calls[0] as [string, RequestInit];
     const headers = init.headers as Record<string, string>;
-    expect(headers['x-openwhispr-policy-version']).toBe('1');
-    expect(headers['x-openwhispr-platform']).toBe('mobile');
+    expect(headers['x-mnemo-policy-version']).toBe('1');
+    expect(headers['x-mnemo-platform']).toBe('mobile');
   });
 });
 
@@ -375,7 +375,7 @@ describe('POLICY_MODE_BLOCKED mapping', () => {
     const result = streamAgentText({ messages: BASE_MESSAGES, maxRetries: 0 });
     jest.runAllTimersAsync();
     await expect(result).rejects.toThrow(
-      "Your organization's policy doesn't allow OpenWhispr cloud AI.",
+      "Your organization's policy doesn't allow Pura LLM AI.",
     );
     await expect(streamAgentText({ messages: BASE_MESSAGES, maxRetries: 0 })).rejects.toMatchObject(
       { status: 403, code: 'POLICY_MODE_BLOCKED' },
@@ -413,7 +413,7 @@ describe('426 UPGRADE_REQUIRED mapping', () => {
 
     const result = streamAgentText({ messages: BASE_MESSAGES, maxRetries: 0 });
     jest.runAllTimersAsync();
-    await expect(result).rejects.toThrow('Update OpenWhispr to keep using cloud features.');
+    await expect(result).rejects.toThrow('Update mnemo to keep using cloud features.');
     await expect(streamAgentText({ messages: BASE_MESSAGES, maxRetries: 0 })).rejects.toMatchObject(
       { status: 426 },
     );
@@ -432,6 +432,6 @@ describe('426 UPGRADE_REQUIRED mapping', () => {
 
     const result = streamAgentText({ messages: BASE_MESSAGES, maxRetries: 0 });
     jest.runAllTimersAsync();
-    await expect(result).rejects.toThrow('Update OpenWhispr to keep using cloud features.');
+    await expect(result).rejects.toThrow('Update mnemo to keep using cloud features.');
   });
 });

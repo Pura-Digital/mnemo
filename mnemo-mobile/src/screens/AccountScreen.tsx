@@ -25,15 +25,16 @@ import { iosColor } from '@/config/colors';
 import { getAccountDisplay } from '@/lib/accountDisplay';
 import { useSuperwallGate } from '@/hooks/useSuperwallGate';
 import { SUPERWALL_PLACEMENTS } from '@/lib/superwall';
+import { isArchiveyeIntegrationEnabled, isMnemoStandaloneProduct } from '@/config/mnemoProduct';
 
 const MUTED_ICON_BG = iosColor('systemGray2');
 const SHOW_GOOGLE_CALENDAR_INTEGRATION = Platform.OS === 'ios';
 const APP_STORE_SUBSCRIPTIONS_URL = 'itms-apps://apps.apple.com/account/subscriptions';
-const SUPPORT_EMAIL = 'support@openwhispr.com';
-const SUPPORT_SUBJECT = 'OpenWhispr Billing Support';
+const SUPPORT_EMAIL = 'support@mnemo.com';
+const SUPPORT_SUBJECT = 'mnemo Billing Support';
 const US_APP_STORE_COUNTRY_CODE = 'USA';
 const WEB_SUBSCRIPTION_SUPPORT_COPY =
-  "You can't make changes to your plan in the app. We know it's not ideal. Contact OpenWhispr Support for help with cancellation or billing.";
+  "You can't make changes to your plan in the app. We know it's not ideal. Contact mnemo Support for help with cancellation or billing.";
 
 type SubscriptionManagementProvider = 'app-store' | 'web' | 'unknown';
 
@@ -114,6 +115,7 @@ async function openGrantedBillingManagement(usage: UsageInfo): Promise<void> {
 }
 
 export default function AccountScreen() {
+  const standaloneProduct = isMnemoStandaloneProduct();
   const params = useLocalSearchParams<{ superwallPlacement?: string }>();
   const { user, isGuest, signOut, deleteAccount } = useAuthStore();
   // An anonymous onboarding session: Sign Out would revoke it (and the notes
@@ -180,12 +182,13 @@ export default function AccountScreen() {
   }, [loadUsage, registerSuperwallGate, user]);
 
   useEffect(() => {
+    if (standaloneProduct) return;
     if (!user || params.superwallPlacement !== SUPERWALL_PLACEMENTS.accountBillingOpen) return;
     const intentKey = `${user.id}:${params.superwallPlacement}`;
     if (handledBillingIntentRef.current === intentKey) return;
     handledBillingIntentRef.current = intentKey;
     handleBillingPress().catch(() => {});
-  }, [handleBillingPress, params.superwallPlacement, user]);
+  }, [handleBillingPress, params.superwallPlacement, standaloneProduct, user]);
 
   const {
     initials,
@@ -196,7 +199,7 @@ export default function AccountScreen() {
   return (
     <View className="flex-1 bg-systemBackground">
       <TabScreenHeader
-        title="Account"
+        title={standaloneProduct ? 'Settings' : 'Account'}
         left={<GlassBackButton fallbackRoute="/(tabs)/(record)" />}
       />
       <SettingsScreen>
@@ -220,7 +223,7 @@ export default function AccountScreen() {
                   <Text numberOfLines={1} className="shrink text-[17px] font-semibold text-label">
                     {accountName}
                   </Text>
-                  {user ? <PlanBadge usage={usage} /> : null}
+                  {user && !standaloneProduct ? <PlanBadge usage={usage} /> : null}
                 </View>
                 <Text numberOfLines={1} className="mt-0.5 text-sm text-secondaryLabel">
                   {accountSubtitle}
@@ -236,7 +239,7 @@ export default function AccountScreen() {
           </Pressable>
         )}
 
-        {user && usage ? (
+        {user && usage && !standaloneProduct ? (
           <SettingsSection title="Usage">
             <UsageMeter usage={usage} />
           </SettingsSection>
@@ -266,29 +269,43 @@ export default function AccountScreen() {
           />
         </SettingsSection>
 
-        {user && SHOW_GOOGLE_CALENDAR_INTEGRATION ? (
+        {isArchiveyeIntegrationEnabled() || (user && SHOW_GOOGLE_CALENDAR_INTEGRATION) ? (
           <SettingsSection title="Integrations">
-            <SettingsRow
-              iconStyle="line"
-              icon="calendar"
-              mdIcon="CalendarDays"
-              title="Google Calendar"
-              onPress={() => router.push('/(account)/google-calendar')}
-            />
+            {isArchiveyeIntegrationEnabled() ? (
+              <SettingsRow
+                iconStyle="line"
+                icon="books.vertical"
+                mdIcon="Library"
+                title="ArchivEye"
+                subtitle="Knowledge base for your notes"
+                onPress={() => router.push('/(account)/archiveye')}
+              />
+            ) : null}
+            {user && SHOW_GOOGLE_CALENDAR_INTEGRATION ? (
+              <SettingsRow
+                iconStyle="line"
+                icon="calendar"
+                mdIcon="CalendarDays"
+                title="Google Calendar"
+                onPress={() => router.push('/(account)/google-calendar')}
+              />
+            ) : null}
           </SettingsSection>
         ) : null}
 
-        <SettingsSection title="Subscription">
-          <SettingsRow
-            iconStyle="line"
-            icon="creditcard"
-            mdIcon="CreditCard"
-            title="Plans & Billing"
-            onPress={() => {
-              handleBillingPress().catch(() => {});
-            }}
-          />
-        </SettingsSection>
+        {!standaloneProduct ? (
+          <SettingsSection title="Subscription">
+            <SettingsRow
+              iconStyle="line"
+              icon="creditcard"
+              mdIcon="CreditCard"
+              title="Plans & Billing"
+              onPress={() => {
+                handleBillingPress().catch(() => {});
+              }}
+            />
+          </SettingsSection>
+        ) : null}
 
         <SettingsSection title="Support">
           <SettingsRow
@@ -296,7 +313,7 @@ export default function AccountScreen() {
             icon="envelope"
             mdIcon="Mail"
             title="Send Feedback"
-            onPress={() => openMail(SUPPORT_EMAIL, 'OpenWhispr Mobile Feedback')}
+            onPress={() => openMail(SUPPORT_EMAIL, 'mnemo Mobile Feedback')}
             showChevron={false}
           />
           <SettingsRow
@@ -304,7 +321,7 @@ export default function AccountScreen() {
             icon="exclamationmark.triangle"
             mdIcon="AlertTriangle"
             title="Report a Bug"
-            onPress={() => openMail(SUPPORT_EMAIL, 'OpenWhispr Mobile Bug Report')}
+            onPress={() => openMail(SUPPORT_EMAIL, 'mnemo Mobile Bug Report')}
             showChevron={false}
           />
         </SettingsSection>
@@ -345,7 +362,7 @@ export default function AccountScreen() {
             icon="doc.text"
             mdIcon="FileText"
             title="Terms of Service"
-            onPress={() => openExternal('https://openwhispr.com/terms')}
+            onPress={() => openExternal('https://mnemo.com/terms')}
             showChevron={false}
           />
           <SettingsRow
@@ -353,7 +370,7 @@ export default function AccountScreen() {
             icon="hand.raised"
             mdIcon="Hand"
             title="Privacy Policy"
-            onPress={() => openExternal('https://openwhispr.com/privacy')}
+            onPress={() => openExternal('https://mnemo.com/privacy')}
             showChevron={false}
           />
           <SettingsRow
@@ -365,41 +382,45 @@ export default function AccountScreen() {
           />
         </SettingsSection>
 
-        <SettingsSection borderless>
-          {isAnonymous ? (
-            <SettingsRow
-              iconStyle="line"
-              icon="person.crop.circle.badge.plus"
-              mdIcon="UserPlus"
-              title="Create Account"
-              onPress={() => router.push('/auth')}
-              showChevron={false}
-            />
-          ) : (
-            <SettingsRow
-              iconStyle="line"
-              icon={user ? 'rectangle.portrait.and.arrow.right' : 'person.crop.circle.badge.plus'}
-              mdIcon={user ? 'LogOut' : 'UserPlus'}
-              title={user ? 'Sign Out' : 'Sign In'}
-              destructive={!!user}
-              onPress={handleSignOut}
-              showChevron={false}
-            />
-          )}
-        </SettingsSection>
+        {!standaloneProduct ? (
+          <>
+            <SettingsSection borderless>
+              {isAnonymous ? (
+                <SettingsRow
+                  iconStyle="line"
+                  icon="person.crop.circle.badge.plus"
+                  mdIcon="UserPlus"
+                  title="Create Account"
+                  onPress={() => router.push('/auth')}
+                  showChevron={false}
+                />
+              ) : (
+                <SettingsRow
+                  iconStyle="line"
+                  icon={user ? 'rectangle.portrait.and.arrow.right' : 'person.crop.circle.badge.plus'}
+                  mdIcon={user ? 'LogOut' : 'UserPlus'}
+                  title={user ? 'Sign Out' : 'Sign In'}
+                  destructive={!!user}
+                  onPress={handleSignOut}
+                  showChevron={false}
+                />
+              )}
+            </SettingsSection>
 
-        {user && !isAnonymous ? (
-          <SettingsSection borderless>
-            <SettingsRow
-              iconStyle="line"
-              icon="trash"
-              mdIcon="Trash2"
-              title="Delete Account"
-              destructive
-              onPress={() => confirmAccountDeletion(deleteAccount)}
-              showChevron={false}
-            />
-          </SettingsSection>
+            {user && !isAnonymous ? (
+              <SettingsSection borderless>
+                <SettingsRow
+                  iconStyle="line"
+                  icon="trash"
+                  mdIcon="Trash2"
+                  title="Delete Account"
+                  destructive
+                  onPress={() => confirmAccountDeletion(deleteAccount)}
+                  showChevron={false}
+                />
+              </SettingsSection>
+            ) : null}
+          </>
         ) : null}
       </SettingsScreen>
     </View>

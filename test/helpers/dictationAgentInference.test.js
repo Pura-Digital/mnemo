@@ -58,7 +58,7 @@ test("cloud is reachable with no model", async () => {
   const result = resolveDictationAgentInference(
     {
       ...baseSettings,
-      dictationAgentMode: "openwhispr",
+      dictationAgentMode: "mnemo",
       dictationAgentProvider: "openai",
       dictationAgentModel: "",
     },
@@ -67,7 +67,7 @@ test("cloud is reachable with no model", async () => {
 
   assert.equal(result.reachable, true);
   assert.equal(result.model, "");
-  assert.equal(result.config.provider, "openwhispr");
+  assert.equal(result.config.provider, "mnemo");
 });
 
 test("a custom provider forwards its base url and api key", async () => {
@@ -204,13 +204,13 @@ test("managed mode never falls through to a stale provider when signed out", asy
 
   const result = resolveDictationAgentInference({
     ...baseSettings,
-    dictationAgentMode: "openwhispr",
+    dictationAgentMode: "mnemo",
     dictationAgentProvider: "openai",
     dictationAgentModel: "gpt-5-mini",
   });
 
   assert.equal(result.reachable, false);
-  assert.equal(result.displayProvider, "openwhispr");
+  assert.equal(result.displayProvider, "mnemo");
   assert.equal(result.config.provider, undefined);
 });
 
@@ -281,7 +281,7 @@ test("a vision scope with its own endpoint never borrows the agent's key", async
 // the tab the user actually edits — and gates screenshots exactly like the
 // dictation route does.
 const imageWired = (providerId) =>
-  ["openai", "anthropic", "gemini", "openwhispr"].includes(providerId);
+  ["openai", "anthropic", "gemini", "mnemo"].includes(providerId);
 const panelSettings = {
   ...baseSettings,
   isSignedIn: false,
@@ -339,24 +339,24 @@ test("a signed-in cloud Voice Assistant scope is reachable without a model and t
     {
       ...panelSettings,
       isSignedIn: true,
-      dictationAgentMode: "openwhispr",
-      dictationAgentCloudMode: "openwhispr",
-      dictationAgentProvider: "openwhispr",
+      dictationAgentMode: "mnemo",
+      dictationAgentCloudMode: "mnemo",
+      dictationAgentProvider: "mnemo",
       dictationAgentModel: "",
     },
     { hasScreenContext: true }
   );
 
   assert.equal(config.scope, "dictationAgent");
-  assert.equal(config.mode, "openwhispr");
+  assert.equal(config.mode, "mnemo");
   assert.equal(attachScreenContext, true, "cloud vision-routes server-side");
 });
 
 test("a signed-out cloud Voice Assistant scope is unreachable and falls back to Chat", () => {
   const { config } = panel({
     ...panelSettings,
-    dictationAgentMode: "openwhispr",
-    dictationAgentCloudMode: "openwhispr",
+    dictationAgentMode: "mnemo",
+    dictationAgentCloudMode: "mnemo",
     dictationAgentModel: "",
   });
 

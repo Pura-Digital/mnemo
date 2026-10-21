@@ -29,7 +29,7 @@ export async function getPrivateModeReadiness(
 }
 
 export function getPrivateModeUnavailableMessage(): string {
-  return 'Build OpenWhispr with native modules enabled before using on-device transcription.';
+  return 'Build mnemo with native modules enabled before using on-device transcription.';
 }
 
 // Private mode with no on-device model. We never upload automatically — the

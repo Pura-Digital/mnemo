@@ -13,7 +13,7 @@ describe('transcriptionPolicyErrorFromResponse', () => {
     expect(error).toBeInstanceOf(Error);
     expect(error?.message).toBe(POLICY_MODE_BLOCKED_TRANSCRIPTION_MESSAGE);
     expect(POLICY_MODE_BLOCKED_TRANSCRIPTION_MESSAGE).toBe(
-      "Your organization's policy doesn't allow OpenWhispr cloud transcription.",
+      "Your organization's policy doesn't allow Pura LLM transcription.",
     );
   });
 
@@ -39,7 +39,7 @@ describe('transcriptionPolicyErrorFromResponse', () => {
   it('maps 426 to the exact upgrade message regardless of body content', () => {
     const error = transcriptionPolicyErrorFromResponse(426, 'some raw server string');
     expect(error?.message).toBe(UPGRADE_REQUIRED_MESSAGE);
-    expect(UPGRADE_REQUIRED_MESSAGE).toBe('Update OpenWhispr to keep using cloud features.');
+    expect(UPGRADE_REQUIRED_MESSAGE).toBe('Update mnemo to keep using cloud features.');
   });
 
   it('maps 426 even with an empty body', () => {

@@ -90,14 +90,14 @@ export class ReasoningService {
         signal: options.signal,
         headers: options.timeoutMs
           ? {
-              'X-OpenWhispr-Client-Timeout-Ms': String(options.timeoutMs),
-              'X-OpenWhispr-Cleanup-Timeout-Ms': String(options.timeoutMs),
+              'X-Mnemo-Client-Timeout-Ms': String(options.timeoutMs),
+              'X-Mnemo-Cleanup-Timeout-Ms': String(options.timeoutMs),
             }
           : undefined,
       });
     } catch (error) {
       if (isPolicyModeBlocked(error)) {
-        throw new Error("Your organization's policy doesn't allow OpenWhispr cloud AI.");
+        throw new Error("Your organization's policy doesn't allow Pura LLM AI.");
       }
       throw error;
     }

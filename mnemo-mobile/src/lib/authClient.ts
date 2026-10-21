@@ -7,12 +7,12 @@ import * as SecureStore from 'expo-secure-store';
 import { fetch } from 'expo/fetch';
 import { getClientVersionHeader } from './apiClient';
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://api.openwhispr.com';
+const API_URL = process.env.EXPO_PUBLIC_API_URL?.trim() || '';
 // Mirrors ANONYMOUS_EMAIL_DOMAIN in the API's lib/anonymous-identity.ts.
-const ANONYMOUS_EMAIL_DOMAIN = 'anon.openwhispr.invalid';
-const COOKIE_STORAGE_KEY = 'openwhispr_cookie';
-const SESSION_DATA_STORAGE_KEY = 'openwhispr_session_data';
-const PRODUCTION_BUNDLE_ID = 'com.gizmolabs.openwhispr';
+const ANONYMOUS_EMAIL_DOMAIN = 'anon.mnemo.invalid';
+const COOKIE_STORAGE_KEY = 'mnemo_cookie';
+const SESSION_DATA_STORAGE_KEY = 'mnemo_session_data';
+const PRODUCTION_BUNDLE_ID = 'com.pura.mnemo';
 
 function firstScheme(value: unknown): string | undefined {
   if (Array.isArray(value)) {
@@ -22,22 +22,22 @@ function firstScheme(value: unknown): string | undefined {
 }
 
 function resolveAuthScheme(): string {
-  const explicitScheme = process.env.EXPO_PUBLIC_OPENWHISPR_SCHEME;
+  const explicitScheme = process.env.EXPO_PUBLIC_MNEMO_SCHEME;
   if (explicitScheme) return explicitScheme;
 
-  const openWhisprConfig = Constants.expoConfig?.extra?.openWhispr as
+  const openWhisprConfig = Constants.expoConfig?.extra?.mnemo as
     | { scheme?: string }
     | undefined;
   const configuredScheme = openWhisprConfig?.scheme || firstScheme(Constants.expoConfig?.scheme);
   const nativeBundleId = Application.applicationId;
 
   if (nativeBundleId && nativeBundleId !== PRODUCTION_BUNDLE_ID) {
-    return configuredScheme && configuredScheme !== 'openwhispr'
+    return configuredScheme && configuredScheme !== 'mnemo'
       ? configuredScheme
-      : 'openwhispr-dev';
+      : 'mnemo-dev';
   }
 
-  return configuredScheme || 'openwhispr';
+  return configuredScheme || 'mnemo';
 }
 
 const client = createAuthClient({
@@ -46,7 +46,7 @@ const client = createAuthClient({
     anonymousClient(),
     expoClient({
       scheme: resolveAuthScheme(),
-      storagePrefix: 'openwhispr',
+      storagePrefix: 'mnemo',
       storage: SecureStore,
     }),
   ],

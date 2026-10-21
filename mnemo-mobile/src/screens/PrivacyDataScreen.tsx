@@ -120,7 +120,7 @@ export default function PrivacyDataScreen() {
           icon="chart.bar"
           mdIcon="BarChart3"
           title="Usage Analytics"
-          description="Share performance metrics and app-session analytics to help improve OpenWhispr. Apple’s Tracking permission separately limits advertising attribution on iOS. We never send transcription content."
+          description="Share performance metrics and app-session analytics to help improve mnemo. Apple’s Tracking permission separately limits advertising attribution on iOS. We never send transcription content."
           rightElement={
             <SettingsSwitch value={usageAnalytics} onValueChange={handleToggleAnalytics} />
           }

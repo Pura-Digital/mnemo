@@ -79,7 +79,7 @@ test("a recording start refreshes a stale STT config in the background", async (
   });
   const container = installHookDom(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-stt-config-refresh-hook-",
+    cachePrefix: "mnemo-stt-config-refresh-hook-",
     mockModules: {
       "/helpers/audioManager": FAKE_AUDIO_MANAGER_SOURCE,
       "/utils/logger": "export default { debug() {}, info() {}, warn() {}, error() {} };",

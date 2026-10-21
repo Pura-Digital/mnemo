@@ -114,16 +114,16 @@ const EXPECTED_NATIVE_FIELD_DIRECTIONS = {
 
 test("shared field primitives inherit unless a consumer declares its content direction", async (t) => {
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-field-direction-primitives-",
+    cachePrefix: "mnemo-field-direction-primitives-",
   });
   const { Input } = await vite.ssrLoadModule("/components/ui/input.tsx");
   const { Textarea } = await vite.ssrLoadModule("/components/ui/textarea.tsx");
 
   const inherited = renderToStaticMarkup(
-    React.createElement(Input, { value: "مرحبا OpenWhispr 2.0", readOnly: true })
+    React.createElement(Input, { value: "مرحبا Mnemo 2.0", readOnly: true })
   );
   assert.doesNotMatch(inherited, /\sdir=/);
-  assert.match(inherited, /value="مرحبا OpenWhispr 2.0"/);
+  assert.match(inherited, /value="مرحبا Mnemo 2.0"/);
 
   const technicalPassword = renderToStaticMarkup(
     React.createElement(Input, {
@@ -139,12 +139,12 @@ test("shared field primitives inherit unless a consumer declares its content dir
   const prose = renderToStaticMarkup(
     React.createElement(Textarea, {
       dir: "auto",
-      value: "مرحبا OpenWhispr 2.0",
+      value: "مرحبا Mnemo 2.0",
       readOnly: true,
     })
   );
   assert.match(prose, /\sdir="auto"/);
-  assert.match(prose, />مرحبا OpenWhispr 2.0<\/textarea>/);
+  assert.match(prose, />مرحبا Mnemo 2.0<\/textarea>/);
 });
 
 test("every shared Input and Textarea consumer has an explicit reviewed classification", () => {

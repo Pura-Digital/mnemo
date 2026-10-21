@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { router } from 'expo-router';
+import { isConversationalAgentEnabled } from '@/config/mnemoProduct';
 import { SettingsRow, SettingsSection } from '@/components/ui/SettingsSection';
 import { SettingsScreen } from '@/components/ui/SettingsScreen';
 import { SettingsSwitch } from '@/components/ui/SettingsSwitch';
@@ -16,7 +17,7 @@ export default function PreferencesScreen() {
   const autoLearn = config?.autoLearnCorrections ?? true;
   const language = getLanguage(config?.preferredLanguage ?? DEFAULT_LANGUAGE);
   const keyboardTone = config?.keyboardTone ?? DEFAULT_KEYBOARD_TONE;
-  const agentName = config ? getDictationAgentName(config) : 'OpenWhispr';
+  const agentName = config ? getDictationAgentName(config) : 'mnemo';
   const handleToggleAutoLearn = useConfigToggle('autoLearnCorrections');
   const [dictationMode, setDictationMode] = useState(() => LiveActivity.isDictationModeEnabled());
 
@@ -53,7 +54,7 @@ export default function PreferencesScreen() {
         {/* First in the section because it is the prerequisite for everything
             below it, and because the person who needs it most is the one whose
             dictation just died. Routes to the recovery screen rather than
-            Linking.openSettings(): iOS only ever lands on Settings > OpenWhispr,
+            Linking.openSettings(): iOS only ever lands on Settings > mnemo,
             and Full Access is two levels deeper, so the taps have to be taught. */}
         <SettingsRow
           iconStyle="line"
@@ -72,21 +73,23 @@ export default function PreferencesScreen() {
           subtitle={toneLabel(keyboardTone)}
           onPress={() => router.push('/(account)/keyboard-tone')}
         />
-        <SettingsRow
-          iconStyle="line"
-          icon="person.wave.2"
-          mdIcon="UserRoundCog"
-          title="Voice Assistant"
-          description="Trigger AI actions by saying your assistant’s name"
-          subtitle={agentName}
-          onPress={() => router.push('/(account)/dictation-agent')}
-        />
+        {isConversationalAgentEnabled() ? (
+          <SettingsRow
+            iconStyle="line"
+            icon="person.wave.2"
+            mdIcon="UserRoundCog"
+            title="Voice Assistant"
+            description="Trigger AI actions by saying your assistant’s name"
+            subtitle={agentName}
+            onPress={() => router.push('/(account)/dictation-agent')}
+          />
+        ) : null}
         <SettingsRow
           iconStyle="line"
           icon="waveform"
           mdIcon="Activity"
           title="Dictation mode"
-          description="Show OpenWhispr in the Dynamic Island while you dictate"
+          description="Show mnemo in the Dynamic Island while you dictate"
           rightElement={
             <SettingsSwitch
               value={dictationMode}

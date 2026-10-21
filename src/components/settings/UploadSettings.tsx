@@ -8,15 +8,25 @@ import {
 } from "../../stores/settingsStore";
 import { usePolicyModeOptions, usePolicySnapshot } from "../../hooks/usePolicy";
 import { isEnterpriseTranscriptionOfferable } from "../../stores/policyRules";
+import { filterInferenceModeOptions } from "../../config/mnemoProduct";
 import { requestSignIn } from "../../utils/requestSignIn";
 import { InferenceModeSelector } from "../ui/SettingsSection";
 import type { InferenceModeOption } from "../ui/SettingsSection";
 import TranscriptionModelPicker from "../TranscriptionModelPicker";
 import SelfHostedPanel from "../SelfHostedPanel";
 import type { InferenceMode } from "../../types/electron";
+import { useAiSetupLane } from "../../contexts/AiSetupLaneContext";
+import {
+  isAiSetupLaneLocked,
+  resolveTranscriptionUiMode,
+  transcriptionPickerModeForSetupLane,
+} from "../../helpers/aiSetupLanePolicy";
+import { useAlignTranscriptionWithSetupLane } from "../../hooks/useAlignTranscriptionWithSetupLane";
 
 export function UploadTranscriptionPanel() {
   const { t } = useTranslation();
+  const setupLane = useAiSetupLane();
+  const laneLocked = isAiSetupLaneLocked(setupLane);
   const policySnapshot = usePolicySnapshot();
 
   const {
@@ -50,11 +60,11 @@ export function UploadTranscriptionPanel() {
     effectiveMode: effectiveTranscriptionMode,
     isModeAllowed,
   } = usePolicyModeOptions<InferenceModeOption>(
-    [
+    filterInferenceModeOptions([
       {
-        id: "openwhispr",
-        label: t("settingsPage.transcription.modes.openwhispr"),
-        description: t("settingsPage.transcription.modes.openwhisprDesc"),
+        id: "pura",
+        label: t("settingsPage.transcription.modes.mnemo"),
+        description: t("settingsPage.transcription.modes.mnemoCloudDesc"),
         icon: <Cloud className="w-4 h-4" />,
         disabled: !isSignedIn,
         badge: !isSignedIn ? t("common.freeAccountRequired") : undefined,
@@ -87,7 +97,7 @@ export function UploadTranscriptionPanel() {
             },
           ]
         : []),
-    ],
+    ]),
     "transcription",
     uploadTranscriptionMode,
     {
@@ -95,16 +105,23 @@ export function UploadTranscriptionPanel() {
       enterpriseProviders: TRANSCRIPTION_ENTERPRISE_POLICY_PROVIDER_IDS,
     }
   );
+  useAlignTranscriptionWithSetupLane(
+    setupLane,
+    uploadTranscriptionMode,
+    setUploadTranscriptionMode,
+    setUploadUseLocalWhisper
+  );
+  const uiTranscriptionMode = resolveTranscriptionUiMode(setupLane, effectiveTranscriptionMode);
   const handleTranscriptionModeSelect = (mode: InferenceMode) => {
     if (!isModeAllowed(mode)) return;
-    if (mode === "openwhispr" && !isSignedIn) {
+    if (mode === "pura" && !isSignedIn) {
       requestSignIn();
       return;
     }
     if (mode === effectiveTranscriptionMode) return;
     setUploadTranscriptionMode(mode);
     setUploadUseLocalWhisper(mode === "local");
-    setUploadCloudTranscriptionMode(mode === "openwhispr" ? "openwhispr" : "byok");
+    setUploadCloudTranscriptionMode(mode === "pura" ? "mnemo" : "byok");
     if (mode === "enterprise") setEnterpriseTranscriptionSetupMode("managed");
   };
 
@@ -155,15 +172,20 @@ export function UploadTranscriptionPanel() {
 
   return (
     <div className="space-y-3">
-      <InferenceModeSelector
-        modes={transcriptionModes}
-        activeMode={effectiveTranscriptionMode}
-        onSelect={handleTranscriptionModeSelect}
-      />
+      {!laneLocked && (
+        <InferenceModeSelector
+          modes={transcriptionModes}
+          activeMode={effectiveTranscriptionMode}
+          onSelect={handleTranscriptionModeSelect}
+        />
+      )}
 
-      {effectiveTranscriptionMode === "providers" && renderTranscriptionPicker("cloud")}
-      {effectiveTranscriptionMode === "local" && renderTranscriptionPicker("local")}
-      {effectiveTranscriptionMode === "self-hosted" && (
+      {laneLocked && setupLane
+        ? renderTranscriptionPicker(transcriptionPickerModeForSetupLane(setupLane))
+        : null}
+      {!laneLocked && uiTranscriptionMode === "providers" && renderTranscriptionPicker("cloud")}
+      {!laneLocked && uiTranscriptionMode === "local" && renderTranscriptionPicker("local")}
+      {!laneLocked && uiTranscriptionMode === "self-hosted" && (
         <SelfHostedPanel
           service="transcription"
           url={uploadRemoteTranscriptionUrl}

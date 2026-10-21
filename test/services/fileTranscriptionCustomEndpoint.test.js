@@ -8,7 +8,7 @@ function customConfig(baseUrl) {
     localTranscriptionProvider: "whisper",
     whisperModel: "base",
     parakeetModel: "parakeet-tdt-0.6b-v3",
-    isOpenWhisprCloud: false,
+    isMnemoCloud: false,
     getApiKey: () => "must-not-leak",
     cloudTranscriptionProvider: "custom",
     cloudTranscriptionBaseUrl: baseUrl,
@@ -21,7 +21,7 @@ function customConfig(baseUrl) {
 test("file transcription enforces Custom endpoint security before IPC", async (t) => {
   const { window } = installBrowserGlobals(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-file-custom-endpoint-test-",
+    cachePrefix: "mnemo-file-custom-endpoint-test-",
     mockModules: {
       "/lib/auth": "export const withSessionRefresh = (fn) => fn();",
     },
@@ -90,7 +90,7 @@ test("file transcription enforces Custom endpoint security before IPC", async (t
 test("self-hosted file transcription bypasses stale Custom endpoint validation", async (t) => {
   const { window } = installBrowserGlobals(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-file-self-hosted-endpoint-test-",
+    cachePrefix: "mnemo-file-self-hosted-endpoint-test-",
     mockModules: {
       "/lib/auth": "export const withSessionRefresh = (fn) => fn();",
     },

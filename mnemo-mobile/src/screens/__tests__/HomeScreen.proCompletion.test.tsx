@@ -163,8 +163,8 @@ describe('HomeScreen Pro completion', () => {
   });
 
   it.each([
-    ['purchased', 'Welcome to OpenWhispr Pro'],
-    ['restored', 'OpenWhispr Pro Restored'],
+    ['purchased', 'Welcome to mnemo Pro'],
+    ['restored', 'mnemo Pro Restored'],
   ] as const)('clears a valid %s completion once without showing it again', (completion, title) => {
     mockRouteParams = { proCompletion: completion };
     const screen = render(<HomeScreen />);

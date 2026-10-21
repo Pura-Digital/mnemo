@@ -5,7 +5,7 @@ export function buildNoteFormattingOverrides(noteFormatting, isCloudMode) {
   if (isCloudMode) {
     return {
       inferenceScope: /** @type {const} */ ("noteFormatting"),
-      provider: "openwhispr",
+      provider: "mnemo",
       baseUrl: undefined,
       customApiKey: undefined,
       lanUrl: undefined,

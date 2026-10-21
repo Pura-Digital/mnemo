@@ -37,11 +37,11 @@ describe("modelDirUtils cache policy (#1279, #1399)", () => {
   function createRedirectedWindowsFixture() {
     setPlatform("win32");
     const home = path.join(tempRoot, "Users", "stan");
-    const legacyRoot = path.join(home, ".cache", "openwhispr");
+    const homeCacheRoot = path.join(home, ".cache", "mnemo");
     const redirectedProfile = path.join(tempRoot, "RedirectedUsers", "stan");
-    const redirectedRoot = path.join(redirectedProfile, ".cache", "openwhispr");
+    const redirectedRoot = path.join(redirectedProfile, ".cache", "mnemo");
     process.env.USERPROFILE = redirectedProfile;
-    return { home, legacyRoot, redirectedRoot };
+    return { home, homeCacheRoot, redirectedRoot };
   }
 
   function writeModel(directory, name, contents) {
@@ -66,7 +66,7 @@ describe("modelDirUtils cache policy (#1279, #1399)", () => {
   beforeEach(() => {
     tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "ow-cache-test-"));
     process.env = { ...originalEnv };
-    delete process.env.OPENWHISPR_CACHE_ROOT;
+    delete process.env.MNEMO_CACHE_ROOT;
     delete process.env.USERPROFILE;
     delete process.env.XDG_CACHE_HOME;
   });
@@ -82,26 +82,26 @@ describe("modelDirUtils cache policy (#1279, #1399)", () => {
 
   it("pathHasProblematicChars flags non-ASCII and spaces", () => {
     const { pathHasProblematicChars } = loadFresh(path.join(tempRoot, "ascii-user"));
-    assert.strictEqual(pathHasProblematicChars("C:\\Users\\Anton\\.cache\\openwhispr"), false);
-    assert.strictEqual(pathHasProblematicChars("C:\\Users\\Антон\\.cache\\openwhispr"), true);
-    assert.strictEqual(pathHasProblematicChars("C:\\Users\\詩涵\\.cache\\openwhispr"), true);
-    assert.strictEqual(pathHasProblematicChars("C:\\Users\\Stan Shih\\.cache\\openwhispr"), true);
+    assert.strictEqual(pathHasProblematicChars("C:\\Users\\Anton\\.cache\\mnemo"), false);
+    assert.strictEqual(pathHasProblematicChars("C:\\Users\\Антон\\.cache\\mnemo"), true);
+    assert.strictEqual(pathHasProblematicChars("C:\\Users\\詩涵\\.cache\\mnemo"), true);
+    assert.strictEqual(pathHasProblematicChars("C:\\Users\\Stan Shih\\.cache\\mnemo"), true);
   });
 
-  it("honors OPENWHISPR_CACHE_ROOT when ASCII-safe", () => {
+  it("honors MNEMO_CACHE_ROOT when ASCII-safe", () => {
     setPlatform("win32");
     const override = path.join(tempRoot, "ascii-cache");
-    process.env.OPENWHISPR_CACHE_ROOT = override;
+    process.env.MNEMO_CACHE_ROOT = override;
     const { getCacheRoot } = loadFresh(path.join(tempRoot, "使用者", "詩涵"));
     assert.strictEqual(getCacheRoot(), override);
     assert.ok(fs.existsSync(override));
   });
 
-  it("gives OPENWHISPR_CACHE_ROOT precedence over an ASCII-safe Windows home", () => {
+  it("gives MNEMO_CACHE_ROOT precedence over an ASCII-safe Windows home", () => {
     setPlatform("win32");
     const home = path.join(tempRoot, "Users", "stan");
     const override = path.join(tempRoot, "custom-cache");
-    process.env.OPENWHISPR_CACHE_ROOT = override;
+    process.env.MNEMO_CACHE_ROOT = override;
 
     const { getCacheRoot } = loadFresh(home);
 
@@ -124,14 +124,14 @@ describe("modelDirUtils cache policy (#1279, #1399)", () => {
 
     const { getCacheRoot } = loadFresh(home);
 
-    assert.strictEqual(getCacheRoot(), path.join(xdgCacheHome, "openwhispr"));
+    assert.strictEqual(getCacheRoot(), path.join(xdgCacheHome, "mnemo"));
   });
 
-  it("gives OPENWHISPR_CACHE_ROOT precedence over XDG_CACHE_HOME", () => {
+  it("gives MNEMO_CACHE_ROOT precedence over XDG_CACHE_HOME", () => {
     setPlatform("linux");
     const home = path.join(tempRoot, "home", "stan");
     const override = path.join(tempRoot, "custom-cache");
-    process.env.OPENWHISPR_CACHE_ROOT = override;
+    process.env.MNEMO_CACHE_ROOT = override;
     process.env.XDG_CACHE_HOME = path.join(tempRoot, "xdg-cache");
 
     const { getCacheRoot } = loadFresh(home);
@@ -146,7 +146,7 @@ describe("modelDirUtils cache policy (#1279, #1399)", () => {
 
     const { getCacheRoot } = loadFresh(home);
 
-    assert.strictEqual(getCacheRoot(), path.join(home, ".cache", "openwhispr"));
+    assert.strictEqual(getCacheRoot(), path.join(home, ".cache", "mnemo"));
   });
 
   it("preserves the macOS home-cache default", () => {
@@ -155,14 +155,14 @@ describe("modelDirUtils cache policy (#1279, #1399)", () => {
 
     const { getCacheRoot } = loadFresh(home);
 
-    assert.strictEqual(getCacheRoot(), path.join(home, ".cache", "openwhispr"));
+    assert.strictEqual(getCacheRoot(), path.join(home, ".cache", "mnemo"));
   });
 
-  it("honors OPENWHISPR_CACHE_ROOT on macOS", () => {
+  it("honors MNEMO_CACHE_ROOT on macOS", () => {
     setPlatform("darwin");
     const home = path.join(tempRoot, "Users", "stan");
     const override = path.join(tempRoot, "custom-cache");
-    process.env.OPENWHISPR_CACHE_ROOT = override;
+    process.env.MNEMO_CACHE_ROOT = override;
 
     const { getCacheRoot } = loadFresh(home);
 
@@ -178,7 +178,7 @@ describe("modelDirUtils cache policy (#1279, #1399)", () => {
 
     const { getCacheRoot } = loadFresh(home);
 
-    assert.strictEqual(getCacheRoot(), path.join(programData, "OpenWhispr", "cache"));
+    assert.strictEqual(getCacheRoot(), path.join(programData, "Mnemo", "cache"));
   });
 
   it("skips an unsafe ProgramData fallback", () => {
@@ -191,14 +191,14 @@ describe("modelDirUtils cache policy (#1279, #1399)", () => {
 
     const { getCacheRoot } = loadFresh(home);
 
-    assert.strictEqual(getCacheRoot(), path.join(systemDrive, "OpenWhispr", "cache"));
+    assert.strictEqual(getCacheRoot(), path.join(systemDrive, "Mnemo", "cache"));
   });
 
   it("keeps all model consumers on the selected cache root", () => {
     setPlatform("win32");
     const home = path.join(tempRoot, "Users", "stan");
     const override = path.join(tempRoot, "custom-cache");
-    process.env.OPENWHISPR_CACHE_ROOT = override;
+    process.env.MNEMO_CACHE_ROOT = override;
 
     const { getCacheRoot, getModelsDirForService } = loadFresh(home);
 
@@ -221,7 +221,7 @@ describe("modelDirUtils cache policy (#1279, #1399)", () => {
       path.join(tempRoot, "使用者", "詩涵")
     );
     const root = getCacheRoot();
-    assert.strictEqual(root, path.join(programData, "OpenWhispr", "cache"));
+    assert.strictEqual(root, path.join(programData, "Mnemo", "cache"));
     assert.ok(fs.existsSync(root));
     assert.strictEqual(getModelsDirForService("whisper"), path.join(root, "whisper-models"));
   });
@@ -230,7 +230,7 @@ describe("modelDirUtils cache policy (#1279, #1399)", () => {
     setPlatform("win32");
     const home = path.join(tempRoot, "Users", "stan");
     const { getCacheRoot } = loadFresh(home);
-    assert.strictEqual(getCacheRoot(), path.join(home, ".cache", "openwhispr"));
+    assert.strictEqual(getCacheRoot(), path.join(home, ".cache", "mnemo"));
   });
 
   it("migrates legacy model dirs into the safe root and leaves home-based dirs alone", () => {
@@ -239,7 +239,8 @@ describe("modelDirUtils cache policy (#1279, #1399)", () => {
     process.env.ProgramData = programData;
 
     const home = path.join(tempRoot, "使用者", "詩涵");
-    const legacyRoot = path.join(home, ".cache", "openwhispr");
+    const legacyRoot = path.join(home, ".cache", "mnemo");
+    const homeCacheRoot = path.join(home, ".cache", "mnemo");
     fs.mkdirSync(path.join(legacyRoot, "whisper-models"), { recursive: true });
     fs.writeFileSync(path.join(legacyRoot, "whisper-models", "ggml-base.bin"), "model");
     fs.mkdirSync(path.join(legacyRoot, "models"), { recursive: true });
@@ -250,22 +251,23 @@ describe("modelDirUtils cache policy (#1279, #1399)", () => {
     const { getCacheRoot } = loadFresh(home);
     const root = getCacheRoot();
 
-    assert.strictEqual(root, path.join(programData, "OpenWhispr", "cache"));
+    assert.strictEqual(root, path.join(programData, "Mnemo", "cache"));
     assert.strictEqual(
       fs.readFileSync(path.join(root, "whisper-models", "ggml-base.bin"), "utf8"),
       "model"
     );
     assert.strictEqual(fs.readFileSync(path.join(root, "models", "qwen.gguf"), "utf8"), "llm");
-    assert.ok(!fs.existsSync(path.join(legacyRoot, "whisper-models")));
-    assert.ok(!fs.existsSync(path.join(legacyRoot, "models")));
+    assert.ok(!fs.existsSync(path.join(homeCacheRoot, "whisper-models")));
+    assert.ok(!fs.existsSync(path.join(homeCacheRoot, "models")));
     // qdrantManager and localEmbeddings read these from the home cache directly.
-    assert.ok(fs.existsSync(path.join(legacyRoot, "qdrant-data")));
-    assert.ok(fs.existsSync(path.join(legacyRoot, "embedding-models")));
+    assert.ok(fs.existsSync(path.join(homeCacheRoot, "qdrant-data")));
+    assert.ok(fs.existsSync(path.join(homeCacheRoot, "embedding-models")));
+    assert.ok(!fs.existsSync(legacyRoot));
   });
 
   it("migrates legacy model dirs when USERPROFILE redirects the cache", () => {
-    const { home, legacyRoot, redirectedRoot } = createRedirectedWindowsFixture();
-    writeModel(path.join(legacyRoot, "whisper-models"), "ggml-base.bin", "model");
+    const { home, homeCacheRoot, redirectedRoot } = createRedirectedWindowsFixture();
+    writeModel(path.join(home, ".cache", "mnemo", "whisper-models"), "ggml-base.bin", "model");
 
     const { getCacheRoot } = loadFresh(home);
 
@@ -274,14 +276,14 @@ describe("modelDirUtils cache policy (#1279, #1399)", () => {
       fs.readFileSync(path.join(redirectedRoot, "whisper-models", "ggml-base.bin"), "utf8"),
       "model"
     );
-    assert.ok(!fs.existsSync(path.join(legacyRoot, "whisper-models")));
+    assert.ok(!fs.existsSync(path.join(homeCacheRoot, "whisper-models")));
   });
 
   it("stages cross-volume migrations before removing the legacy model directory", () => {
-    const { home, legacyRoot, redirectedRoot } = createRedirectedWindowsFixture();
-    const legacyModels = path.join(legacyRoot, "whisper-models");
+    const { home, homeCacheRoot, redirectedRoot } = createRedirectedWindowsFixture();
+    const legacyModels = path.join(homeCacheRoot, "whisper-models");
     const redirectedModels = path.join(redirectedRoot, "whisper-models");
-    writeModel(legacyModels, "ggml-base.bin", "model");
+    writeModel(path.join(home, ".cache", "mnemo", "whisper-models"), "ggml-base.bin", "model");
 
     const { getCacheRoot } = loadFresh(home);
     const originalRenameSync = fs.renameSync;
@@ -306,10 +308,10 @@ describe("modelDirUtils cache policy (#1279, #1399)", () => {
   });
 
   it("keeps the legacy cache discoverable after a migration failure and retries later", () => {
-    const { home, legacyRoot, redirectedRoot } = createRedirectedWindowsFixture();
-    const legacyModels = path.join(legacyRoot, "whisper-models");
+    const { home, homeCacheRoot, redirectedRoot } = createRedirectedWindowsFixture();
+    const legacyModels = path.join(homeCacheRoot, "whisper-models");
     const redirectedModels = path.join(redirectedRoot, "whisper-models");
-    writeModel(legacyModels, "ggml-base.bin", "model");
+    writeModel(path.join(home, ".cache", "mnemo", "whisper-models"), "ggml-base.bin", "model");
 
     const { getCacheRoot } = loadFresh(home);
     const originalRenameSync = fs.renameSync;
@@ -332,7 +334,7 @@ describe("modelDirUtils cache policy (#1279, #1399)", () => {
       () => getCacheRoot()
     );
 
-    assert.strictEqual(firstResolution, legacyRoot);
+    assert.strictEqual(firstResolution, homeCacheRoot);
     assert.ok(fs.existsSync(path.join(legacyModels, "ggml-base.bin")));
     assert.ok(!fs.existsSync(`${redirectedModels}.migrating`));
 
@@ -342,14 +344,14 @@ describe("modelDirUtils cache policy (#1279, #1399)", () => {
   });
 
   it("rolls back earlier moves when staging cleanup fails", () => {
-    const { home, legacyRoot, redirectedRoot } = createRedirectedWindowsFixture();
-    const legacyWhisper = path.join(legacyRoot, "whisper-models");
-    const legacyParakeet = path.join(legacyRoot, "parakeet-models");
+    const { home, homeCacheRoot, redirectedRoot } = createRedirectedWindowsFixture();
+    const legacyWhisper = path.join(homeCacheRoot, "whisper-models");
+    const legacyParakeet = path.join(homeCacheRoot, "parakeet-models");
     const redirectedWhisper = path.join(redirectedRoot, "whisper-models");
     const redirectedParakeet = path.join(redirectedRoot, "parakeet-models");
     const parakeetStaging = `${redirectedParakeet}.migrating`;
-    writeModel(legacyWhisper, "ggml-base.bin", "whisper");
-    writeModel(legacyParakeet, "model.int8.onnx", "parakeet");
+    writeModel(path.join(home, ".cache", "mnemo", "whisper-models"), "ggml-base.bin", "whisper");
+    writeModel(path.join(home, ".cache", "mnemo", "parakeet-models"), "model.int8.onnx", "parakeet");
 
     const { getCacheRoot } = loadFresh(home);
     const originalRenameSync = fs.renameSync;
@@ -372,7 +374,7 @@ describe("modelDirUtils cache policy (#1279, #1399)", () => {
       () => getCacheRoot()
     );
 
-    assert.strictEqual(root, legacyRoot);
+    assert.strictEqual(root, homeCacheRoot);
     assert.ok(fs.existsSync(path.join(legacyWhisper, "ggml-base.bin")));
     assert.ok(fs.existsSync(path.join(legacyParakeet, "model.int8.onnx")));
     assert.ok(!fs.existsSync(redirectedWhisper));
@@ -380,11 +382,19 @@ describe("modelDirUtils cache policy (#1279, #1399)", () => {
   });
 
   it("restores files removed by a partial cross-volume source cleanup", () => {
-    const { home, legacyRoot, redirectedRoot } = createRedirectedWindowsFixture();
-    const legacyModels = path.join(legacyRoot, "whisper-models");
+    const { home, homeCacheRoot, redirectedRoot } = createRedirectedWindowsFixture();
+    const legacyModels = path.join(homeCacheRoot, "whisper-models");
     const redirectedModels = path.join(redirectedRoot, "whisper-models");
-    const firstModel = writeModel(legacyModels, "ggml-base.bin", "base");
-    const secondModel = writeModel(legacyModels, "ggml-small.bin", "small");
+    const firstModel = writeModel(
+      path.join(home, ".cache", "mnemo", "whisper-models"),
+      "ggml-base.bin",
+      "base"
+    );
+    const secondModel = writeModel(
+      path.join(home, ".cache", "mnemo", "whisper-models"),
+      "ggml-small.bin",
+      "small"
+    );
 
     const { getCacheRoot } = loadFresh(home);
     const originalRenameSync = fs.renameSync;
@@ -410,9 +420,15 @@ describe("modelDirUtils cache policy (#1279, #1399)", () => {
       () => getCacheRoot()
     );
 
-    assert.strictEqual(root, legacyRoot);
-    assert.strictEqual(fs.readFileSync(firstModel, "utf8"), "base");
-    assert.strictEqual(fs.readFileSync(secondModel, "utf8"), "small");
+    assert.strictEqual(root, homeCacheRoot);
+    assert.strictEqual(
+      fs.readFileSync(path.join(homeCacheRoot, "whisper-models", "ggml-base.bin"), "utf8"),
+      "base"
+    );
+    assert.strictEqual(
+      fs.readFileSync(path.join(homeCacheRoot, "whisper-models", "ggml-small.bin"), "utf8"),
+      "small"
+    );
     assert.ok(!fs.existsSync(redirectedModels));
   });
 
@@ -422,11 +438,11 @@ describe("modelDirUtils cache policy (#1279, #1399)", () => {
     process.env.ProgramData = programData;
 
     const home = path.join(tempRoot, "使用者", "詩涵");
-    const legacyDir = path.join(home, ".cache", "openwhispr", "whisper-models");
+    const legacyDir = path.join(home, ".cache", "mnemo", "whisper-models");
     fs.mkdirSync(legacyDir, { recursive: true });
     fs.writeFileSync(path.join(legacyDir, "ggml-base.bin"), "old");
 
-    const newDir = path.join(programData, "OpenWhispr", "cache", "whisper-models");
+    const newDir = path.join(programData, "Mnemo", "cache", "whisper-models");
     fs.mkdirSync(newDir, { recursive: true });
     fs.writeFileSync(path.join(newDir, "ggml-base.bin"), "new");
 
@@ -434,6 +450,26 @@ describe("modelDirUtils cache policy (#1279, #1399)", () => {
     getCacheRoot();
 
     assert.strictEqual(fs.readFileSync(path.join(newDir, "ggml-base.bin"), "utf8"), "new");
-    assert.strictEqual(fs.readFileSync(path.join(legacyDir, "ggml-base.bin"), "utf8"), "old");
+    assert.strictEqual(
+      fs.readFileSync(path.join(home, ".cache", "mnemo", "whisper-models", "ggml-base.bin"), "utf8"),
+      "old"
+    );
+  });
+
+  it("renames ~/.cache/mnemo to ~/.cache/mnemo on first access", () => {
+    setPlatform("darwin");
+    const home = path.join(tempRoot, "Users", "stan");
+    const legacyRoot = path.join(home, ".cache", "mnemo");
+    fs.mkdirSync(path.join(legacyRoot, "whisper-models"), { recursive: true });
+    fs.writeFileSync(path.join(legacyRoot, "whisper-models", "ggml-base.bin"), "model");
+
+    const { getCacheRoot } = loadFresh(home);
+
+    assert.strictEqual(getCacheRoot(), path.join(home, ".cache", "mnemo"));
+    assert.ok(!fs.existsSync(legacyRoot));
+    assert.strictEqual(
+      fs.readFileSync(path.join(home, ".cache", "mnemo", "whisper-models", "ggml-base.bin"), "utf8"),
+      "model"
+    );
   });
 });

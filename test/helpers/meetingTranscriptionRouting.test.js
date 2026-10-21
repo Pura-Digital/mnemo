@@ -46,7 +46,7 @@ const baseOptions = {
   ],
   cortiEnvironment: "us",
   cortiTenant: "tenant",
-  keyterms: ["OpenWhispr"],
+  keyterms: ["Mnemo"],
 };
 
 test("providers mode routes Tinfoil through its realtime client", async () => {
@@ -130,12 +130,12 @@ test("managed mode ignores stale BYOK state", async () => {
   assert.deepEqual(
     resolveMeetingTranscriptionOptions({
       ...baseOptions,
-      transcriptionMode: "openwhispr",
+      transcriptionMode: "mnemo",
     }),
     {
       provider: "assemblyai-realtime",
       model: "universal-streaming",
-      mode: "openwhispr",
+      mode: "mnemo",
       language: "en",
     }
   );
@@ -147,13 +147,13 @@ test("managed mode keeps its established OpenAI default before the catalog loads
   assert.deepEqual(
     resolveMeetingTranscriptionOptions({
       ...baseOptions,
-      transcriptionMode: "openwhispr",
+      transcriptionMode: "mnemo",
       managedProviders: null,
     }),
     {
       provider: "openai-realtime",
       model: "gpt-4o-mini-transcribe",
-      mode: "openwhispr",
+      mode: "mnemo",
       language: "en",
     }
   );
@@ -175,7 +175,7 @@ test("Corti keeps the meeting-specific connection settings", async () => {
       language: "en",
       environment: "us",
       tenant: "tenant",
-      keyterms: ["OpenWhispr"],
+      keyterms: ["Mnemo"],
     }
   );
 });
@@ -262,7 +262,7 @@ test("gpt-live-transcribe is never offered for Note Recording", async () => {
     assert.equal(
       resolveMeetingTranscriptionOptions({
         ...baseOptions,
-        transcriptionMode: "openwhispr",
+        transcriptionMode: "mnemo",
         managedProviders,
         selectedModel: "gpt-live-transcribe",
       }).model,

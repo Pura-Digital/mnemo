@@ -14,7 +14,7 @@ macOS has its own tray GUID from #2267; this change does not reuse it. Do not pr
 Use Electron's supported `new Tray(image, guid)` only when all three conditions hold:
 
 1. `process.platform === "win32"`.
-2. The channel already resolved by `main.js` is `process.env.OPENWHISPR_CHANNEL === "production"`.
+2. The channel already resolved by `main.js` is `process.env.MNEMO_CHANNEL === "production"`.
 3. The packaged `package.json` contains `windowsTrayIdentity: true`.
 
 Use the permanent Windows production GUID **`9afd9bd5-53da-42ef-8334-6e2b494c66fe`**. Keep it unchanged across versions and executable paths. Every other Windows case, and Linux, keeps calling `new Tray(image)` with exactly one argument.
@@ -74,8 +74,8 @@ Native evidence, for each Windows version:
 Identify the running executable and its signature in PowerShell, choosing the main process id from the first command:
 
 ```powershell
-Get-Process OpenWhispr | Select-Object Id, Path
-$trayProcessId = Read-Host 'OpenWhispr main process id'
+Get-Process Mnemo | Select-Object Id, Path
+$trayProcessId = Read-Host 'Mnemo main process id'
 $trayExePath = (Get-Process -Id $trayProcessId).Path
 $traySignature = Get-AuthenticodeSignature -LiteralPath $trayExePath
 $traySignature | Select-Object Status, Path, @{Name='Subject';Expression={$_.SignerCertificate.Subject}}

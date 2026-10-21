@@ -21,18 +21,23 @@ const LISTENER_RESPAWN_MAX_MS = 60 * 1000;
 const EXEC_OPTS = { timeout: 5000, encoding: "utf8" };
 
 class AudioActivityDetector extends EventEmitter {
-  // `getExcludedProcessIds` lists every pid whose mic use is OpenWhispr's own:
+  // `getExcludedProcessIds` lists every pid whose mic use is Mnemo's own:
   // the Electron process tree by default, plus any live capture helpers when
   // main.js composes them in (see electronProcessIds.js). `isMeetingAppRunning`
   // corroborates macOS device activity that cannot be attributed to a process;
-  // without it such activity never prompts.
+  // without it such activity never prompts. `resolveProcessAppKey` names the
+  // app that owns a capture pid, so a call in a second app can prompt while
+  // another app keeps the mic open (see processAppIdentity.js).
   constructor(
     getExcludedProcessIds = () => [...getOwnProcessPids()],
-    isMeetingAppRunning = () => false
+    isMeetingAppRunning = () => false,
+    resolveProcessAppKey = async () => null
   ) {
     super();
     this._getExcludedProcessIds = getExcludedProcessIds;
     this._isMeetingAppRunning = isMeetingAppRunning;
+    this._resolveProcessAppKey = resolveProcessAppKey;
+    this._captureAppKeys = new Map();
     this.checkInterval = null;
     this.consecutiveChecks = 0;
     this.audioActiveStart = null;
@@ -100,6 +105,53 @@ class AudioActivityDetector extends EventEmitter {
     this._promptedCapturePids.clear();
     this._captureIdleSincePrompt = false;
     debugLogger.info("Re-armed meeting prompt for a changed capture source", {}, "meeting");
+  }
+
+  // A browser tab or dictation tool can hold the mic for hours, so the idle gap
+  // above never comes and every later call would pass silently. A capture from
+  // a different app is a new call even with no gap; a new pid of an app already
+  // prompted for (screen-share rebuild, respawned helper) still is not.
+  _rearmPromptForNewApp() {
+    if (!this.hasPrompted || !this._pidScopedCapability || !this._promptedCapturePids.size) {
+      return false;
+    }
+    const promptedAppKeys = new Set();
+    for (const pid of this._promptedCapturePids) {
+      const appKey = this._captureAppKeys.get(pid);
+      if (!appKey) return false;
+      promptedAppKeys.add(appKey);
+    }
+    const newAppKey = [...this._externalCapturePids]
+      .map((pid) => this._captureAppKeys.get(pid))
+      .find((appKey) => appKey && !promptedAppKeys.has(appKey));
+    if (!newAppKey) return false;
+
+    this.hasPrompted = false;
+    this._promptedCapturePids.clear();
+    this._captureIdleSincePrompt = false;
+    debugLogger.info(
+      "Re-armed meeting prompt for a new capture app",
+      { app: newAppKey },
+      "meeting"
+    );
+    return true;
+  }
+
+  async _identifyCaptureApp(pid) {
+    if (this._captureAppKeys.has(pid)) return;
+    this._captureAppKeys.set(pid, null);
+    const generation = this._startGeneration;
+    let appKey = null;
+    try {
+      appKey = (await this._resolveProcessAppKey(pid)) || null;
+    } catch {
+      appKey = null;
+    }
+    if (this._isStale(generation)) return;
+    this._captureAppKeys.set(pid, appKey);
+    if (appKey && this._externalCapturePids.has(pid) && this._rearmPromptForNewApp()) {
+      this._reevaluateAfterGate();
+    }
   }
 
   getExternalMicState() {
@@ -228,6 +280,7 @@ class AudioActivityDetector extends EventEmitter {
     this._activeSources = 0;
     this._lastKnownMicState = false;
     this._externalCapturePids.clear();
+    this._captureAppKeys.clear();
     this._clearCooldownReevalTimer();
     this._linuxOwnershipRequest++;
     this._linuxReconcileQueued = false;
@@ -521,6 +574,7 @@ class AudioActivityDetector extends EventEmitter {
       this._activeMicPids.add(pid);
       const externalMicActive = this._updateExternalMicState();
       this._onMicStateChanged(externalMicActive);
+      void this._identifyCaptureApp(pid);
       return;
     }
 

@@ -36,11 +36,11 @@ test("preserves policy denial code, status, details, and minimum version", async
 test("normalizes parsed multipart policy errors without losing legacy statusCode", () => {
   const error = createPolicyResponseError(
     426,
-    { error: { message: "Update OpenWhispr" }, code: "UPGRADE_REQUIRED", minAppVersion: "2.1.0" },
+    { error: { message: "Update Mnemo" }, code: "UPGRADE_REQUIRED", minAppVersion: "2.1.0" },
     "Transcription failed"
   );
 
-  assert.equal(error.message, "Update OpenWhispr");
+  assert.equal(error.message, "Update Mnemo");
   assert.equal(error.code, "UPGRADE_REQUIRED");
   assert.equal(error.status, 426);
   assert.equal(error.statusCode, 426);

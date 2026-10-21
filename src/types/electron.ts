@@ -21,7 +21,7 @@ export interface MainWindowInputRegion {
 
 export type ChineseScriptPreference = "simplified" | "traditional" | "as-transcribed";
 
-export type InferenceMode = "openwhispr" | "providers" | "local" | "self-hosted" | "enterprise";
+export type InferenceMode = "mnemo" | "providers" | "local" | "self-hosted" | "enterprise";
 
 /** Each LLM scope's resolved mode and model, from which the main process decides the shared llama-server. */
 export interface LocalServerPrefs {
@@ -74,7 +74,7 @@ export interface DictationRealtimeSessionOptions {
   provider: string;
   baseUrl?: string;
   model?: string;
-  mode?: "byok" | "openwhispr";
+  mode?: "byok" | "mnemo";
   language?: string;
   sampleRate?: number;
   keyterms?: string[];
@@ -118,6 +118,8 @@ export interface MeetingNotificationData {
   event: { summary?: string | null } | null;
   variant: MeetingPromptVariant;
   joinUrl: string | null;
+  /** Set when the prompt morphs the dictation pill; absent for the overlay window. */
+  pillDurationMs?: number;
 }
 
 /** Why auto-end concluded the meeting is over. */
@@ -172,7 +174,7 @@ export interface TranscriptionItem {
   deleted_at: string | null;
 }
 
-export type AnalyticsMode = "local" | "openwhispr_cloud" | "byok" | "self_hosted" | "unknown";
+export type AnalyticsMode = "local" | "mnemo_cloud" | "byok" | "self_hosted" | "unknown";
 
 export interface AnalyticsEventInput {
   eventId: string;
@@ -340,6 +342,7 @@ export interface NoteItem {
   client_note_id: string;
   sync_status: "synced" | "pending" | "error";
   deleted_at: string | null;
+  archiveye_document_id?: string | null;
   // Computed by getNoteByClientId while a parent folder DELETE awaits its
   // server result. Held notes stay hidden and must not be pulled/queued alone.
   folder_delete_pending?: number;
@@ -1977,6 +1980,8 @@ declare global {
       snapToMeetingMode: () => Promise<void>;
       restoreFromMeetingMode: () => Promise<void>;
       getPlatform: () => string;
+      getNativeGlassCapabilities?: () => Promise<{ supported: boolean }>;
+      syncNativeGlassAppearance?: (appearance: "light" | "dark") => Promise<void>;
       startWindowDrag: () => Promise<void>;
       stopWindowDrag: () => Promise<void>;
       startControlPanelDrag: () => Promise<void>;
@@ -2358,7 +2363,7 @@ declare global {
         callback: (state: { generation: number; hasToken: boolean }) => void
       ) => () => void;
 
-      // OpenWhispr Cloud API
+      // Pura LLM API
       cloudTranscribe?: (
         audioBuffer: ArrayBuffer,
         opts: {
@@ -2450,6 +2455,18 @@ declare global {
           code?: string;
         }
       >;
+      puraGetConnectionState?: () => Promise<{
+        configured: boolean;
+        connected: boolean;
+        puraUserId: number | null;
+      }>;
+      puraStartConnection?: (locale?: string) => Promise<{ success: boolean; error?: string }>;
+      puraGetTokens?: () => Promise<import("@pura-ai/sdk").StoredTokens | null>;
+      puraSetTokens?: (
+        tokens: import("@pura-ai/sdk").StoredTokens | null
+      ) => Promise<{ success: boolean }>;
+      puraDisconnect?: () => Promise<{ success: boolean }>;
+      onPuraConnectionChanged?: (callback: () => void) => () => void;
       cloudCheckout?: (opts?: {
         plan?: "monthly" | "annual";
         tier?: "pro" | "business";
@@ -2883,6 +2900,37 @@ declare global {
       >;
 
       // Google Calendar
+      archiveyeStartOAuth?: () => Promise<{
+        success: boolean;
+        email?: string;
+        name?: string | null;
+        error?: string;
+      }>;
+      archiveyeDisconnect?: () => Promise<{ success: boolean; error?: string }>;
+      archiveyeGetStatus?: () => Promise<{
+        connected: boolean;
+        email: string | null;
+        name?: string | null;
+        webUrl?: string;
+      }>;
+      archiveyeUploadNote?: (
+        noteId: number,
+        options?: { preferEnhanced?: boolean }
+      ) => Promise<{
+        success: boolean;
+        documentId?: string | null;
+        url?: string | null;
+        error?: string;
+      }>;
+      onArchiveyeConnectionChanged?: (
+        callback: (status: {
+          connected: boolean;
+          email: string | null;
+          name?: string | null;
+          webUrl?: string;
+        }) => void
+      ) => () => void;
+
       gcalStartOAuth?: () => Promise<{ success: boolean; email?: string; error?: string }>;
       gcalDisconnect?: (email?: string) => Promise<{ success: boolean; error?: string }>;
       gcalGetConnectionStatus?: () => Promise<{
@@ -3193,6 +3241,7 @@ declare global {
         samplesOverlap?: number;
       }) => Promise<{ success: boolean; config?: Record<string, unknown>; error?: string }>;
       onMeetingNotificationData?: (callback: (data: MeetingNotificationData) => void) => () => void;
+      onMeetingNotificationDismissed?: (callback: (detectionId: string) => void) => () => void;
       onMeetingAutoEndRequested?: (
         callback: (request: MeetingAutoEndRequest) => void
       ) => () => void;

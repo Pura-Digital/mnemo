@@ -12,7 +12,7 @@ const LOCAL_WHISPER_SETTINGS = {
 
 async function loadManagerClass(t, settings = LOCAL_WHISPER_SETTINGS) {
   const { AudioManager } = await loadAudioManager(t, {
-    cachePrefix: "openwhispr-no-audio-lifecycle-test-",
+    cachePrefix: "mnemo-no-audio-lifecycle-test-",
     settingsKey: "__noAudioLifecycleSettings",
     settings,
   });
@@ -31,7 +31,7 @@ function createManager(AudioManager, failure) {
     processWithLocalWhisper: async () => {
       throw failure;
     },
-    processWithOpenWhisprCloud: async () => {
+    processWithMnemoCloud: async () => {
       throw failure;
     },
     onStateChange: (state) => order.push(state.isProcessing ? "processing" : "idle"),
@@ -69,7 +69,7 @@ test("dictionary-echo silence keeps the recording but shares the settled outcome
 test("Cloud finding no speech is the no-audio outcome and keeps the recording", async (t) => {
   const AudioManager = await loadManagerClass(t, {
     useLocalWhisper: false,
-    cloudTranscriptionMode: "openwhispr",
+    cloudTranscriptionMode: "mnemo",
     isSignedIn: true,
   });
   // cloud-transcribe's shape for the API's 422 (ipcHandlers.js).

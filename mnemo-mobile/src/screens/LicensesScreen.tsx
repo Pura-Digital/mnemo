@@ -43,7 +43,7 @@ export default function LicensesScreen() {
       contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
     >
       <Text className="mb-4 px-1 text-sm text-secondaryLabel">
-        OpenWhispr's on-device intelligence is built on these open models and libraries.
+        mnemo's on-device intelligence is built on these open models and libraries.
       </Text>
 
       <View className="gap-3">

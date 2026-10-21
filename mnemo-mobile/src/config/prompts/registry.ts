@@ -15,7 +15,7 @@ export function customPromptStorageKey(kind: PromptKind): string {
   return `customPrompt.${kind}`;
 }
 
-// Byte-identical to the server default (openwhispr-api/lib/locales/en/prompts.json)
+// Byte-identical to the server default (mnemo-api/lib/locales/en/prompts.json)
 // and desktop's src/locales/en/prompts.json. When this text changes, move its
 // old hash into RETIRED_DEFAULT_PROMPT_HASHES and update
 // CURRENT_DEFAULT_PROMPT_HASHES in ./retiredPrompts.ts; the registry test

@@ -64,7 +64,7 @@ async function loadStore(t, api) {
     window: { electronAPI: api, setTimeout: (fn, ms) => setTimeout(fn, ms) },
   });
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-meeting-diarization-publish-test-",
+    cachePrefix: "mnemo-meeting-diarization-publish-test-",
   });
   return vite.ssrLoadModule("/stores/meetingRecordingStore.ts");
 }

@@ -1,3 +1,4 @@
+import { isMnemoStandaloneProduct } from "../../config/mnemoProduct";
 import {
   filterByokProviderOptionsByPolicy,
   isModeAllowedByPolicy,
@@ -40,8 +41,9 @@ export function getOnboardingSetupAvailability({
     filterByokProviderOptionsByPolicy(llmProviders, "llm", policy).length > 0;
 
   const cloud =
-    isModeAllowedByPolicy(policy, "transcription", "openwhispr") &&
-    (!agentAllowed || isModeAllowedByPolicy(policy, "llm", "openwhispr"));
+    !isMnemoStandaloneProduct() &&
+    isModeAllowedByPolicy(policy, "transcription", "mnemo") &&
+    (!agentAllowed || isModeAllowedByPolicy(policy, "llm", "mnemo"));
   const local =
     isModeAllowedByPolicy(policy, "transcription", "local") &&
     (!agentAllowed || isModeAllowedByPolicy(policy, "llm", "local"));

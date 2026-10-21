@@ -1,10 +1,10 @@
 import type { InferenceMode } from "./electron";
 
 /**
- * Organization policy delivered by the OpenWhispr API and enforced by the app.
+ * Organization policy delivered by the Mnemo API and enforced by the app.
  *
- * Mirrors the canonical schema in `openwhispr-api/lib/policy-schema.ts` and
- * `openwhispr-admin/lib/policy-schema.ts` — keep the three in sync. Mode ids are
+ * Mirrors the canonical schema in `mnemo-api/lib/policy-schema.ts` and
+ * `mnemo-admin/lib/policy-schema.ts` — keep the three in sync. Mode ids are
  * validated strictly; BYOK provider ids are validated shape-only (see
  * `allowedByokProviders`) so the server enum can grow ahead of this build.
  */

@@ -11,7 +11,7 @@ import { Sentry } from '@/lib/sentry';
 import { useKeyboardRecoveryStore } from '@/store/useKeyboardRecoveryStore';
 
 // Deliberately three steps, not onboarding's five: the keyboard is already
-// added by the time a user lands here, so "Enable OpenWhispr" would describe
+// added by the time a user lands here, so "Enable mnemo" would describe
 // something they've done and make the whole list look wrong.
 const STEPS = ['Tap Keyboards', 'Allow Full Access', 'Tap Allow on the popup'];
 
@@ -28,7 +28,7 @@ const STEPS = ['Tap Keyboards', 'Allow Full Access', 'Tap Allow on the popup'];
  * copy states what Full Access is for rather than asserting that iOS removed it.
  *
  * iOS offers no deep link to the Full Access toggle — `Linking.openSettings()`
- * only ever lands on Settings ▸ OpenWhispr — so the screen has to teach the two
+ * only ever lands on Settings ▸ mnemo — so the screen has to teach the two
  * taps from there, with the PiP tutorial playing over Settings.
  */
 export default function KeyboardFullAccessScreen() {
@@ -110,7 +110,7 @@ export default function KeyboardFullAccessScreen() {
         skipLabel="Close"
         title="Dictation needs Full Access."
         titleAccent="Full Access"
-        subtitle="Here's how to turn it on for the OpenWhispr keyboard."
+        subtitle="Here's how to turn it on for the mnemo keyboard."
         ctaLabel="Open Settings"
         ctaDisabled={settingsLaunchPending}
         ctaLoading={settingsLaunchPending}
@@ -118,7 +118,7 @@ export default function KeyboardFullAccessScreen() {
       >
         <View className="flex-1 justify-center gap-4">
           {/* Visible before the user leaves, not only after: iOS drops them
-              on Settings ▸ OpenWhispr with no deeper link available, so they
+              on Settings ▸ mnemo with no deeper link available, so they
               need to know the two taps that follow before they get there. */}
           <InstructionOverlay title="Steps to turn it on" steps={STEPS} />
           <FullAccessReasons />

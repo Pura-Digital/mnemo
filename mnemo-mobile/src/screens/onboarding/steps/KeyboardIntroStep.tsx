@@ -12,7 +12,7 @@ import { describeOnboardingError } from '@/lib/onboardingErrors';
 
 const STEPS = [
   'Tap Keyboards',
-  'Enable OpenWhispr',
+  'Enable mnemo',
   'Allow Full Access',
   'Tap Allow on the popup',
   'Come back into the app',
@@ -47,7 +47,7 @@ export function KeyboardIntroStep() {
     }
   }, [goNext, setKeyboardInstalled, stopPipTutorial]);
 
-  // Mirror MicrophoneStep's auto-skip pattern: if the OpenWhispr keyboard is
+  // Mirror MicrophoneStep's auto-skip pattern: if the mnemo keyboard is
   // already enabled in iOS, advance immediately without showing this screen.
   useEffect(() => {
     if (skipCheckRef.current) return;
@@ -126,7 +126,7 @@ export function KeyboardIntroStep() {
   return (
     <OnboardingShell
       progress={progress}
-      title={hasReturned ? 'Did you enable the keyboard?' : 'Use OpenWhispr in any app.'}
+      title={hasReturned ? 'Did you enable the keyboard?' : 'Use mnemo in any app.'}
       titleAccent={hasReturned ? 'enable' : 'any app'}
       subtitle={
         hasReturned

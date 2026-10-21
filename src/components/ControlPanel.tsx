@@ -4,6 +4,8 @@ import { useShallow } from "zustand/react/shallow";
 import { Button } from "./ui/button";
 import { PAGE_CONTENT_WIDTH_CLASS } from "./ui/pageWidth";
 import { cn } from "./lib/utils";
+import { useNativeGlass } from "../hooks/useNativeGlass";
+import { resolveWindowChromeSurface, resolveWindowPanelSurface } from "./ui/glass";
 import { BIDI_VALUE_TOKEN, BidiInterpolatedText } from "./ui/BidiInterpolatedText";
 import { Download, RefreshCw, Loader2, AlertTriangle, Zap } from "./icons";
 import UpgradePrompt from "./UpgradePrompt";
@@ -20,6 +22,10 @@ import { useJoinableWorkspaces } from "../hooks/useJoinableWorkspaces";
 import { useWorkspace } from "../hooks/useWorkspace";
 import { manageableWorkspaces, selectWorkspaceForSpaceCreation } from "../lib/workspaceSelection";
 import { useUsage } from "../hooks/useUsage";
+import {
+  isConversationalAgentEnabled,
+  isMnemoStandaloneProduct,
+} from "../config/mnemoProduct";
 import { decideUpsell } from "../lib/upsell";
 import { useCollapsibleSidebar } from "../hooks/useCollapsibleSidebar";
 import {
@@ -53,6 +59,8 @@ import {
 import ControlPanelSidebar from "./ControlPanelSidebar";
 import ControlPanelTopBar from "./ControlPanelTopBar";
 import { useControlPanelNavItems, type ControlPanelView } from "./controlPanelNav";
+import NotesAppSidebar from "./notes/NotesAppSidebar";
+import { type NotesShellView, useNotesShellPageTitle } from "./notesShellView";
 import MeetingRecordingMount from "./MeetingRecordingMount";
 import MeetingRecordingPill from "./notes/MeetingRecordingPill";
 import NewNoteMenu from "./notes/NewNoteMenu";
@@ -98,6 +106,7 @@ const ReferralModal = React.lazy(() => import("./ReferralModal"));
 const InviteTeammateDialog = React.lazy(() => import("./InviteTeammateDialog"));
 const PersonalNotesView = React.lazy(() => import("./notes/PersonalNotesView"));
 const InsightsView = React.lazy(() => import("./InsightsView"));
+const DictionaryModal = React.lazy(() => import("./DictionaryModal"));
 const DictionaryView = React.lazy(() => import("./DictionaryView"));
 const UploadAudioView = React.lazy(() => import("./notes/UploadAudioView"));
 const IntegrationsView = React.lazy(() => import("./IntegrationsView"));
@@ -110,6 +119,8 @@ interface ControlPanelProps {
 }
 
 export default function ControlPanel({ initialSettingsSection }: ControlPanelProps = {}) {
+  const standaloneProduct = isMnemoStandaloneProduct();
+  const nativeGlass = useNativeGlass();
   const { t } = useTranslation();
   const history = useTranscriptions();
   const [isLoading, setIsLoading] = useState(true);
@@ -134,8 +145,17 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
   } | null>(null);
   const [showSearch, setShowSearch] = useState(false);
   const showDiscarded = useShowDiscarded();
-  const [activeView, setActiveView] = useState<ControlPanelView>("home");
+  const [activeView, setActiveView] = useState<ControlPanelView>(
+    standaloneProduct ? "personal-notes" : "home"
+  );
+  const [shellView, setShellView] = useState<NotesShellView>("notes");
+  const [showDictionary, setShowDictionary] = useState(false);
   const navItems = useControlPanelNavItems();
+  const shellPageTitle = useNotesShellPageTitle(shellView);
+  const goToNotes = useCallback(() => {
+    if (standaloneProduct) setShellView("notes");
+    else setActiveView("personal-notes");
+  }, [standaloneProduct]);
   const {
     collapsed: sidebarCollapsed,
     peek: sidebarPeek,
@@ -147,8 +167,12 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
   const isMeetingMode = useIsMeetingMode();
   const isNarrowWindow = useIsNarrowWindow();
   const activeNoteId = useActiveNoteId();
+  const notesSurfaceActive = standaloneProduct ? shellView === "notes" : activeView === "personal-notes";
   const isSidePanelLayout =
-    isMeetingMode || (isNarrowWindow && activeView === "personal-notes" && activeNoteId != null);
+    (standaloneProduct && shellView !== "notes") ||
+    isMeetingMode ||
+    (isNarrowWindow && notesSurfaceActive && activeNoteId != null);
+  const showNotesAppSidebar = standaloneProduct && shellView === "notes" && !isSidePanelLayout;
   const recordingNoteId = useMeetingRecordingStore((s) => s.recordingNoteId);
   const recordingFolderId = useMeetingRecordingStore((s) => s.recordingFolderId);
   const [meetingRecordingRequest, setMeetingRecordingRequest] = useState<{
@@ -169,7 +193,10 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
     joinable,
     dismiss: dismissJoinable,
     markRequested,
-  } = useJoinableWorkspaces(user?.id ?? null, isSignedIn && !invitationToken);
+  } = useJoinableWorkspaces(
+    user?.id ?? null,
+    !standaloneProduct && isSignedIn && !invitationToken
+  );
   const { workspaces, active: activeWorkspace } = useWorkspace();
   // Invitations are owner/admin-only (server-enforced), so the sidebar row
   // only exists when the user can manage a workspace.
@@ -201,19 +228,38 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
   }, []);
   useSignInCloudNudge(isSignedIn, openTranscriptionSettings);
 
-  const agentAllowedByPolicy = usePolicyStore(isAgentAllowed);
+  const agentAllowedByPolicyRaw = usePolicyStore(isAgentAllowed);
+  const agentAllowedByPolicy =
+    isConversationalAgentEnabled() && agentAllowedByPolicyRaw;
   const { createNote } = useCreateNote();
   // The note is created before the view switches so Notes mounts with it already open.
   const handleNewNote = useCallback(async () => {
     await createNote();
-    setActiveView("personal-notes");
-  }, [createNote]);
+    goToNotes();
+  }, [createNote, goToNotes]);
   const policyActionsAllowed = usePolicyStore((state) => isPolicyActionAllowed(state));
   useEffect(() => {
-    if (!isControlPanelViewAllowed(activeView, agentAllowedByPolicy, policyActionsAllowed)) {
+    if (standaloneProduct) {
+      if (shellView === "upload" && !policyActionsAllowed) setShellView("notes");
+      return;
+    }
+    if (
+      !isControlPanelViewAllowed(
+        activeView,
+        agentAllowedByPolicy,
+        policyActionsAllowed,
+        isConversationalAgentEnabled()
+      )
+    ) {
       setActiveView("home");
     }
-  }, [activeView, agentAllowedByPolicy, policyActionsAllowed]);
+  }, [
+    standaloneProduct,
+    shellView,
+    activeView,
+    agentAllowedByPolicy,
+    policyActionsAllowed,
+  ]);
   const updateRequiredByOrg = usePolicyStore(isUpdateRequiredByOrg);
   const policyMinAppVersion = usePolicyStore((s) => s.policy?.minAppVersion ?? null);
 
@@ -322,6 +368,7 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
   }, [updateStatus.updateDownloaded, isDownloading, toast, t]);
 
   useEffect(() => {
+    if (standaloneProduct) return;
     const dispose = window.electronAPI?.onLimitReached?.(
       (data: { wordsUsed: number; limit: number }) => {
         if (!hasShownUpgradePrompt.current) {
@@ -341,9 +388,10 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
     return () => {
       dispose?.();
     };
-  }, [toast, t]);
+  }, [standaloneProduct, toast, t]);
 
   useEffect(() => {
+    if (standaloneProduct) return;
     if (!usage?.isPastDue) return;
     if (sessionStorage.getItem("pastDueNotified")) return;
     sessionStorage.setItem("pastDueNotified", "true");
@@ -353,7 +401,7 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
       variant: "destructive",
       duration: 8000,
     });
-  }, [usage?.isPastDue, toast, t]);
+  }, [standaloneProduct, usage?.isPastDue, toast, t]);
 
   useEffect(() => {
     const unsubscribe = window.electronAPI?.onWorkspaceInvitationToken?.((token) => {
@@ -385,7 +433,7 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
       if (!data) return;
       setActiveFolderId(data.folderId);
       setActiveNoteId(data.noteId);
-      setActiveView("personal-notes");
+      goToNotes();
       setMeetingRecordingRequest({
         noteId: data.noteId,
         folderId: data.folderId,
@@ -402,7 +450,7 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
     drain();
     const cleanup = window.electronAPI?.onMeetingNoteNavigationPending?.(drain);
     return () => cleanup?.();
-  }, []);
+  }, [goToNotes]);
 
   useEffect(() => {
     const drain = async () => {
@@ -413,12 +461,12 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
         initializeNotes(null, 50, data.folderId);
       }
       setActiveNoteId(data.noteId);
-      setActiveView("personal-notes");
+      goToNotes();
     };
     drain();
     const cleanup = window.electronAPI?.onNoteNavigationPending?.(drain);
     return () => cleanup?.();
-  }, []);
+  }, [goToNotes]);
 
   useEffect(() => {
     const cleanup = window.electronAPI?.onShowSettings?.(() => {
@@ -456,9 +504,13 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
   // The side-panel layout is shared by meeting mode and by a note opened in a
   // narrow window, so leaving it means different things in each case.
   const handleExitSidePanel = useCallback(() => {
+    if (standaloneProduct && shellView !== "notes") {
+      setShellView("notes");
+      return;
+    }
     if (isMeetingMode) window.electronAPI?.restoreFromMeetingMode?.();
     else setActiveNoteId(null);
-  }, [isMeetingMode]);
+  }, [standaloneProduct, shellView, isMeetingMode]);
 
   const copyToClipboard = useCallback(
     async (text: string) => {
@@ -861,13 +913,25 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
   };
 
   return (
-    <div className="h-screen bg-surface-window flex flex-col">
+    <div
+      className={cn(
+        "control-panel-window h-screen flex flex-col",
+        standaloneProduct && "app-canvas",
+        resolveWindowChromeSurface(nativeGlass)
+      )}
+    >
       <MeetingRecordingMount />
       <MeetingRecordingPill
-        activeView={activeView}
+        activeView={
+          standaloneProduct
+            ? shellView === "notes"
+              ? "personal-notes"
+              : shellView
+            : activeView
+        }
         activeNoteId={activeNoteId}
         onReturnToNote={() => {
-          setActiveView("personal-notes");
+          goToNotes();
           setActiveFolderId(recordingFolderId);
           setActiveNoteId(recordingNoteId);
         }}
@@ -889,12 +953,14 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
         onOk={() => {}}
       />
 
-      <UpgradePrompt
-        open={showUpgradePrompt}
-        onOpenChange={setShowUpgradePrompt}
-        wordsUsed={limitData?.wordsUsed}
-        limit={limitData?.limit}
-      />
+      {!standaloneProduct && (
+        <UpgradePrompt
+          open={showUpgradePrompt}
+          onOpenChange={setShowUpgradePrompt}
+          wordsUsed={limitData?.wordsUsed}
+          limit={limitData?.limit}
+        />
+      )}
 
       <PostMigrationOnboarding
         open={showPostMigration}
@@ -915,13 +981,13 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
         </Suspense>
       )}
 
-      {showReferrals && (
+      {!standaloneProduct && showReferrals && (
         <Suspense fallback={null}>
           <ReferralModal open={showReferrals} onOpenChange={setShowReferrals} />
         </Suspense>
       )}
 
-      {showInviteTeam && inviteWorkspace && (
+      {!standaloneProduct && showInviteTeam && inviteWorkspace && (
         <Suspense fallback={null}>
           <InviteTeammateDialog
             open={showInviteTeam}
@@ -932,22 +998,26 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
         </Suspense>
       )}
 
-      <AcceptInvitationModal
-        token={invitationToken}
-        onClose={() => setInvitationToken(null)}
-        onAccepted={(entry) => {
-          setInvitationNotesEntry(entry);
-          setActiveView("personal-notes");
-        }}
-      />
+      {!standaloneProduct && (
+        <AcceptInvitationModal
+          token={invitationToken}
+          onClose={() => setInvitationToken(null)}
+          onAccepted={(entry) => {
+            setInvitationNotesEntry(entry);
+            goToNotes();
+          }}
+        />
+      )}
 
-      <JoinYourTeamModal
-        joinable={joinable}
-        domain={user?.email?.split("@")[1] ?? null}
-        onDismiss={dismissJoinable}
-        onRequested={markRequested}
-        onJoined={() => setActiveView("personal-notes")}
-      />
+      {!standaloneProduct && (
+        <JoinYourTeamModal
+          joinable={joinable}
+          domain={user?.email?.split("@")[1] ?? null}
+          onDismiss={dismissJoinable}
+          onRequested={markRequested}
+          onJoined={goToNotes}
+        />
+      )}
 
       {/* Always mounted so the palette chunk is warm and Radix can play its exit animation. */}
       <Suspense fallback={null}>
@@ -959,94 +1029,66 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
             if (folderId != null) setActiveFolderId(folderId);
             else if (spaceId != null) navigateToContainer(spaceId, null);
             setActiveNoteId(id);
-            setActiveView("personal-notes");
+            goToNotes();
           }}
           onContainerSelect={(spaceId, folderId) => {
             navigateToContainer(spaceId, folderId);
-            setActiveView("personal-notes");
+            goToNotes();
           }}
           onTranscriptSelect={() => {
-            setActiveView("home");
+            if (standaloneProduct) {
+              toast({
+                title: t("commandSearch.transcriptHintTitle"),
+                description: t("commandSearch.transcriptHintDescription"),
+                duration: 6000,
+              });
+            } else {
+              setActiveView("home");
+            }
           }}
         />
       </Suspense>
 
-      <div className="flex flex-1 overflow-hidden relative">
-        <div
-          className="shrink-0 transition-[width] duration-300 ease-out"
-          style={{ width: sidebarCollapsed || isSidePanelLayout ? 0 : SIDEBAR_WIDTH_PX }}
-        />
-        <div
-          className={`absolute inset-y-0 start-0 z-30 transition-transform duration-300 ease-out ${
-            !isSidePanelLayout && (!sidebarCollapsed || sidebarPeek)
-              ? "translate-x-0"
-              : "ltr:-translate-x-full rtl:translate-x-full"
-          }${
-            sidebarCollapsed && sidebarPeek && !isSidePanelLayout
-              ? " shadow-[10px_0_40px_-18px_rgba(0,0,0,0.2)] rtl:shadow-[-10px_0_40px_-18px_rgba(0,0,0,0.2)]"
-              : ""
-          }`}
-          onMouseEnter={sidebarCollapsed ? showSidebarPeek : undefined}
-          onMouseLeave={sidebarCollapsed ? hideSidebarPeek : undefined}
-        >
-          <ControlPanelSidebar
-            activeView={activeView}
-            onViewChange={setActiveView}
-            onOpenSettings={() => {
-              setSettingsSection(undefined);
-              setShowSettings(true);
-            }}
-            onOpenReferrals={() => setShowReferrals(true)}
-            onInviteTeam={inviteWorkspace ? () => setShowInviteTeam(true) : undefined}
-            onUpgrade={() => {
-              setSettingsSection("plansBilling");
-              setShowSettings(true);
-            }}
-            isOverLimit={usage?.isOverLimit ?? false}
-            userName={user?.name}
-            userEmail={user?.email}
-            userImage={user?.image}
-            isSignedIn={isSignedIn}
-            authLoaded={authLoaded}
-            upsell={upsell}
-            updateAction={
-              !updateStatus.isDevelopment &&
-              (updateStatus.updateAvailable ||
-                updateStatus.updateDownloaded ||
-                isDownloading ||
-                isInstalling) ? (
-                <Button
-                  variant={updateStatus.updateDownloaded ? "default" : "outline"}
-                  size="sm"
-                  onClick={handleUpdateClick}
-                  disabled={isInstalling || isDownloading}
-                  className="gap-1.5 text-xs w-full h-7"
-                >
-                  {getUpdateButtonContent()}
-                </Button>
-              ) : undefined
-            }
-          />
-        </div>
-        <main className="flex-1 flex flex-col overflow-hidden p-2">
-          <div className="flex min-h-0 flex-1 flex-col overflow-clip rounded-(--radius-shell) border border-border bg-background dark:border-white/10">
+      {standaloneProduct && (
+        <Suspense fallback={null}>
+          <DictionaryModal open={showDictionary} onOpenChange={setShowDictionary} />
+        </Suspense>
+      )}
+
+      {standaloneProduct ? (
+        <div className="flex flex-1 min-h-0 overflow-hidden">
+          <div
+            className="shrink-0 overflow-hidden transition-[width] duration-300 ease-out"
+            style={{ width: showNotesAppSidebar ? "13rem" : 0 }}
+          >
+            {showNotesAppSidebar && (
+              <NotesAppSidebar
+                onOpenDictionary={() => setShowDictionary(true)}
+                onOpenUpload={() => setShellView("upload")}
+                onOpenIntegrations={() => setShellView("integrations")}
+                onOpenSettings={() => {
+                  setSettingsSection(undefined);
+                  setShowSettings(true);
+                }}
+              />
+            )}
+          </div>
+          <main className="flex min-h-0 flex-1 flex-col overflow-hidden">
             <ControlPanelTopBar
-              title={navItems.find((item) => item.id === activeView)?.label ?? ""}
-              sidebarCollapsed={sidebarCollapsed}
-              onToggleSidebar={toggleSidebar}
-              onToggleMouseEnter={sidebarCollapsed ? showSidebarPeek : undefined}
-              onToggleMouseLeave={sidebarCollapsed ? leaveSidebarToggle : undefined}
+              title={shellView === "notes" ? "" : shellPageTitle}
+              sidebarCollapsed={false}
+              onToggleSidebar={() => {}}
               onOpenSearch={() => setShowSearch(true)}
               isSidePanelLayout={isSidePanelLayout}
               onExitSidePanel={handleExitSidePanel}
+              hideSidebarToggle
               actions={
-                <NewNoteMenu
-                  onNewNote={handleNewNote}
-                  onNewChat={agentAllowedByPolicy ? () => setActiveView("chat") : undefined}
-                />
+                shellView === "notes" && !isSidePanelLayout ? (
+                  <NewNoteMenu onNewNote={handleNewNote} />
+                ) : undefined
               }
             />
-            <div className="scrollbar-hidden flex-1 overflow-y-auto">
+            <div className="scrollbar-hidden min-h-0 flex-1 overflow-y-auto">
               {updateRequiredByOrg && (
                 <div className={cn(PAGE_CONTENT_WIDTH_CLASS, "px-6 mb-3")}>
                   <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/50 p-3">
@@ -1072,7 +1114,201 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
                 </div>
               )}
               <RequiredModelsBanner />
-              {usage?.isPastDue && activeView === "home" && (
+              {(gpuAccelAvailable.transcription || gpuAccelAvailable.intelligence) &&
+                shellView === "notes" &&
+                !gpuBannerDismissed && (
+                  <div className={cn(PAGE_CONTENT_WIDTH_CLASS, "px-6 mb-3")}>
+                    <div className="rounded-lg border border-primary/20 dark:border-primary/15 bg-primary/5 p-3">
+                      <div className="flex items-start gap-3">
+                        <div className="shrink-0 w-8 h-8 rounded-md bg-primary/10 dark:bg-primary/15 flex items-center justify-center">
+                          <Zap size={16} className="text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium text-foreground mb-0.5">
+                            {t("controlPanel.gpu.bannerTitle")}
+                          </p>
+                          <p className="text-xs text-muted-foreground mb-2">
+                            {t("controlPanel.gpu.bannerDescription")}
+                          </p>
+                          <div className="flex items-center gap-3">
+                            <Button
+                              variant="default"
+                              size="sm"
+                              className="h-7 text-xs"
+                              onClick={() => {
+                                setSettingsSection("ai");
+                                setShowSettings(true);
+                              }}
+                            >
+                              {t("controlPanel.gpu.enableButton")}
+                            </Button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setGpuBannerDismissed(true);
+                                localStorage.setItem("gpuBannerDismissedUnified", "true");
+                              }}
+                              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                            >
+                              {t("controlPanel.gpu.dismissButton")}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              {shellView === "notes" && (
+                <Suspense fallback={null}>
+                  <PersonalNotesView
+                    onOpenSettings={(section) => {
+                      setSettingsSection(section);
+                      setShowSettings(true);
+                    }}
+                    meetingRecordingRequest={meetingRecordingRequest}
+                    onMeetingRecordingRequestHandled={handleMeetingRecordingRequestHandled}
+                    invitationEntry={invitationNotesEntry}
+                    onInvitationEntryHandled={() => setInvitationNotesEntry(null)}
+                  />
+                </Suspense>
+              )}
+              {shellView === "upload" && policyActionsAllowed && (
+                <Suspense fallback={null}>
+                  <UploadAudioView
+                    onNoteCreated={(noteId, folderId) => {
+                      setActiveNoteId(noteId);
+                      if (folderId) setActiveFolderId(folderId);
+                      goToNotes();
+                    }}
+                    onOpenSettings={(section) => {
+                      setSettingsSection(section);
+                      setShowSettings(true);
+                    }}
+                  />
+                </Suspense>
+              )}
+              {shellView === "integrations" && (
+                <Suspense fallback={null}>
+                  <IntegrationsView
+                    isPaid={usage?.hasPaidAccessOptimistic ?? false}
+                    onUpgrade={() => {}}
+                  />
+                </Suspense>
+              )}
+            </div>
+          </main>
+        </div>
+      ) : (
+        <div className="flex flex-1 overflow-hidden relative">
+          <div
+            className="shrink-0 transition-[width] duration-300 ease-out"
+            style={{ width: sidebarCollapsed || isSidePanelLayout ? 0 : SIDEBAR_WIDTH_PX }}
+          />
+          <div
+            className={`absolute inset-y-0 start-0 z-30 transition-transform duration-300 ease-out ${
+              !isSidePanelLayout && (!sidebarCollapsed || sidebarPeek)
+                ? "translate-x-0"
+                : "ltr:-translate-x-full rtl:translate-x-full"
+            }${
+              sidebarCollapsed && sidebarPeek && !isSidePanelLayout
+                ? " shadow-[10px_0_40px_-18px_rgba(0,0,0,0.2)] rtl:shadow-[-10px_0_40px_-18px_rgba(0,0,0,0.2)]"
+                : ""
+            }`}
+            onMouseEnter={sidebarCollapsed ? showSidebarPeek : undefined}
+            onMouseLeave={sidebarCollapsed ? hideSidebarPeek : undefined}
+          >
+            <ControlPanelSidebar
+              activeView={activeView}
+              onViewChange={setActiveView}
+              onOpenSettings={() => {
+                setSettingsSection(undefined);
+                setShowSettings(true);
+              }}
+              onOpenReferrals={() => setShowReferrals(true)}
+              onInviteTeam={
+                inviteWorkspace ? () => setShowInviteTeam(true) : undefined
+              }
+              onUpgrade={() => {
+                setSettingsSection("plansBilling");
+                setShowSettings(true);
+              }}
+              standaloneProduct={standaloneProduct}
+              isOverLimit={usage?.isOverLimit ?? false}
+              userName={user?.name}
+              userEmail={user?.email}
+              userImage={user?.image}
+              isSignedIn={isSignedIn}
+              authLoaded={authLoaded}
+              upsell={upsell}
+              updateAction={
+                !updateStatus.isDevelopment &&
+                (updateStatus.updateAvailable ||
+                  updateStatus.updateDownloaded ||
+                  isDownloading ||
+                  isInstalling) ? (
+                  <Button
+                    variant={updateStatus.updateDownloaded ? "default" : "outline"}
+                    size="sm"
+                    onClick={handleUpdateClick}
+                    disabled={isInstalling || isDownloading}
+                    className="gap-1.5 text-xs w-full h-7"
+                  >
+                    {getUpdateButtonContent()}
+                  </Button>
+                ) : undefined
+              }
+            />
+          </div>
+          <main className="flex-1 flex flex-col overflow-hidden p-2">
+            <div
+              className={cn(
+                "flex min-h-0 flex-1 flex-col overflow-clip rounded-(--radius-shell) border border-border dark:border-white/10",
+                resolveWindowPanelSurface(nativeGlass)
+              )}
+            >
+              <ControlPanelTopBar
+                title={navItems.find((item) => item.id === activeView)?.label ?? ""}
+                sidebarCollapsed={sidebarCollapsed}
+                onToggleSidebar={toggleSidebar}
+                onToggleMouseEnter={sidebarCollapsed ? showSidebarPeek : undefined}
+                onToggleMouseLeave={sidebarCollapsed ? leaveSidebarToggle : undefined}
+                onOpenSearch={() => setShowSearch(true)}
+                isSidePanelLayout={isSidePanelLayout}
+                onExitSidePanel={handleExitSidePanel}
+                actions={
+                  <NewNoteMenu
+                    onNewNote={handleNewNote}
+                    onNewChat={agentAllowedByPolicy ? () => setActiveView("chat") : undefined}
+                  />
+                }
+              />
+              <div className="scrollbar-hidden flex-1 overflow-y-auto">
+              {updateRequiredByOrg && (
+                <div className={cn(PAGE_CONTENT_WIDTH_CLASS, "px-6 mb-3")}>
+                  <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/50 p-3">
+                    <div className="flex items-start gap-3">
+                      <div className="shrink-0 w-8 h-8 rounded-md bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center">
+                        <AlertTriangle size={16} className="text-amber-600 dark:text-amber-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-amber-900 dark:text-amber-200 mb-0.5">
+                          {t("controlPanel.updateRequiredByOrg.title")}
+                        </p>
+                        <p className="text-xs text-amber-700 dark:text-amber-300/80">
+                          <BidiInterpolatedText
+                            text={t("controlPanel.updateRequiredByOrg.description", {
+                              version: BIDI_VALUE_TOKEN,
+                            })}
+                            value={policyMinAppVersion}
+                          />
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              <RequiredModelsBanner />
+              {!standaloneProduct && usage?.isPastDue && activeView === "home" && (
                 <div className={cn(PAGE_CONTENT_WIDTH_CLASS, "px-6 mb-3")}>
                   <div className="rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/50 p-3">
                     <div className="flex items-start gap-3">
@@ -1177,12 +1413,7 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
               )}
               {activeView === "insights" && (
                 <Suspense fallback={null}>
-                  <InsightsView
-                    onSignIn={() => {
-                      setSettingsSection("account");
-                      setShowSettings(true);
-                    }}
-                  />
+                  <InsightsView />
                 </Suspense>
               )}
               {activeView === "chat" && agentAllowedByPolicy && (
@@ -1227,11 +1458,15 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
               {activeView === "integrations" && (
                 <Suspense fallback={null}>
                   <IntegrationsView
-                    isPaid={usage?.hasPaidAccessOptimistic ?? false}
-                    onUpgrade={() => {
-                      setSettingsSection("plansBilling");
-                      setShowSettings(true);
-                    }}
+                    isPaid={standaloneProduct || (usage?.hasPaidAccessOptimistic ?? false)}
+                    onUpgrade={
+                      standaloneProduct
+                        ? () => {}
+                        : () => {
+                            setSettingsSection("plansBilling");
+                            setShowSettings(true);
+                          }
+                    }
                   />
                 </Suspense>
               )}
@@ -1239,6 +1474,7 @@ export default function ControlPanel({ initialSettingsSection }: ControlPanelPro
           </div>
         </main>
       </div>
+      )}
       <BackgroundActionToastListener />
       <SpaceSyncToastListener />
     </div>

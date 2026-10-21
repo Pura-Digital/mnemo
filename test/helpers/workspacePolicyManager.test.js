@@ -37,13 +37,13 @@ function response(status, body) {
 }
 
 function setup(proxyFetch, overrides = {}) {
-  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "openwhispr-policy-manager-"));
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "mnemo-policy-manager-"));
   const cachePath = path.join(tempDir, "workspace-policy.json");
   const tokenState = { token: "token-a", generation: 1 };
   const broadcasts = [];
   const manager = createWorkspacePolicyManager({
     cachePath,
-    getApiUrl: () => "https://api.openwhispr.test",
+    getApiUrl: () => "https://api.mnemo.test",
     getAppVersion: () => "1.8.1",
     proxyFetch,
     tokenStore: { getState: () => ({ ...tokenState }) },
@@ -66,8 +66,8 @@ function setup(proxyFetch, overrides = {}) {
 test("caches authoritative unmanaged verdicts for offline startup", async (t) => {
   let online = true;
   const context = setup(async (_url, init) => {
-    assert.equal(init.headers["x-openwhispr-policy-version"], "1");
-    assert.equal(init.headers["x-openwhispr-version"], "1.8.1");
+    assert.equal(init.headers["x-mnemo-policy-version"], "1");
+    assert.equal(init.headers["x-mnemo-version"], "1.8.1");
     if (!online) throw new Error("offline");
     return response(200, { data: { managed: false, policy: null, policyUpdatedAt: null } });
   });
@@ -138,11 +138,11 @@ test("accepts and caches the API's legacy-compatible unmanaged default-policy en
   const defaultPolicy = {
     version: 1,
     transcription: {
-      allowedModes: ["openwhispr", "providers", "local", "self-hosted"],
+      allowedModes: ["mnemo", "providers", "local", "self-hosted"],
       allowedByokProviders: ["openai", "groq", "xai", "mistral", "corti", "tinfoil"],
     },
     llm: {
-      allowedModes: ["openwhispr", "providers", "local", "self-hosted", "enterprise"],
+      allowedModes: ["mnemo", "providers", "local", "self-hosted", "enterprise"],
       allowedByokProviders: ["openai", "anthropic", "gemini", "groq", "tinfoil", "corti"],
       allowedEnterpriseProviders: ["bedrock", "azure", "vertex"],
     },
@@ -225,7 +225,7 @@ test("a 501 after restart cannot replace a disk-cached managed last-good policy"
 
   const restarted = createWorkspacePolicyManager({
     cachePath: context.cachePath,
-    getApiUrl: () => "https://api.openwhispr.test",
+    getApiUrl: () => "https://api.mnemo.test",
     getAppVersion: () => "1.8.1",
     proxyFetch: async () => response(501, { error: "not implemented" }),
     tokenStore: { getState: () => ({ ...context.tokenState }) },
@@ -235,7 +235,7 @@ test("a 501 after restart cannot replace a disk-cached managed last-good policy"
 
   const offlineRestart = createWorkspacePolicyManager({
     cachePath: context.cachePath,
-    getApiUrl: () => "https://api.openwhispr.test",
+    getApiUrl: () => "https://api.mnemo.test",
     getAppVersion: () => "1.8.1",
     proxyFetch: async () => {
       throw new Error("offline");
@@ -407,7 +407,7 @@ test("a stale managed HTTP response cannot replace a newer disk policy after res
   const restartedBroadcasts = [];
   const restarted = createWorkspacePolicyManager({
     cachePath: context.cachePath,
-    getApiUrl: () => "https://api.openwhispr.test",
+    getApiUrl: () => "https://api.mnemo.test",
     getAppVersion: () => "1.8.1",
     proxyFetch: async () => response(200, validPolicy("2026-08-05T00:05:00.000Z")),
     tokenStore: { getState: () => ({ ...context.tokenState }) },
@@ -618,7 +618,7 @@ test("a first-ever unresolvable verdict still fails closed after restart", async
   // on disk standing between a restart and a fail-open on an unsupported route.
   const restarted = createWorkspacePolicyManager({
     cachePath: context.cachePath,
-    getApiUrl: () => "https://api.openwhispr.test",
+    getApiUrl: () => "https://api.mnemo.test",
     getAppVersion: () => "1.8.1",
     proxyFetch: async () => response(404, { error: "Not found" }),
     tokenStore: { getState: () => ({ ...context.tokenState }) },
@@ -668,7 +668,7 @@ test("a managed-unresolvable signal survives throttling, other windows, and rest
 
   const restarted = createWorkspacePolicyManager({
     cachePath: context.cachePath,
-    getApiUrl: () => "https://api.openwhispr.test",
+    getApiUrl: () => "https://api.mnemo.test",
     getAppVersion: () => "1.8.1",
     proxyFetch: async () => {
       throw new Error("offline");
@@ -725,7 +725,7 @@ test("an unmanaged verdict cannot be rebound to a new credential or API origin",
   context.tokenState.generation = 1;
   const differentOrigin = createWorkspacePolicyManager({
     cachePath: context.cachePath,
-    getApiUrl: () => "https://self-host.openwhispr.test",
+    getApiUrl: () => "https://self-host.mnemo.test",
     getAppVersion: () => "1.8.1",
     proxyFetch: async () => {
       throw new Error("offline");

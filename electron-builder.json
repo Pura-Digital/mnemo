@@ -1,13 +1,13 @@
 {
-  "appId": "com.gizmolabs.openwhispr",
+  "appId": "com.pura.mnemo",
   "afterPack": "scripts/afterPack.js",
   "extraMetadata": {
     "windowsTrayIdentity": true
   },
-  "productName": "OpenWhispr",
+  "productName": "mnemo",
   "protocols": {
-    "name": "OpenWhispr Protocol",
-    "schemes": ["openwhispr"]
+    "name": "mnemo Protocol",
+    "schemes": ["mnemo", "mnemo-dev", "mnemo-staging"]
   },
   "directories": {
     "output": "dist"
@@ -37,7 +37,6 @@
     "src/components.json",
     "!node_modules/.cache/**/*",
     "!src/node_modules/**/*",
-
     "!**/node_modules/electron/**",
     "!**/node_modules/electron-builder/**",
     "!**/node_modules/app-builder-bin/**",
@@ -45,7 +44,6 @@
     "!**/node_modules/builder-util/**",
     "!**/node_modules/dmg-builder/**",
     "!**/node_modules/7zip-bin/**",
-
     "!**/node_modules/typescript/**",
     "!**/node_modules/prettier/**",
     "!**/node_modules/eslint/**",
@@ -53,20 +51,17 @@
     "!**/node_modules/@eslint/**",
     "!**/node_modules/@typescript-eslint/**",
     "!**/node_modules/globals/**",
-
     "!**/node_modules/vite/**",
     "!**/node_modules/@vitejs/**",
     "!**/node_modules/esbuild/**",
     "!**/node_modules/@esbuild/**",
     "!**/node_modules/rollup/**",
     "!**/node_modules/@rollup/**",
-
     "!**/node_modules/postcss/**",
     "!**/node_modules/autoprefixer/**",
     "!**/node_modules/tailwindcss/**",
     "!**/node_modules/@tailwindcss/**",
     "!**/node_modules/lightningcss*/**",
-
     "!**/node_modules/react/**",
     "!**/node_modules/react-dom/**",
     "!**/node_modules/lucide-react/**",
@@ -77,12 +72,10 @@
     "!**/node_modules/tw-animate-css/**",
     "!**/node_modules/react-markdown/**",
     "!**/node_modules/shadcn-ui/**",
-
     "!**/node_modules/@types/**",
     "!**/node_modules/concurrently/**",
     "!**/node_modules/cross-env/**",
     "!**/node_modules/@electron/notarize/**",
-
     "!**/node_modules/**/test/**",
     "!**/node_modules/**/tests/**",
     "!**/node_modules/**/*.ts",
@@ -168,12 +161,12 @@
     ],
     "extendInfo": {
       "LSUIElement": false,
-      "CFBundleIconName": "openwhispr",
-      "NSMicrophoneUsageDescription": "OpenWhispr uses the microphone to capture your voice for transcription.",
-      "NSAudioCaptureUsageDescription": "OpenWhispr uses system audio to capture other participants' audio from calls and meetings.",
-      "NSAccessibilityUsageDescription": "OpenWhispr needs accessibility permissions to paste transcribed text into other applications.",
-      "NSCalendarsUsageDescription": "OpenWhispr reads your calendar to detect upcoming meetings and link meeting notes to events.",
-      "NSCalendarsFullAccessUsageDescription": "OpenWhispr reads your calendar to detect upcoming meetings and link meeting notes to events."
+      "CFBundleIconName": "mnemo",
+      "NSMicrophoneUsageDescription": "mnemo uses the microphone to capture your voice for transcription.",
+      "NSAudioCaptureUsageDescription": "mnemo uses system audio to capture other participants' audio from calls and meetings.",
+      "NSAccessibilityUsageDescription": "mnemo needs accessibility permissions to paste transcribed text into other applications.",
+      "NSCalendarsUsageDescription": "mnemo reads your calendar to detect upcoming meetings and link meeting notes to events.",
+      "NSCalendarsFullAccessUsageDescription": "mnemo reads your calendar to detect upcoming meetings and link meeting notes to events."
     }
   },
   "win": {
@@ -182,8 +175,8 @@
     "forceCodeSigning": true,
     "azureSignOptions": {
       "endpoint": "https://eus.codesigning.azure.net/",
-      "certificateProfileName": "openwhispr-release",
-      "codeSigningAccountName": "OpenWhispr",
+      "certificateProfileName": "mnemo-release",
+      "codeSigningAccountName": "Mnemo",
       "publisherName": "CN=Gizmo Labs Inc., O=Gizmo Labs Inc., L=Wilmington, S=Delaware, C=US"
     },
     "extraResources": [
@@ -267,7 +260,7 @@
     "include": "resources/nsis/installer.nsh"
   },
   "dmg": {
-    "title": "OpenWhispr",
+    "title": "mnemo",
     "icon": "src/assets/icon.icns",
     "window": {
       "width": 540,
@@ -276,8 +269,8 @@
   },
   "publish": {
     "provider": "github",
-    "owner": "OpenWhispr",
-    "repo": "openwhispr",
+    "owner": "Pura-Digital",
+    "repo": "mnemo",
     "private": false,
     "releaseType": "draft"
   }

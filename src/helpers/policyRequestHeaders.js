@@ -12,9 +12,9 @@ function withPolicyRequestHeaders(headers, appVersion) {
   }
   return {
     ...headers,
-    "x-openwhispr-policy-version": POLICY_CAPABILITY_VERSION,
-    "x-openwhispr-version": appVersion,
-    "x-openwhispr-capabilities": CLIENT_CAPABILITIES,
+    "x-mnemo-policy-version": POLICY_CAPABILITY_VERSION,
+    "x-mnemo-version": appVersion,
+    "x-mnemo-capabilities": CLIENT_CAPABILITIES,
   };
 }
 

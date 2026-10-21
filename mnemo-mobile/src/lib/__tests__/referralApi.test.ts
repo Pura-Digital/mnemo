@@ -34,7 +34,7 @@ afterEach(() => {
 });
 
 describe('referralApi client version header', () => {
-  it('sends x-openwhispr-version on the stats request when the app version is known', async () => {
+  it('sends x-mnemo-version on the stats request when the app version is known', async () => {
     const { referralApi, mockFetch } = loadReferralApi('3.1.4');
     mockFetch.mockResolvedValue({
       ok: true,
@@ -52,10 +52,10 @@ describe('referralApi client version header', () => {
 
     const [, init] = mockFetch.mock.calls[0] as [string, RequestInit];
     const headers = init.headers as Record<string, string>;
-    expect(headers['x-openwhispr-version']).toBe('3.1.4');
+    expect(headers['x-mnemo-version']).toBe('3.1.4');
   });
 
-  it('omits x-openwhispr-version when the app version is unknown', async () => {
+  it('omits x-mnemo-version when the app version is unknown', async () => {
     const { referralApi, mockFetch } = loadReferralApi(undefined);
     mockFetch.mockResolvedValue({ ok: true, json: async () => ({ invites: [] }) });
 
@@ -63,6 +63,6 @@ describe('referralApi client version header', () => {
 
     const [, init] = mockFetch.mock.calls[0] as [string, RequestInit];
     const headers = init.headers as Record<string, string>;
-    expect(headers).not.toHaveProperty('x-openwhispr-version');
+    expect(headers).not.toHaveProperty('x-mnemo-version');
   });
 });

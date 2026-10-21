@@ -61,7 +61,6 @@ test("guest flow keeps permissions and the hotkey before setup choice", async ()
   // finalizeOnboarding registers the dictation hotkey on every path, so guests
   // must still grant the mic and see the key they are getting.
   assert.deepEqual(getOnboardingRoute({ authPath: "guest", setupMode: null, agentAllowed: true }), [
-    "auth",
     "permissions",
     "dictation-hotkey",
     "setup-choice",
@@ -80,7 +79,7 @@ test("setup choice appends the selected two-stage route", async () => {
   const { getOnboardingRoute } = await load();
   assert.deepEqual(
     getOnboardingRoute({ authPath: "guest", setupMode: "byok", agentAllowed: true }),
-    ["auth", "permissions", "dictation-hotkey", "setup-choice", "byok-dictation", "byok-assistant"]
+    ["permissions", "dictation-hotkey", "setup-choice", "byok-dictation", "byok-assistant"]
   );
   assert.deepEqual(
     getOnboardingRoute({ authPath: "account", setupMode: "local", agentAllowed: false }).slice(-2),
@@ -277,7 +276,7 @@ test("v2 sessions retain safe within-step state without accepting secrets", asyn
   assert.equal(parsed.resume.localModels["local-assistant"].modelId, "");
 });
 
-test("an explicit restart clears every persisted route choice and returns to auth", async () => {
+test("an explicit restart clears every persisted route choice and returns to permissions", async () => {
   const { resetOnboardingProgress } = await load();
   const values = new Map([
     ["onboardingSessionV2", '{"currentStepId":"permissions"}'],
@@ -307,8 +306,8 @@ test("an explicit restart clears every persisted route choice and returns to aut
 
 test("legacy numeric steps migrate conservatively", async () => {
   const { migrateLegacyOnboardingStep } = await load();
-  assert.equal(migrateLegacyOnboardingStep(null), "auth");
-  assert.equal(migrateLegacyOnboardingStep("0"), "auth");
+  assert.equal(migrateLegacyOnboardingStep(null), "permissions");
+  assert.equal(migrateLegacyOnboardingStep("0"), "permissions");
   // Old steps 1-2 predate the old permissions step, so they must resume at
   // the new flow's permissions step rather than past it.
   assert.equal(migrateLegacyOnboardingStep("1"), "permissions");
@@ -531,4 +530,21 @@ test("a session written before the resume flags infers its hotkey confirmations"
   // Nothing else is inferred — a demo the user never ran must still gate Continue.
   assert.equal(past.resume.dictationDemoCompleted, false);
   assert.equal(past.resume.assistantDemoCompleted, false);
+});
+
+test("fresh BYOK setup starts without an account and only Pura opens authentication", async () => {
+  const { createOnboardingSession, getOnboardingRoute } = await load();
+  const session = createOnboardingSession();
+  assert.equal(session.currentStepId, "permissions");
+  assert.equal(session.authPath, "guest");
+  assert.equal(getOnboardingRoute({ ...session, agentAllowed: true }).includes("auth"), false);
+  assert.deepEqual(getOnboardingRoute({ authPath: null, setupMode: "cloud", agentAllowed: true }), [
+    "auth",
+  ]);
+  assert.equal(
+    getOnboardingRoute({ authPath: "guest", setupMode: "local", agentAllowed: true }).includes(
+      "auth"
+    ),
+    false
+  );
 });

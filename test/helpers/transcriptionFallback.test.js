@@ -7,24 +7,24 @@ const {
 
 const load = () => import("../../src/helpers/transcriptionFallback.js");
 
-test("signed-in OpenWhispr Cloud falls back to cloud", async () => {
+test("signed-in Mnemo Cloud falls back to cloud", async () => {
   const { resolveStreamingFallbackTarget } = await load();
   assert.equal(
     resolveStreamingFallbackTarget({
       useLocalWhisper: false,
-      cloudTranscriptionMode: "openwhispr",
+      cloudTranscriptionMode: "mnemo",
       isSignedIn: true,
     }),
     "cloud"
   );
 });
 
-test("signed-out OpenWhispr Cloud skips rather than diverting to a leftover BYOK provider", async () => {
+test("signed-out Mnemo Cloud skips rather than diverting to a leftover BYOK provider", async () => {
   const { resolveStreamingFallbackTarget } = await load();
   assert.equal(
     resolveStreamingFallbackTarget({
       useLocalWhisper: false,
-      cloudTranscriptionMode: "openwhispr",
+      cloudTranscriptionMode: "mnemo",
       isSignedIn: false,
     }),
     "skip"
@@ -50,7 +50,7 @@ const orukeetStart = (result) =>
   import("../../src/helpers/transcriptionFallback.js").then(({ resolveStreamingStartFallback }) =>
     resolveStreamingStartFallback({
       providerName: "orukeet",
-      cloudTranscriptionMode: "openwhispr",
+      cloudTranscriptionMode: "mnemo",
       result,
     })
   );
@@ -140,7 +140,7 @@ test("only the managed Orukeet route falls back on session failures", async () =
   assert.equal(
     resolveStreamingStartFallback({
       providerName: "deepgram",
-      cloudTranscriptionMode: "openwhispr",
+      cloudTranscriptionMode: "mnemo",
       result,
     }),
     null

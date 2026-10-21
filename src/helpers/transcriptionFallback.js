@@ -5,7 +5,7 @@ export function resolveStreamingFallbackTarget({
   cloudTranscriptionMode,
   isSignedIn,
 }) {
-  const isCloudMode = !useLocalWhisper && cloudTranscriptionMode === "openwhispr";
+  const isCloudMode = !useLocalWhisper && cloudTranscriptionMode === "pura";
   if (isCloudMode) return isSignedIn ? "cloud" : "skip";
   return "byok";
 }
@@ -22,9 +22,9 @@ const USER_ACTIONABLE_START_FAILURES = new Set([
   "LIMIT_REACHED",
 ]);
 
-// Orukeet over OpenWhispr Cloud sessions, as opposed to a self-hosted server.
+// Orukeet over Pura LLM sessions, as opposed to a self-hosted server.
 export function isManagedOrukeetStream({ providerName, cloudTranscriptionMode }) {
-  return providerName === "orukeet" && cloudTranscriptionMode === "openwhispr";
+  return providerName === "orukeet" && cloudTranscriptionMode === "pura";
 }
 
 // Every other managed Orukeet start failure goes to batch rather than losing

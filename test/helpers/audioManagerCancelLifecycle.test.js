@@ -5,7 +5,7 @@ const { deferred } = require("./harness/deferred");
 
 async function loadManagerClass(t) {
   const { AudioManager, window } = await loadAudioManager(t, {
-    cachePrefix: "openwhispr-cancel-lifecycle-test-",
+    cachePrefix: "mnemo-cancel-lifecycle-test-",
     settingsKey: "__cancelLifecycleSettings",
     settings: {
       useLocalWhisper: true,
@@ -277,14 +277,14 @@ test("cancelling when nothing is processing dismisses nothing", async (t) => {
 // batch pipeline that captured it.
 async function loadCancelGuardManagerClass(t) {
   const { AudioManager, window } = await loadAudioManager(t, {
-    cachePrefix: "openwhispr-streaming-leak-test-",
+    cachePrefix: "mnemo-streaming-leak-test-",
     settingsKey: "__streamingLeakSettings",
     settings: {
       useLocalWhisper: false,
-      cloudTranscriptionMode: "openwhispr",
+      cloudTranscriptionMode: "mnemo",
       isSignedIn: true,
       preferredLanguage: "auto",
-      cleanupCloudMode: "openwhispr",
+      cleanupCloudMode: "mnemo",
       useCleanupModel: true,
       customPrompts: {},
     },
@@ -305,7 +305,7 @@ async function loadCancelGuardManagerClass(t) {
           globalThis.__streamingLeakCleanupFailureCalls.push(message);
         };
       `,
-      // processWithOpenWhisprCloud's "agent" route walks through
+      // processWithMnemoCloud's "agent" route walks through
       // resolveReasoningRoute -> dictationAgentPrompt -> resolvePrompt, which
       // reads the real useSettingsStore zustand store for custom prompts.
       // Mocking /config/prompts (as the real ReasoningService flow does in
@@ -414,7 +414,7 @@ function createStreamingLeakManager(AudioManager) {
     getStreamingProviderName: () => "openai",
     shouldUseStreaming: () => false,
     isRecordingAllowedByPolicy: () => true,
-    // Real processWithOpenWhisprCloud runs; these three would otherwise need
+    // Real processWithMnemoCloud runs; these three would otherwise need
     // more settings/state than this scenario cares about.
     isDictionaryEcho: () => false,
     getWhisperPrompt: () => null,
@@ -433,7 +433,7 @@ test("a cancelled batch pipeline cannot clear newer streaming finalization", asy
   manager.isProcessing = true;
   manager.isStreaming = false;
   manager._localSpeechGateState = null;
-  manager.processWithOpenWhisprCloud = () => oldTranscription.promise;
+  manager.processWithMnemoCloud = () => oldTranscription.promise;
 
   const oldRun = manager.processAudio(new Blob(["old"], { type: "audio/webm" }));
   assert.equal(manager.cancelProcessing(), true);
@@ -446,7 +446,7 @@ test("a cancelled batch pipeline cannot clear newer streaming finalization", asy
   const streamingStop = manager.stopStreamingRecording();
   assert.equal(manager.isProcessing, true);
 
-  oldTranscription.resolve({ success: true, text: "old", source: "openwhispr", timings: {} });
+  oldTranscription.resolve({ success: true, text: "old", source: "mnemo", timings: {} });
   await oldRun;
   const remainedBusy = manager.isProcessing;
   await streamingStop;
@@ -495,7 +495,7 @@ test(
   }
 );
 
-// Finding 2 (round-1 review override): processWithOpenWhisprCloud's catch
+// Finding 2 (round-1 review override): processWithMnemoCloud's catch
 // gates _notifyAgentReasoningFailed() too, not just the logger/cleanup-store
 // calls the brief named. Without that, a cancelled voice-agent command whose
 // cloud reasoning also happens to fail would still pop an "Agent Unavailable"
@@ -523,7 +523,7 @@ test(
       text: "the raw transcript",
     });
 
-    const result = await manager.processWithOpenWhisprCloud(
+    const result = await manager.processWithMnemoCloud(
       {
         size: 1024,
         type: "audio/webm",

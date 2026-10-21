@@ -123,7 +123,7 @@ function runFFmpegConversion(args, outputPath, { signal } = {}) {
     if (!ffmpegPath) {
       reject(
         new Error(
-          "FFmpeg not found - the bundled FFmpeg is missing from this install and no system FFmpeg was found on PATH; reinstalling OpenWhispr should fix this"
+          "FFmpeg not found - the bundled FFmpeg is missing from this install and no system FFmpeg was found on PATH; reinstalling mnemo should fix this"
         )
       );
       return;
@@ -471,7 +471,7 @@ async function mergeAudioSegments(segments) {
   const ffmpegPath = getFFmpegPath();
   if (!ffmpegPath) throw new Error("FFmpeg not found - required for audio segment recovery");
 
-  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "openwhispr-audio-merge-"));
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "mnemo-audio-merge-"));
   const outputPath = path.join(tempDir, "merged.webm");
   try {
     const inputPaths = segments.map((segment, index) => {

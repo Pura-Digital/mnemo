@@ -144,7 +144,7 @@ async function mountCompletionHarness(
   };
 
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-audio-recording-clipboard-persistence-",
+    cachePrefix: "mnemo-audio-recording-clipboard-persistence-",
     noExternal: ["react-i18next"],
     mockModules: {
       "/helpers/audioManager": FAKE_AUDIO_MANAGER_SOURCE,

@@ -8,7 +8,7 @@ const modelRegistryData = require("../models/modelRegistryData.json");
 
 const POLICY_SCOPES = ["transcription", "llm"];
 const TRANSCRIPTION_MODES = new Set([
-  "openwhispr",
+  "mnemo",
   "providers",
   "local",
   "self-hosted",

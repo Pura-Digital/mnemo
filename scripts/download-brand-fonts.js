@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Fetches the licensed Yowza font files from the private OpenWhispr/brand-assets
+// Fetches the licensed Yowza font files from the private Mnemo/brand-assets
 // release into src/assets/fonts/yowza/, where src/brandFonts.ts picks them up
 // at build time. Blaze Type's EULA forbids redistributing the files, so they
 // are never committed; a build without access skips this step and the UI falls
@@ -10,7 +10,7 @@ const path = require("path");
 const { execSync } = require("child_process");
 const { parseArgs } = require("./lib/download-utils");
 
-const REPO = "OpenWhispr/brand-assets";
+const REPO = "Mnemo/brand-assets";
 const TAG = "yowza-v1";
 const FILES = [
   "yowza-std-regular.otf",
@@ -46,7 +46,7 @@ function apiHeaders(token) {
   return {
     Accept: "application/vnd.github+json",
     Authorization: `Bearer ${token}`,
-    "User-Agent": "OpenWhispr-Downloader",
+    "User-Agent": "Mnemo-Downloader",
   };
 }
 

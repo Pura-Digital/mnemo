@@ -32,7 +32,7 @@ const SHARED_CHANNEL_PROVIDERS = ["openai-realtime", "tinfoil-realtime"];
 const SETTINGS_DEFAULTS = {
   cloudTranscriptionProvider: "openai",
   cloudTranscriptionModel: "gpt-4o-mini-transcribe",
-  cloudTranscriptionMode: "openwhispr",
+  cloudTranscriptionMode: "mnemo",
   cortiEnvironment: undefined,
   cortiTenant: undefined,
 };
@@ -63,7 +63,7 @@ const RESOLUTION_MATRIX = [
     "corti",
   ],
   [
-    "corti on openwhispr cloud is not corti streaming; realtime model still wins",
+    "corti on mnemo cloud is not corti streaming; realtime model still wins",
     { settings: settingsWith({ cloudTranscriptionProvider: "corti" }) },
     "openai-realtime",
   ],
@@ -121,7 +121,7 @@ const RESOLUTION_MATRIX = [
     "deepgram",
   ],
   [
-    "deepgram on openwhispr cloud stays on the managed path",
+    "deepgram on mnemo cloud stays on the managed path",
     { settings: settingsWith({ cloudTranscriptionProvider: "deepgram" }) },
     "openai-realtime",
   ],
@@ -176,15 +176,15 @@ test("options: openai-realtime sends provider explicitly and no preview (#1624)"
     providerName: "openai-realtime",
     settings: settingsWith({}),
     language: "en",
-    keyterms: ["OpenWhispr"],
+    keyterms: ["Mnemo"],
   });
   assert.deepEqual(options, {
     provider: "openai-realtime",
     sampleRate: 16000,
     language: "en",
-    keyterms: ["OpenWhispr"],
+    keyterms: ["Mnemo"],
     model: "gpt-4o-mini-transcribe",
-    mode: "openwhispr",
+    mode: "mnemo",
     environment: undefined,
     tenant: undefined,
   });

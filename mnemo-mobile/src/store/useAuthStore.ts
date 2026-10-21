@@ -20,7 +20,7 @@ import { Sentry } from '@/lib/sentry';
 import { useUsageStore } from '@/store/useUsageStore';
 import { clearAllSessions as clearAgentSessions } from '@/services/agent/AgentComposerService';
 
-const GUEST_SESSION_KEY = 'openwhispr_guest_session';
+const GUEST_SESSION_KEY = 'mnemo_guest_session';
 
 // Explicit auth choices wait for the startup request to finish writing its cookie,
 // including failures, so its late result cannot overwrite the chosen session.

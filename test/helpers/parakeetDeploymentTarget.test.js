@@ -61,7 +61,7 @@ test("rejects a packaged ONNX Runtime library missing a universal architecture s
 });
 
 test("validates the ONNX Runtime library the sherpa binaries load", () => {
-  const appPath = "/tmp/OpenWhispr.app";
+  const appPath = "/tmp/Mnemo.app";
   const result = sherpaDownloader.verifyPackagedMacosParakeet?.(appPath, {
     readDirectory(directory) {
       assert.equal(directory, `${appPath}/Contents/Resources/bin`);

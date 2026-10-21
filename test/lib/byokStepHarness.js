@@ -62,7 +62,7 @@ async function mountByokStep(
   });
   const container = installHookDom(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-byok-step-",
+    cachePrefix: "mnemo-byok-step-",
     noExternal: ["react-i18next"],
     mockModules: {
       "react-i18next": `

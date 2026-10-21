@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 function installWindow(state) {
   const previousWindow = global.window;
   global.window = {
-    location: { origin: "https://desktop.openwhispr.test" },
+    location: { origin: "https://desktop.mnemo.test" },
     electronAPI: {
       authGetTokenState: async () => ({ ...state.current }),
       authSetToken: async (token, expectedGeneration) => {
@@ -33,7 +33,7 @@ function installWindow(state) {
 
 function sessionRequest(generation, token) {
   return {
-    url: "https://auth.openwhispr.test/api/auth/get-session",
+    url: "https://auth.mnemo.test/api/auth/get-session",
     headers: new Headers(token ? { Authorization: `Bearer ${token}` } : {}),
     openWhisprAuthGeneration: generation,
   };
@@ -105,7 +105,7 @@ test("a token replacement before fetch prevents the request from leaving", async
   const state = { current: { token: "token-a", generation: 7 } };
   t.after(installWindow(state));
   const request = await auth.prepareAuthRequest({
-    url: "https://auth.openwhispr.test/api/auth/get-session",
+    url: "https://auth.mnemo.test/api/auth/get-session",
     headers: new Headers(),
   });
 
@@ -132,7 +132,7 @@ test("a token replacement while fetch is in flight discards the old response", a
   const state = { current: { token: "token-a", generation: 11 } };
   t.after(installWindow(state));
   const request = await auth.prepareAuthRequest({
-    url: "https://auth.openwhispr.test/api/auth/get-session",
+    url: "https://auth.mnemo.test/api/auth/get-session",
     headers: new Headers(),
   });
 
@@ -168,7 +168,7 @@ test("a transient get-session network failure keeps the binding but fences sync"
   assert.equal(auth.getValidatedAuthGeneration(), 3);
 
   const request = await auth.prepareAuthRequest({
-    url: "https://auth.openwhispr.test/api/auth/get-session",
+    url: "https://auth.mnemo.test/api/auth/get-session",
     headers: new Headers(),
   });
   const previousFetch = global.fetch;

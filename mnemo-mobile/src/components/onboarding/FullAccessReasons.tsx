@@ -12,7 +12,7 @@ const REASONS = [
 /** The "why do you need this?" answer, shown wherever we ask for Full Access. */
 export function FullAccessReasons() {
   return (
-    <Disclosure title="Why does OpenWhispr need Full Access?">
+    <Disclosure title="Why does mnemo need Full Access?">
       <View className="gap-2">
         {REASONS.map((reason) => (
           <View key={reason} className="flex-row items-start gap-2">

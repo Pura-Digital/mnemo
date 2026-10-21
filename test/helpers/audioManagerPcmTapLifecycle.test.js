@@ -8,7 +8,7 @@ const { installMicCaptureGlobals } = require("../lib/rendererTestHarness");
 
 async function load(t) {
   const { AudioManager } = await loadAudioManager(t, {
-    cachePrefix: "openwhispr-pcm-tap-lifecycle-test-",
+    cachePrefix: "mnemo-pcm-tap-lifecycle-test-",
     settingsKey: "__pcmTapLifecycleSettings",
   });
   return AudioManager;
@@ -112,7 +112,7 @@ test("a replacement microphone is bound into the same tap", async (t) => {
 
 async function loadWithSettings(t, settings, mockModules = {}) {
   const loaded = await loadAudioManager(t, {
-    cachePrefix: "openwhispr-pcm-tap-start-test-",
+    cachePrefix: "mnemo-pcm-tap-start-test-",
     settingsKey: "__pcmTapStartSettings",
     settings,
     mockModules,
@@ -151,7 +151,7 @@ test("only offline local engines get a tap", async (t) => {
     "online models commit their own stream"
   );
   assert.equal(taps({ useLocalWhisper: false, cloudTranscriptionMode: "byok" }), false);
-  assert.equal(taps({ useLocalWhisper: false, cloudTranscriptionMode: "openwhispr" }), false);
+  assert.equal(taps({ useLocalWhisper: false, cloudTranscriptionMode: "mnemo" }), false);
 });
 
 test("managed enterprise transcription gets no tap even with local settings", async (t) => {

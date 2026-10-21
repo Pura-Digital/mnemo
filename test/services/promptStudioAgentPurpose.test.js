@@ -22,7 +22,7 @@ test("Prompt Studio labels dictation-agent runs for policy enforcement", async (
   globalThis.__promptStudioReasoningCalls = calls;
 
   const { createServer } = await import("vite");
-  const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), "openwhispr-prompt-studio-test-"));
+  const cacheDir = fs.mkdtempSync(path.join(os.tmpdir(), "mnemo-prompt-studio-test-"));
   const vite = await createServer({
     root: path.resolve(__dirname, "../../src"),
     cacheDir,
@@ -157,12 +157,12 @@ test("Prompt Studio labels dictation-agent runs for policy enforcement", async (
                 useCleanupModel: true,
                 cleanupModel: "",
                 useDictationAgent: true,
-                dictationAgentMode: "openwhispr",
-                dictationAgentProvider: "openwhispr",
+                dictationAgentMode: "mnemo",
+                dictationAgentProvider: "mnemo",
                 dictationAgentModel: "auto",
                 useDictationTranslation: true,
-                translationMode: "openwhispr",
-                translationProvider: "openwhispr",
+                translationMode: "mnemo",
+                translationProvider: "mnemo",
                 translationModel: "auto",
                 translationRemoteUrl: "",
                 translationCloudBaseUrl: "",
@@ -194,8 +194,8 @@ test("Prompt Studio labels dictation-agent runs for policy enforcement", async (
                 return {
                   reachable: true,
                   model: "auto",
-                  displayProvider: "openwhispr",
-                  config: { provider: "openwhispr" },
+                  displayProvider: "mnemo",
+                  config: { provider: "mnemo" },
                 };
               }
             `;
@@ -206,8 +206,8 @@ test("Prompt Studio labels dictation-agent runs for policy enforcement", async (
                 return {
                   reachable: true,
                   model: "auto",
-                  displayProvider: "openwhispr",
-                  config: { provider: "openwhispr" },
+                  displayProvider: "mnemo",
+                  config: { provider: "mnemo" },
                 };
               }
             `;

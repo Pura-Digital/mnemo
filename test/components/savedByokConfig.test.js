@@ -10,13 +10,13 @@ const DRAFT_KEYS = ["baseUrl", "customModel", "selectedModel", "selectedProvider
 // A fresh install: only store defaults, nothing the user configured.
 const firstRun = async () => ({
   useLocalWhisper: false,
-  transcriptionMode: "openwhispr",
+  transcriptionMode: "mnemo",
   cloudTranscriptionProvider: "openai",
   cloudTranscriptionModel: "gpt-4o-mini-transcribe",
   cloudTranscriptionBaseUrl: await loadDefaultTranscriptionBase(),
   remoteTranscriptionUrl: "",
   remoteTranscriptionModel: "",
-  chatAgentMode: "openwhispr",
+  chatAgentMode: "mnemo",
   chatAgentProvider: "groq",
   chatAgentModel: "openai/gpt-oss-120b",
   chatAgentRemoteUrl: "",
@@ -35,7 +35,7 @@ test("a first run has nothing to reopen", async () => {
   assert.equal(resolveSavedByokConfig("byok-assistant", settings), null);
 });
 
-test("local, OpenWhispr Cloud and enterprise dictation reopen nothing", async () => {
+test("local, Mnemo Cloud and enterprise dictation reopen nothing", async () => {
   const { resolveSavedByokConfig } = await load();
   const base = await firstRun();
   for (const settings of [
@@ -48,7 +48,7 @@ test("local, OpenWhispr Cloud and enterprise dictation reopen nothing", async ()
       cloudTranscriptionProvider: "groq",
     },
     { ...base, transcriptionMode: "providers", useLocalWhisper: true },
-    { ...base, transcriptionMode: "openwhispr", ...CUSTOM_ENDPOINT },
+    { ...base, transcriptionMode: "mnemo", ...CUSTOM_ENDPOINT },
     { ...base, transcriptionMode: "enterprise", ...CUSTOM_ENDPOINT },
   ]) {
     assert.equal(
@@ -206,7 +206,7 @@ test("the assistant reopens nothing it could not save back", async () => {
   for (const settings of [
     { ...base, chatAgentMode: "self-hosted", chatAgentRemoteUrl: "" },
     { ...base, chatAgentMode: "providers", chatAgentProvider: "custom" },
-    { ...base, chatAgentMode: "openwhispr" },
+    { ...base, chatAgentMode: "mnemo" },
     { ...base, chatAgentMode: "local", chatAgentProvider: "qwen" },
   ]) {
     assert.equal(resolveSavedByokConfig("byok-assistant", settings), null, settings.chatAgentMode);

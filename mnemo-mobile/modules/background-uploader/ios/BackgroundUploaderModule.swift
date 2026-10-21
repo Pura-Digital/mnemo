@@ -14,7 +14,7 @@ private struct UploadRequest: Record {
 }
 
 private enum BackgroundUploaderConstants {
-  static let sessionIdentifier = "com.openwhispr.background-uploader"
+  static let sessionIdentifier = "com.mnemo.background-uploader"
   static let pendingTranscriptKey = "keyboard_pending_transcript"
   static let pendingTranscriptJobIdKey = "keyboard_pending_transcript_job_id"
   static let orphanedRawTranscriptKey = "keyboard_orphaned_raw_transcript"
@@ -34,7 +34,7 @@ private enum BackgroundUploaderConstants {
   // Derived from the host app's bundle id so the same module works for any
   // signing identity (the convention is `group.<bundle-id>`).
   static var bundleId: String {
-    Bundle.main.bundleIdentifier ?? "com.gizmolabs.openwhispr"
+    Bundle.main.bundleIdentifier ?? "com.pura.mnemo"
   }
 
   static var appGroupId: String {
@@ -319,7 +319,7 @@ public class BackgroundUploaderModule: Module {
     }
 
     let resolvedFileName = request.fileName ?? fileUrl.lastPathComponent
-    let boundary = "----OpenWhisprBoundary\(UUID().uuidString)"
+    let boundary = "----MnemoBoundary\(UUID().uuidString)"
 
     let bodyFileUrl: URL
     let bodyBuildStartedAt = Int(Date().timeIntervalSince1970 * 1000)

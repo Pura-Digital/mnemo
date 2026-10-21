@@ -4,7 +4,7 @@ import AVFoundation
 
 public class AppGroupStorageModule: Module {
   private var appBundleId: String {
-    Bundle.main.bundleIdentifier ?? "com.gizmolabs.openwhispr"
+    Bundle.main.bundleIdentifier ?? "com.pura.mnemo"
   }
   private var appGroupId: String {
     "group.\(appBundleId)"
@@ -25,7 +25,7 @@ public class AppGroupStorageModule: Module {
   private let agentActionKey = "keyboard_agent_action"
   private let agentActionAtMsKey = "keyboard_agent_action_at_ms"
   private static var notificationPrefix: String {
-    Bundle.main.bundleIdentifier ?? "com.gizmolabs.openwhispr"
+    Bundle.main.bundleIdentifier ?? "com.pura.mnemo"
   }
   private static var darwinStopNotificationName: String {
     "\(notificationPrefix).stopRecording"
@@ -132,7 +132,7 @@ public class AppGroupStorageModule: Module {
   private var backgroundObserverToken: NSObjectProtocol?
   private var audioInterruptionObserverToken: NSObjectProtocol?
   private var mediaServicesResetObserverToken: NSObjectProtocol?
-  // Refreshed while OpenWhispr is foreground so the keyboard can tell it is
+  // Refreshed while Mnemo is foreground so the keyboard can tell it is
   // hosted by our own app (record in place) rather than another app (hand off).
   private var foregroundHeartbeatTimer: Timer?
   private let containingAppForegroundKey = "containing_app_foreground_at_ms"
@@ -947,7 +947,7 @@ public class AppGroupStorageModule: Module {
       return
     }
 
-    backgroundTaskId = UIApplication.shared.beginBackgroundTask(withName: "OpenWhisprTranscription") {
+    backgroundTaskId = UIApplication.shared.beginBackgroundTask(withName: "MnemoTranscription") {
       self.endBackgroundTask()
     }
 
@@ -1235,7 +1235,7 @@ public class AppGroupStorageModule: Module {
     inputFormat: AVAudioFormat,
     timestamp: Int
   ) throws -> (AVAudioFile, URL) {
-    let filePath = NSTemporaryDirectory() + "openwhispr_recording_\(timestamp).m4a"
+    let filePath = NSTemporaryDirectory() + "mnemo_recording_\(timestamp).m4a"
     let fileUrl = URL(fileURLWithPath: filePath)
     let settings: [String: Any] = [
       AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
@@ -1278,7 +1278,7 @@ public class AppGroupStorageModule: Module {
       ])
     }
 
-    let filePath = NSTemporaryDirectory() + "openwhispr_recording_\(timestamp).wav"
+    let filePath = NSTemporaryDirectory() + "mnemo_recording_\(timestamp).wav"
     let fileUrl = URL(fileURLWithPath: filePath)
 
     let file = try AVAudioFile(
@@ -1779,7 +1779,7 @@ public class AppGroupStorageModule: Module {
     armWarmMic(reason: "appForeground")  // arms if cold, resets idle timer if already warm
   }
 
-  // Lets the keyboard tell whether it is running inside OpenWhispr itself. While
+  // Lets the keyboard tell whether it is running inside Mnemo itself. While
   // the app is foreground this timestamp is refreshed every couple seconds; the
   // keyboard treats a fresh value as "host is our own app" and records in place
   // instead of doing a cross-app handoff (which would wrongly show the "swipe

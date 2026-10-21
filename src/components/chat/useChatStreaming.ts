@@ -246,11 +246,11 @@ export function useChatStreaming({
         isProviderImageWired: providerSupportsImages,
       });
       const requestedAttachment = attachScreenContext ? (options?.attachment ?? null) : null;
-      const llmMode = llmConfig.mode || "openwhispr";
+      const llmMode = llmConfig.mode || "mnemo";
       const policyState = usePolicyStore.getState();
       const policyProvider =
-        llmMode === "openwhispr"
-          ? "openwhispr"
+        llmMode === "mnemo"
+          ? "mnemo"
           : llmMode === "local"
             ? "local"
             : llmConfig.provider;
@@ -271,7 +271,7 @@ export function useChatStreaming({
       }
 
       setAgentState("thinking");
-      const isCloudAgent = llmMode === "openwhispr" && settings.isSignedIn;
+      const isCloudAgent = llmMode === "mnemo" && settings.isSignedIn;
       const isLanAgent = llmMode === "self-hosted" && !!llmConfig.remoteUrl;
       const isCustomAgent = llmMode === "providers" && llmConfig.provider === "custom";
       const isLocalProvider =
@@ -363,7 +363,7 @@ export function useChatStreaming({
       if (attachment) {
         // The screenshot needs its grounding instruction, exactly like the
         // dictation path pairs the suffix with an attached image. Restore it
-        // for cloud context once openwhispr-api#157 vision-routes that field.
+        // for cloud context once mnemo-api#157 vision-routes that field.
         systemPrompt = appendScreenContextSuffix(systemPrompt, settings.uiLanguage);
       }
       if (options?.plainTextResponse) {

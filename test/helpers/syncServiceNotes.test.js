@@ -25,7 +25,7 @@ const { NotesService } = require("../../src/services/NotesService.ts");
 const { CloudApiError } = require("../../src/services/cloudApi.ts");
 
 // Mirrors SYNC_ALL_LOCK in SyncService.ts.
-const SYNC_ALL_LOCK = "openwhispr-sync-all";
+const SYNC_ALL_LOCK = "mnemo-sync-all";
 const BATCH_SIZE = 50;
 
 // SQLite's datetime() format, the one local rows actually carry.

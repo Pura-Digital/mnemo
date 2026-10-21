@@ -36,7 +36,7 @@
       "localizations" : [
 
       ],
-      "name" : "OpenWhispr Pro",
+      "name" : "Mnemo Pro",
       "subscriptions" : [
         {
           "adHocOffers" : [
@@ -64,13 +64,13 @@
           "localizations" : [
             {
               "description" : "Unlimited cloud transcription and sync.",
-              "displayName" : "OpenWhispr Pro Monthly",
+              "displayName" : "Mnemo Pro Monthly",
               "locale" : "en_US"
             }
           ],
-          "productID" : "com.openwhispr.pro.monthly",
+          "productID" : "com.pura.mnemo.pro.monthly",
           "recurringSubscriptionPeriod" : "P1M",
-          "referenceName" : "OpenWhispr Pro Monthly",
+          "referenceName" : "Mnemo Pro Monthly",
           "subscriptionGroupID" : "B9E44BB5",
           "type" : "RecurringSubscription",
           "winbackOffers" : [
@@ -103,13 +103,13 @@
           "localizations" : [
             {
               "description" : "Unlimited cloud transcription and sync.",
-              "displayName" : "OpenWhispr Pro Annual",
+              "displayName" : "Mnemo Pro Annual",
               "locale" : "en_US"
             }
           ],
-          "productID" : "com.openwhispr.pro.annual",
+          "productID" : "com.pura.mnemo.pro.annual",
           "recurringSubscriptionPeriod" : "P1Y",
-          "referenceName" : "OpenWhispr Pro Annual",
+          "referenceName" : "Mnemo Pro Annual",
           "subscriptionGroupID" : "B9E44BB5",
           "type" : "RecurringSubscription",
           "winbackOffers" : [

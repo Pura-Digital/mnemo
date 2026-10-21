@@ -122,11 +122,11 @@ test("migration is Windows-only", () => {
 test("Windows and Linux detect a login launch from the flag on argv", () => {
   for (const platform of ["win32", "linux"]) {
     assert.equal(
-      wasLaunchedHidden({ platform, argv: ["OpenWhispr.exe", HIDDEN_LAUNCH_FLAG] }),
+      wasLaunchedHidden({ platform, argv: ["Mnemo.exe", HIDDEN_LAUNCH_FLAG] }),
       true,
       platform
     );
-    assert.equal(wasLaunchedHidden({ platform, argv: ["OpenWhispr.exe"] }), false, platform);
+    assert.equal(wasLaunchedHidden({ platform, argv: ["Mnemo.exe"] }), false, platform);
   }
 });
 
@@ -136,7 +136,7 @@ test("macOS detects a login launch from wasOpenedAtLogin, not from argv", () => 
   assert.equal(
     wasLaunchedHidden({
       platform: "darwin",
-      argv: ["OpenWhispr"],
+      argv: ["Mnemo"],
       loginItemSettings: { wasOpenedAtLogin: true },
     }),
     true
@@ -144,7 +144,7 @@ test("macOS detects a login launch from wasOpenedAtLogin, not from argv", () => 
   assert.equal(
     wasLaunchedHidden({
       platform: "darwin",
-      argv: ["OpenWhispr", HIDDEN_LAUNCH_FLAG],
+      argv: ["Mnemo", HIDDEN_LAUNCH_FLAG],
       loginItemSettings: { wasOpenedAtLogin: false },
     }),
     false
@@ -154,8 +154,8 @@ test("macOS detects a login launch from wasOpenedAtLogin, not from argv", () => 
 test("a relaunch drops the hidden-launch flag and keeps every other arg", () => {
   assert.deepEqual(
     getRelaunchOptions({
-      argv: ["OpenWhispr.exe", HIDDEN_LAUNCH_FLAG, "--log-level=debug"],
-      protocol: "openwhispr",
+      argv: ["Mnemo.exe", HIDDEN_LAUNCH_FLAG, "--log-level=debug"],
+      protocol: "mnemo",
     }),
     { args: ["--log-level=debug"] }
   );
@@ -165,11 +165,11 @@ test("a relaunch drops the deep link that cold-started the app", () => {
   assert.deepEqual(
     getRelaunchOptions({
       argv: [
-        "OpenWhispr.exe",
-        "openwhispr://auth/callback?bearer_token=stale",
+        "Mnemo.exe",
+        "mnemo://auth/callback?bearer_token=stale",
         "--proxy-server=http://proxy:8080",
       ],
-      protocol: "openwhispr",
+      protocol: "mnemo",
     }),
     { args: ["--proxy-server=http://proxy:8080"] }
   );
@@ -178,18 +178,18 @@ test("a relaunch drops the deep link that cold-started the app", () => {
 test("an AppImage relaunches from the AppImage file, not its FUSE mount", () => {
   assert.deepEqual(
     getRelaunchOptions({
-      argv: ["/tmp/.mount_OpenWh/open-whispr", "--no-sandbox"],
-      protocol: "openwhispr",
-      appImagePath: "/home/user/OpenWhispr.AppImage",
+      argv: ["/tmp/.mount_OpenWh/mnemo", "--no-sandbox"],
+      protocol: "mnemo",
+      appImagePath: "/home/user/Mnemo.AppImage",
     }),
-    { launcherPath: "/home/user/OpenWhispr.AppImage", args: ["--no-sandbox"] }
+    { launcherPath: "/home/user/Mnemo.AppImage", args: ["--no-sandbox"] }
   );
 });
 
 test("the AppImage waiter outlives this process, then execs the file with its args", () => {
   assert.deepEqual(
     getRelaunchWaiter({
-      launcherPath: "/home/user/OpenWhispr.AppImage",
+      launcherPath: "/home/user/Mnemo.AppImage",
       args: ["--no-sandbox"],
       pid: 4242,
     }),
@@ -199,7 +199,7 @@ test("the AppImage waiter outlives this process, then execs the file with its ar
         "-c",
         'while kill -0 "$0"; do sleep 0.2; done; exec "$@"',
         "4242",
-        "/home/user/OpenWhispr.AppImage",
+        "/home/user/Mnemo.AppImage",
         "--no-sandbox",
       ],
     }

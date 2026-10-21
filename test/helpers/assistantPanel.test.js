@@ -26,7 +26,7 @@ async function renderAssistantPanel(
   });
 
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-assistant-panel-test-",
+    cachePrefix: "mnemo-assistant-panel-test-",
     mockModules: {
       "/chat/useChatPersistence": `
         export function useChatPersistence() {
@@ -154,7 +154,7 @@ test("starting a new conversation clears the displayed response and parent conte
   });
 
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-assistant-panel-reset-test-",
+    cachePrefix: "mnemo-assistant-panel-reset-test-",
     mockModules: {
       "/components/icons": `
         import React from "react";
@@ -396,7 +396,7 @@ test("an automatic clipboard delivery keeps the shared Copy button confirmed for
   const container = installInteractiveDom(t);
   const scheduledDelays = [];
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-copy-feedback-test-",
+    cachePrefix: "mnemo-copy-feedback-test-",
   });
   const { useCopyFeedback } = await vite.ssrLoadModule("/hooks/useCopyFeedback.ts");
   const { createRoot } = require("react-dom/client");
@@ -439,7 +439,7 @@ test("Assistant selection copy preserves the selected text without claiming Copi
   };
 
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-selection-copy-feedback-test-",
+    cachePrefix: "mnemo-selection-copy-feedback-test-",
   });
   const { useCopyFeedback } = await vite.ssrLoadModule("/hooks/useCopyFeedback.ts");
   const { createRoot } = require("react-dom/client");
@@ -463,7 +463,7 @@ test("Assistant selection copy preserves the selected text without claiming Copi
 test("Assistant selection must stay entirely inside the response root", async (t) => {
   installBrowserGlobals(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-assistant-selection-test-",
+    cachePrefix: "mnemo-assistant-selection-test-",
   });
   const { getSelectionForCopyShortcut, getSelectionInside } = await vite.ssrLoadModule(
     "/utils/assistantSelection.ts"
@@ -527,7 +527,7 @@ test("Assistant selection must stay entirely inside the response root", async (t
 test("a failed Assistant resize releases its open claim so opening can retry", async (t) => {
   installBrowserGlobals(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-assistant-open-failure-test-",
+    cachePrefix: "mnemo-assistant-open-failure-test-",
   });
   const { useAssistantPanel } = await vite.ssrLoadModule("/hooks/useAssistantPanel.js");
   let resizeCalls = 0;
@@ -556,7 +556,7 @@ test("a failed Assistant resize releases its open claim so opening can retry", a
 test("a failed live-transcript resize releases its open claim so opening can retry", async (t) => {
   installBrowserGlobals(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-live-transcript-open-failure-test-",
+    cachePrefix: "mnemo-live-transcript-open-failure-test-",
   });
   const { useLiveTranscriptPanel } = await vite.ssrLoadModule("/hooks/useLiveTranscriptPanel.js");
   let resizeCalls = 0;
@@ -594,7 +594,7 @@ test("a caret-delivered command returns the hidden Assistant to the idle pill", 
   installBrowserGlobals(t);
   const container = installInteractiveDom(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-assistant-caret-settlement-test-",
+    cachePrefix: "mnemo-assistant-caret-settlement-test-",
   });
   const { useAssistantPanel } = await vite.ssrLoadModule("/hooks/useAssistantPanel.js");
   const { createRoot } = require("react-dom/client");
@@ -644,7 +644,7 @@ test("a follow-up into an open panel strips caret delivery and stays panel-first
   installBrowserGlobals(t);
   const container = installInteractiveDom(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-assistant-followup-delivery-test-",
+    cachePrefix: "mnemo-assistant-followup-delivery-test-",
   });
   const { useAssistantPanel } = await vite.ssrLoadModule("/hooks/useAssistantPanel.js");
   const { createRoot } = require("react-dom/client");
@@ -703,7 +703,7 @@ test("only a plain-text caret delivery asks the model for plain prose", async (t
   const sentOptions = [];
   globalThis.__assistantPanelSentOptions = sentOptions;
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-assistant-plain-text-test-",
+    cachePrefix: "mnemo-assistant-plain-text-test-",
     mockModules: {
       "/chat/useChatPersistence": `
         export function useChatPersistence() {

@@ -59,7 +59,7 @@ const mockCaptureException = Sentry.captureException as jest.Mock;
 
 const entry = (overrides: Record<string, unknown> = {}) => ({
   id: 1,
-  word: 'openwhispr',
+  word: 'mnemo',
   source: 'manual' as const,
   clientDictId: 'client-dict-1',
   remoteId: null,

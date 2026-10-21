@@ -89,21 +89,21 @@ test("self-hosted mode without an endpoint never falls through to cloud inferenc
   assert.equal(result.config.lanUrl, undefined);
 });
 
-test("available managed mode resolves OpenWhispr without requiring a model", async () => {
+test("available managed mode resolves Mnemo without requiring a model", async () => {
   const { resolveDictationTranslationInference } = await load();
 
   const result = resolveDictationTranslationInference(
     {
       ...baseSettings,
-      translationMode: "openwhispr",
+      translationMode: "mnemo",
       translationModel: "",
     },
     { isCloudTranslation: true }
   );
 
   assert.equal(result.reachable, true);
-  assert.equal(result.displayProvider, "openwhispr");
-  assert.equal(result.config.provider, "openwhispr");
+  assert.equal(result.displayProvider, "mnemo");
+  assert.equal(result.config.provider, "mnemo");
 });
 
 test("managed mode never falls through to a stale provider when signed out", async () => {
@@ -111,12 +111,12 @@ test("managed mode never falls through to a stale provider when signed out", asy
 
   const result = resolveDictationTranslationInference({
     ...baseSettings,
-    translationMode: "openwhispr",
+    translationMode: "mnemo",
     translationProvider: "openai",
   });
 
   assert.equal(result.reachable, false);
-  assert.equal(result.displayProvider, "openwhispr");
+  assert.equal(result.displayProvider, "mnemo");
   assert.equal(result.config.provider, undefined);
 });
 
@@ -199,7 +199,7 @@ test("managed enterprise access supplies the provider and model, ignoring manual
           mode: "managed_required",
           allowManualSetup: false,
           config: {
-            roleArn: "arn:aws:iam::123456789012:role/OpenWhispr",
+            roleArn: "arn:aws:iam::123456789012:role/Mnemo",
             region: "us-east-1",
             allowedModels: ["managed-model"],
             scopeDefaults: Object.fromEntries(scopes.map((scope) => [scope, "managed-model"])),

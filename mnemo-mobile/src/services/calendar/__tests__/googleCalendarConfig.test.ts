@@ -35,7 +35,7 @@ describe('googleCalendarConfig', () => {
       'prod-env-client.apps.googleusercontent.com';
     const config = loadGoogleCalendarConfig({
       extra: {
-        openWhispr: {
+        mnemo: {
           googleCalendar: {
             iosClientId: 'prod-extra-client.apps.googleusercontent.com',
             iosClientIdDev: 'dev-extra-client.apps.googleusercontent.com',
@@ -50,7 +50,7 @@ describe('googleCalendarConfig', () => {
   it('uses the configured Google iOS redirect URI exactly', () => {
     const config = loadGoogleCalendarConfig({
       extra: {
-        openWhispr: {
+        mnemo: {
           googleCalendar: {
             iosClientId: '123.apps.googleusercontent.com',
             iosRedirectUri: 'com.googleusercontent.apps.123:/oauth2redirect',
@@ -66,10 +66,10 @@ describe('googleCalendarConfig', () => {
 
   it('derives a Google iOS redirect URI from the resolved client id before app-scheme fallback', () => {
     const config = loadGoogleCalendarConfig({
-      scheme: 'openwhispr',
+      scheme: 'mnemo',
       extra: {
-        openWhispr: {
-          scheme: 'openwhispr',
+        mnemo: {
+          scheme: 'mnemo',
           googleCalendar: {
             iosClientId: '123-abc.apps.googleusercontent.com',
           },

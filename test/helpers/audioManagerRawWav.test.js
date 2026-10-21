@@ -7,7 +7,7 @@ const { loadAudioManager } = require("./harness/audioManager");
 
 async function loadManager(t) {
   const { window, setSettings, createManager } = await loadAudioManager(t, {
-    cachePrefix: "openwhispr-raw-wav-test-",
+    cachePrefix: "mnemo-raw-wav-test-",
     settingsKey: "__rawWavSettings",
   });
   setSettings({
@@ -59,7 +59,7 @@ test("without a tap the WebM is sent as before", async (t) => {
 
 async function loadFallbackManager(t, transcribeKey) {
   const { window, setSettings, createManager } = await loadAudioManager(t, {
-    cachePrefix: "openwhispr-raw-wav-fallback-test-",
+    cachePrefix: "mnemo-raw-wav-fallback-test-",
     settingsKey: "__rawWavFallbackSettings",
   });
   setSettings({

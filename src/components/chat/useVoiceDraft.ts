@@ -61,7 +61,7 @@ export function useVoiceDraft({ onTranscript, onError }: UseVoiceDraftOptions) {
     whisperModel,
     parakeetModel,
     cohereModel,
-    isOpenWhisprCloud: isSignedIn && cloudTranscriptionMode === "openwhispr" && !useLocalWhisper,
+    isMnemoCloud: isSignedIn && cloudTranscriptionMode === "pura" && !useLocalWhisper,
     getApiKey: () => getTranscriptionApiKey(cloudTranscriptionProvider as string, settings),
     cloudTranscriptionProvider: cloudTranscriptionProvider as string,
     cloudTranscriptionBaseUrl: cloudTranscriptionBaseUrl || "",
@@ -80,7 +80,7 @@ export function useVoiceDraft({ onTranscript, onError }: UseVoiceDraftOptions) {
   // take record straight into that failure.
   const config = buildConfig();
   const route =
-    config.isOpenWhisprCloud || config.useLocalWhisper
+    config.isMnemoCloud || config.useLocalWhisper
       ? null
       : resolveFileTranscriptionRoute(config);
   const streamingOnlyProvider =

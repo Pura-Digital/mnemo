@@ -6,6 +6,7 @@ import {
   type OnboardingProgress,
 } from '@/utils/onboarding';
 import { logTutorialCompletion } from '@/lib/appsflyer';
+import { isMnemoStandaloneProduct } from '@/config/mnemoProduct';
 import { useConfigStore } from './useConfigStore';
 import type { ProcessingMode } from '@/types';
 
@@ -65,10 +66,15 @@ const BACK_DESTINATIONS: Partial<Record<OnboardingStepId, OnboardingStepId>> = {
   'private-download': 'language',
 };
 
+const isStandaloneExcludedStep = (step: OnboardingStepId): boolean =>
+  isMnemoStandaloneProduct() && (step === 'paywall' || step === 'create-account');
+
 export function getOnboardingRoute(mode: ProcessingMode | null): OnboardingStepId[] {
-  return STEP_ORDER.filter((step) =>
-    step === 'private-download' ? mode === 'private' : step !== 'paywall',
-  );
+  return STEP_ORDER.filter((step) => {
+    if (isStandaloneExcludedStep(step)) return false;
+    if (step === 'private-download') return mode === 'private';
+    return step !== 'paywall';
+  });
 }
 
 // The optional download shares the language step's number so choosing Local doesn't grow the total.
@@ -114,10 +120,22 @@ function resumeLegacyChoice(
     step === 'paywall' || step === 'create-account' || step === 'tracking-permission';
   const paywallHandled = tutorialCompleted && step !== 'paywall';
   const resume = step === 'graduation' || step === 'paywall' ? 'create-account' : step;
-  if (mode === 'cloud' && !paywallHandled && isPaywallNextStep(resume)) {
+  if (
+    !isMnemoStandaloneProduct() &&
+    mode === 'cloud' &&
+    !paywallHandled &&
+    isPaywallNextStep(resume)
+  ) {
     return { currentStep: 'paywall', paywallNextStep: resume, paywallHandled, tutorialCompleted };
   }
-  return { currentStep: resume, paywallNextStep: 'language', paywallHandled, tutorialCompleted };
+  const currentStep =
+    resume === 'create-account' && isMnemoStandaloneProduct() ? 'tracking-permission' : resume;
+  return {
+    currentStep,
+    paywallNextStep: 'language',
+    paywallHandled: paywallHandled || isMnemoStandaloneProduct(),
+    tutorialCompleted,
+  };
 }
 
 interface OnboardingStore {
@@ -263,10 +281,13 @@ export const useOnboardingStore = create<OnboardingStore>((set, get) => {
 
     chooseMode: async (mode, from) => {
       const next = from === 'private-download' ? 'notifications' : 'language';
+      const showPaywall =
+        !isMnemoStandaloneProduct() && mode === 'cloud' && !get().paywallHandled;
       await transition(from, {
         selectedMode: mode,
         paywallNextStep: next,
-        currentStep: mode === 'cloud' && !get().paywallHandled ? 'paywall' : next,
+        currentStep: showPaywall ? 'paywall' : next,
+        paywallHandled: get().paywallHandled || isMnemoStandaloneProduct(),
       });
     },
 

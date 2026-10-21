@@ -1,6 +1,7 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BarChart3, Cloud, CloudUpload, Flame, Gauge, Mic2, Trophy } from "./icons";
 import { useTranslation } from "react-i18next";
+import { isMnemoStandaloneProduct } from "../config/mnemoProduct";
 import { useAuth } from "../hooks/useAuth";
 import { useInsightsSyncOptIn } from "../hooks/useInsightsSyncOptIn";
 import { useSettings } from "../hooks/useSettings";
@@ -27,7 +28,7 @@ import { Tooltip } from "./ui/tooltip";
 type ActivityDay = { date: string; words: number };
 
 interface InsightsViewProps {
-  onSignIn: () => void;
+  onSignIn?: () => void;
 }
 
 const LeaderboardView = lazy(() => import("./LeaderboardView"));
@@ -402,6 +403,7 @@ function YourUsage({
 }
 
 export default function InsightsView({ onSignIn }: InsightsViewProps) {
+  const standaloneProduct = isMnemoStandaloneProduct();
   const { t } = useTranslation();
   const { isLoaded, isSignedIn, user } = useAuth();
   const authValidated = hasValidatedAuthContext();
@@ -433,7 +435,11 @@ export default function InsightsView({ onSignIn }: InsightsViewProps) {
     unclaimedCount,
   });
   const showSyncAction =
-    activeTab === "usage" && isSignedIn && authValidated && (!syncActive || claimAvailable);
+    !standaloneProduct &&
+    activeTab === "usage" &&
+    isSignedIn &&
+    authValidated &&
+    (!syncActive || claimAvailable);
   const syncActionDisabled = !canToggleSync || !dataRetentionEnabled || !syncAllowedByPolicy;
   const syncStatusLabel = syncActive
     ? syncError
@@ -449,9 +455,11 @@ export default function InsightsView({ onSignIn }: InsightsViewProps) {
             <TabsTrigger value="usage" className="h-6 px-2.5 text-xs rounded-[5px]">
               {t("insights.yourUsage")}
             </TabsTrigger>
-            <TabsTrigger value="leaderboard" className="h-6 px-2.5 text-xs rounded-[5px]">
-              {t("insights.leaderboard.title")}
-            </TabsTrigger>
+            {!standaloneProduct && (
+              <TabsTrigger value="leaderboard" className="h-6 px-2.5 text-xs rounded-[5px]">
+                {t("insights.leaderboard.title")}
+              </TabsTrigger>
+            )}
           </TabsList>
 
           {activeTab === "usage" ? (
@@ -505,16 +513,18 @@ export default function InsightsView({ onSignIn }: InsightsViewProps) {
             </p>
           )}
         </TabsContent>
-        <TabsContent value="leaderboard" className="mt-0">
-          <Suspense fallback={isSignedIn ? <LeaderboardSkeleton /> : null}>
-            <LeaderboardView
-              enableInsightsSync={enableInsightsSync}
-              insightsSyncEnabled={insightsSyncEnabled}
-              onSignIn={onSignIn}
-              syncAllowedByPolicy={syncAllowedByPolicy}
-            />
-          </Suspense>
-        </TabsContent>
+        {!standaloneProduct && (
+          <TabsContent value="leaderboard" className="mt-0">
+            <Suspense fallback={isSignedIn ? <LeaderboardSkeleton /> : null}>
+              <LeaderboardView
+                enableInsightsSync={enableInsightsSync}
+                insightsSyncEnabled={insightsSyncEnabled}
+                onSignIn={onSignIn}
+                syncAllowedByPolicy={syncAllowedByPolicy}
+              />
+            </Suspense>
+          </TabsContent>
+        )}
       </Tabs>
       {optInDialog}
     </div>

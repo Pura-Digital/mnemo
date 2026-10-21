@@ -47,7 +47,7 @@ async function mountSettings(t) {
   installBrowserGlobals(t, { window: { electronAPI } });
   const container = installHookDom(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-local-server-sync-wiring-test-",
+    cachePrefix: "mnemo-local-server-sync-wiring-test-",
   });
   const [{ SettingsProvider }, { usePolicyStore }] = await Promise.all([
     vite.ssrLoadModule("/hooks/useSettings.ts"),

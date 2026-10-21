@@ -6,18 +6,18 @@ const load = () => import("../../src/config/agentDetection.ts");
 test("stripAgentAddress removes the leading cue and name, keeping the command", async () => {
   const { stripAgentAddress } = await load();
   assert.equal(
-    stripAgentAddress("Hey OpenWhispr, make this formal", "OpenWhispr"),
+    stripAgentAddress("Hey Mnemo, make this formal", "Mnemo"),
     "make this formal"
   );
   assert.equal(stripAgentAddress("Max take a note", "Max"), "take a note");
   assert.equal(
-    stripAgentAddress("That's everything. OpenWhispr, format this", "OpenWhispr"),
+    stripAgentAddress("That's everything. Mnemo, format this", "Mnemo"),
     "That's everything. format this"
   );
-  assert.equal(stripAgentAddress("make this formal", "OpenWhispr"), "make this formal");
+  assert.equal(stripAgentAddress("make this formal", "Mnemo"), "make this formal");
   assert.equal(
-    stripAgentAddress("OpenWhispr", "OpenWhispr"),
-    "OpenWhispr",
+    stripAgentAddress("Mnemo", "Mnemo"),
+    "Mnemo",
     "never returns an empty command"
   );
 });
@@ -25,14 +25,14 @@ test("stripAgentAddress removes the leading cue and name, keeping the command", 
 test("matches the name when it starts the dictation", async () => {
   const { detectAgentName } = await load();
 
-  assert.equal(detectAgentName("OpenWhispr, summarize this note", "OpenWhispr"), true);
+  assert.equal(detectAgentName("Mnemo, summarize this note", "Mnemo"), true);
   assert.equal(detectAgentName("Max take a note", "Max"), true);
 });
 
 test("matches the name after a greeting cue", async () => {
   const { detectAgentName } = await load();
 
-  assert.equal(detectAgentName("hey OpenWhispr make this formal", "OpenWhispr"), true);
+  assert.equal(detectAgentName("hey Mnemo make this formal", "Mnemo"), true);
   assert.equal(detectAgentName("okay Max stop recording", "Max"), true);
 });
 
@@ -40,7 +40,7 @@ test("matches the name opening a new sentence", async () => {
   const { detectAgentName } = await load();
 
   assert.equal(
-    detectAgentName("That's everything. OpenWhispr, format this as bullets", "OpenWhispr"),
+    detectAgentName("That's everything. Mnemo, format this as bullets", "Mnemo"),
     true
   );
 });
@@ -48,8 +48,8 @@ test("matches the name opening a new sentence", async () => {
 test("ignores mentions that are dictated content, not commands", async () => {
   const { detectAgentName } = await load();
 
-  assert.equal(detectAgentName("I showed OpenWhispr to a friend yesterday", "OpenWhispr"), false);
-  assert.equal(detectAgentName("we shipped the OpenWhispr update today", "OpenWhispr"), false);
+  assert.equal(detectAgentName("I showed Mnemo to a friend yesterday", "Mnemo"), false);
+  assert.equal(detectAgentName("we shipped the Mnemo update today", "Mnemo"), false);
   assert.equal(detectAgentName("the max value is ten", "Max"), false);
 });
 
@@ -58,11 +58,11 @@ test("handles STT splitting or misspelling the name, with the same gating", asyn
 
   // Split across tokens ("Open Whisper") and misheard endings still match
   // when addressed...
-  assert.equal(detectAgentName("hey open whisper translate this", "OpenWhispr"), true);
-  assert.equal(detectAgentName("Open Whisper, take a note", "OpenWhispr"), true);
+  assert.equal(detectAgentName("hey open whisper translate this", "Mnemo"), true);
+  assert.equal(detectAgentName("Open Whisper, take a note", "Mnemo"), true);
   // ...but not as a mid-sentence mention.
   assert.equal(
-    detectAgentName("people keep calling open whisper a dictation app", "OpenWhispr"),
+    detectAgentName("people keep calling open whisper a dictation app", "Mnemo"),
     false
   );
 });
@@ -255,30 +255,30 @@ test("every locale's advertised wake phrase triggers detection in its language",
 });
 
 // A snippet trigger is a phrase the snippet feature owns. When it happens to
-// start with the agent name ("openwhispr review"), the wake-word scan used to
+// start with the agent name ("mnemo review"), the wake-word scan used to
 // read it as an address and hijack an ordinary dictation into the agent.
 test("a name inside a snippet trigger is not an address", async () => {
   const { detectAgentName } = await load();
-  const snippets = [{ trigger: "openwhispr review", replacement: "Review the PR" }];
+  const snippets = [{ trigger: "mnemo review", replacement: "Review the PR" }];
 
   assert.equal(
-    detectAgentName("openwhispr review this PR", "OpenWhispr", undefined, snippets),
+    detectAgentName("mnemo review this PR", "Mnemo", undefined, snippets),
     false
   );
   assert.equal(
-    detectAgentName("That's done. openwhispr review this PR", "OpenWhispr", undefined, snippets),
+    detectAgentName("That's done. mnemo review this PR", "Mnemo", undefined, snippets),
     false
   );
 });
 
 test("a real address still counts when the dictation also uses a snippet trigger", async () => {
   const { detectAgentName } = await load();
-  const snippets = [{ trigger: "openwhispr review", replacement: "Review the PR" }];
+  const snippets = [{ trigger: "mnemo review", replacement: "Review the PR" }];
 
   assert.equal(
     detectAgentName(
-      "Hey OpenWhispr, run openwhispr review on PR 5",
-      "OpenWhispr",
+      "Hey Mnemo, run mnemo review on PR 5",
+      "Mnemo",
       undefined,
       snippets
     ),
@@ -288,20 +288,20 @@ test("a real address still counts when the dictation also uses a snippet trigger
 
 test("stripAgentAddress removes the real address, not the snippet trigger", async () => {
   const { stripAgentAddress } = await load();
-  const snippets = [{ trigger: "openwhispr review", replacement: "Review the PR" }];
+  const snippets = [{ trigger: "mnemo review", replacement: "Review the PR" }];
 
   assert.equal(
     stripAgentAddress(
-      "openwhispr review. OpenWhispr summarize it",
-      "OpenWhispr",
+      "mnemo review. Mnemo summarize it",
+      "Mnemo",
       undefined,
       snippets
     ),
-    "openwhispr review. summarize it"
+    "mnemo review. summarize it"
   );
   assert.equal(
-    stripAgentAddress("openwhispr review this PR", "OpenWhispr", undefined, snippets),
-    "openwhispr review this PR",
+    stripAgentAddress("mnemo review this PR", "Mnemo", undefined, snippets),
+    "mnemo review this PR",
     "no address left once the trigger is excluded"
   );
 });
@@ -340,11 +340,11 @@ test("a trigger clipping part of a split name does not suppress the address", as
   const snippets = [{ trigger: "open", replacement: "OPEN" }];
 
   assert.equal(
-    detectAgentName("open whispr summarize this", "OpenWhispr", undefined, snippets),
+    detectAgentName("open whispr summarize this", "Mnemo", undefined, snippets),
     true
   );
   assert.equal(
-    stripAgentAddress("open whispr summarize this", "OpenWhispr", undefined, snippets),
+    stripAgentAddress("open whispr summarize this", "Mnemo", undefined, snippets),
     "summarize this"
   );
 });
@@ -355,19 +355,19 @@ test("a trigger clipping part of a split name does not suppress the address", as
 // command into their document. The cue wins.
 test("an explicit cue outranks a trigger the address happens to span", async () => {
   const { detectAgentName, stripAgentAddress } = await load();
-  const snippets = [{ trigger: "openwhispr review", replacement: "Review the PR" }];
+  const snippets = [{ trigger: "mnemo review", replacement: "Review the PR" }];
 
   assert.equal(
-    detectAgentName("Hey OpenWhispr review this PR", "OpenWhispr", undefined, snippets),
+    detectAgentName("Hey Mnemo review this PR", "Mnemo", undefined, snippets),
     true
   );
   assert.equal(
-    stripAgentAddress("Hey OpenWhispr review this PR", "OpenWhispr", undefined, snippets),
+    stripAgentAddress("Hey Mnemo review this PR", "Mnemo", undefined, snippets),
     "review this PR"
   );
   // No cue, so the trigger still wins — the reported bug stays fixed.
   assert.equal(
-    detectAgentName("openwhispr review this PR", "OpenWhispr", undefined, snippets),
+    detectAgentName("mnemo review this PR", "Mnemo", undefined, snippets),
     false
   );
 });
@@ -377,11 +377,11 @@ test("an explicit cue outranks a trigger the address happens to span", async () 
 // app is in Japanese or Chinese. The trigger exclusion has to survive it.
 test("a name inside a snippet trigger is not an address under CJK normalization", async () => {
   const { detectAgentName } = await load();
-  const snippets = [{ trigger: "openwhispr review", replacement: "Review the PR" }];
+  const snippets = [{ trigger: "mnemo review", replacement: "Review the PR" }];
 
   for (const language of ["ja", "zh", "zh-CN", "zh-TW"]) {
     assert.equal(
-      detectAgentName("openwhispr review this PR", "OpenWhispr", language, snippets),
+      detectAgentName("mnemo review this PR", "Mnemo", language, snippets),
       false,
       language
     );

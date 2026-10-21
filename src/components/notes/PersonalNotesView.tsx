@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useShallow } from "zustand/react/shallow";
-import { Plus, Sparkles } from "../icons";
+import { Plus } from "../icons";
 import { useToast } from "../ui/useToast";
 import NoteEditor from "./NoteEditor";
-import SpacesTree from "./SpacesTree";
+import { useNotesSidebarHandlersStore } from "../../stores/notesSidebarHandlersStore";
 import { ContainerOverview } from "./overview/ContainerOverview";
 import NotesStructureIntroDialog from "./NotesStructureIntroDialog";
 import ActionPicker from "./ActionPicker";
@@ -23,6 +23,7 @@ import {
 } from "../../stores/settingsStore";
 import { cn } from "../lib/utils";
 import logger from "../../utils/logger";
+import { isArchiveyeIntegrationEnabled } from "../../config/mnemoProduct";
 import { parseTranscriptSegments } from "../../utils/parseTranscriptSegments";
 import { isExplicitSpeakerCount, resolveExpectedSpeakerCount } from "../../utils/participants";
 import {
@@ -219,6 +220,18 @@ export default function PersonalNotesView({
     [commitDraft, persistPendingWrites, takePendingSnapshots]
   );
   const { toast } = useToast();
+  const [archiveyeConnected, setArchiveyeConnected] = useState(false);
+
+  useEffect(() => {
+    if (!isArchiveyeIntegrationEnabled()) return;
+    void window.electronAPI?.archiveyeGetStatus?.().then((status) => {
+      if (status) setArchiveyeConnected(status.connected);
+    });
+    const unsub = window.electronAPI?.onArchiveyeConnectionChanged?.((status) => {
+      setArchiveyeConnected(status.connected);
+    });
+    return () => unsub?.();
+  }, []);
   const policyState = usePolicySnapshot();
   const noteFormatting = useSettingsStore(
     useShallow((settings) => {
@@ -560,6 +573,26 @@ export default function PersonalNotesView({
     [privateSpaceId, handleMoveToFolder, toast, t]
   );
 
+  const setNotesSidebarHandlers = useNotesSidebarHandlersStore((s) => s.setHandlers);
+
+  useEffect(() => {
+    setNotesSidebarHandlers({
+      onDeleteNote: handleDelete,
+      onMoveNote: handleMoveNote,
+      onCreateFolderAndMove: handleCreateFolderAndMove,
+      onNewNote: createNoteIn,
+      onShowStructureIntro: () => setShowStructureIntro(true),
+      onOpenActionManager: () => setShowActionManager(true),
+    });
+    return () => setNotesSidebarHandlers(null);
+  }, [
+    setNotesSidebarHandlers,
+    handleDelete,
+    handleMoveNote,
+    handleCreateFolderAndMove,
+    createNoteIn,
+  ]);
+
   const {
     state: actionProcessingState,
     actionName,
@@ -604,6 +637,22 @@ export default function PersonalNotesView({
     },
     [activeNoteId]
   );
+
+  const handleSendToArchivEye = useCallback(async () => {
+    if (!activeNoteId) return;
+    const result = await window.electronAPI?.archiveyeUploadNote?.(activeNoteId, {
+      preferEnhanced: true,
+    });
+    if (result?.success) {
+      toast({ title: t("integrations.archiveye.uploadSuccess") });
+      return;
+    }
+    toast({
+      title: t("integrations.archiveye.uploadFailed"),
+      description: result?.error,
+      variant: "destructive",
+    });
+  }, [activeNoteId, toast, t]);
 
   const handleExportTranscript = useCallback(
     async (format: "txt" | "srt" | "json" | "md") => {
@@ -731,37 +780,7 @@ export default function PersonalNotesView({
   }
 
   return (
-    <div className="flex h-full">
-      <div
-        className="shrink-0 overflow-hidden transition-[width] duration-300 ease-out"
-        style={{ width: isSidePanelLayout ? 0 : "13rem" }}
-      >
-        <div className="w-52 shrink-0 border-e border-border dark:border-white/10 flex flex-col h-full">
-          <div className="px-2 pt-2 pb-1 shrink-0 space-y-0.5">
-            <button
-              onClick={() => setShowActionManager(true)}
-              className={cn(
-                "flex items-center gap-2 w-full px-2 py-1.5 rounded-md text-xs",
-                "text-foreground/85 hover:text-foreground hover:bg-foreground/5",
-                "transition-colors duration-150",
-                "focus:outline-none focus-visible:ring-1 focus-visible:ring-ring/30"
-              )}
-            >
-              <Sparkles size={14} className="shrink-0" />
-              {t("notes.sidebar.actions")}
-            </button>
-          </div>
-
-          <SpacesTree
-            onDeleteNote={handleDelete}
-            onMoveNote={handleMoveNote}
-            onCreateFolderAndMove={handleCreateFolderAndMove}
-            onNewNote={createNoteIn}
-            onShowStructureIntro={() => setShowStructureIntro(true)}
-          />
-        </div>
-      </div>
-
+    <div className="flex h-full min-h-0">
       <div className="flex-1 flex flex-col min-w-0 min-h-0">
         {editorNote ? (
           <>
@@ -777,6 +796,11 @@ export default function PersonalNotesView({
               onStartRecording={startRecording}
               onStopRecording={stopRecording}
               onExportNote={handleExportNote}
+              onSendToArchivEye={
+                isArchiveyeIntegrationEnabled() && archiveyeConnected
+                  ? handleSendToArchivEye
+                  : undefined
+              }
               onExportTranscript={handleExportTranscript}
               enhancement={
                 editorEnhancedContent

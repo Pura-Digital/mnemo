@@ -265,7 +265,7 @@ test("account analytics accepts a complete cloud summary", async (t) => {
     scope: "account",
     timeZone: "UTC",
   });
-  const requestUrl = new URL(requests[0].path, "https://api.openwhispr.com");
+  const requestUrl = new URL(requests[0].path, "https://api.example.test");
   assert.equal(requestUrl.pathname, "/api/analytics/summary");
   assert.equal(
     requestUrl.searchParams.get("timeZone"),
@@ -296,7 +296,7 @@ test("account analytics sends UTC when the runtime exposes no timezone", async (
 
   await getAccountAnalyticsSummary();
 
-  const requestUrl = new URL(requests[0].path, "https://api.openwhispr.com");
+  const requestUrl = new URL(requests[0].path, "https://api.example.test");
   assert.equal(requestUrl.searchParams.get("timeZone"), "UTC");
 });
 
@@ -325,7 +325,7 @@ test("account analytics requests history once per account and not on ordinary re
 
   assert.deepEqual(
     requests.map((request) =>
-      new URL(request.path, "https://api.openwhispr.com").searchParams.get("backfill")
+      new URL(request.path, "https://api.example.test").searchParams.get("backfill")
     ),
     ["true", null, "true", null]
   );
@@ -357,7 +357,7 @@ test("account analytics retries the history trigger after a failed request", asy
 
   assert.deepEqual(
     requests.map((request) =>
-      new URL(request.path, "https://api.openwhispr.com").searchParams.get("backfill")
+      new URL(request.path, "https://api.example.test").searchParams.get("backfill")
     ),
     ["true", "true"]
   );
@@ -392,7 +392,7 @@ test("account analytics retries the history trigger when queue scheduling is una
 
   assert.deepEqual(
     requests.map((request) =>
-      new URL(request.path, "https://api.openwhispr.com").searchParams.get("backfill")
+      new URL(request.path, "https://api.example.test").searchParams.get("backfill")
     ),
     ["true", "true"]
   );
@@ -450,7 +450,7 @@ test("a malformed successful summary does not retrigger server history", async (
 
   assert.deepEqual(
     requests.map((request) =>
-      new URL(request.path, "https://api.openwhispr.com").searchParams.get("backfill")
+      new URL(request.path, "https://api.example.test").searchParams.get("backfill")
     ),
     ["true", null]
   );

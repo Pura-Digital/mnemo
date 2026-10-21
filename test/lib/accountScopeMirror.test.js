@@ -43,7 +43,7 @@ const policy = {
     allowedByokProviders: [],
     allowedEnterpriseProviders: ["azure"],
   },
-  llm: { allowedModes: ["openwhispr"], allowedByokProviders: [], allowedEnterpriseProviders: [] },
+  llm: { allowedModes: ["mnemo"], allowedByokProviders: [], allowedEnterpriseProviders: [] },
   features: { agentEnabled: true, webSearchEnabled: false },
   sharing: { externalLinkSharing: "disabled" },
   dataRetention: {
@@ -120,7 +120,7 @@ async function boot(t, { scope = null, activeWorkspaceId = null, readScope } = {
     initialStorage: activeWorkspaceId ? { activeWorkspaceId } : {},
     window: { electronAPI, addEventListener: events.add, removeEventListener: events.remove },
   });
-  const vite = await createRendererServer(t, { cachePrefix: "openwhispr-account-scope-mirror-" });
+  const vite = await createRendererServer(t, { cachePrefix: "mnemo-account-scope-mirror-" });
   const { mirrorActiveAccountScope } = await vite.ssrLoadModule("/lib/accountScopeMirror.ts");
   const managed = await vite.ssrLoadModule("/services/managedTranscription.ts");
   const { usePolicyStore } = await vite.ssrLoadModule("/stores/policyStore.ts");

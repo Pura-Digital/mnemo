@@ -27,13 +27,13 @@ async function validateAuthContext(userId = "user_1", authGeneration = 7, reset 
   const auth = require("../../src/lib/authRequestContext.ts");
   if (reset) auth.resetAuthRequestContextForTests();
   const token = `token-${userId}-${authGeneration}`;
-  global.window.location ??= { origin: "https://desktop.openwhispr.test" };
+  global.window.location ??= { origin: "https://desktop.mnemo.test" };
   global.window.electronAPI.authGetTokenState = async () => ({ token, generation: authGeneration });
   await auth.handleAuthRequestSuccess({
     data: { user: { id: userId } },
     response: new Response("{}", { status: 200 }),
     request: {
-      url: "https://auth.openwhispr.test/api/auth/get-session",
+      url: "https://auth.mnemo.test/api/auth/get-session",
       headers: new Headers({ Authorization: `Bearer ${token}` }),
       openWhisprAuthGeneration: authGeneration,
     },

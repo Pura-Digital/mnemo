@@ -22,7 +22,7 @@ export const GOOGLE_AUTH_DISCOVERY = {
   revocationEndpoint: 'https://oauth2.googleapis.com/revoke',
 };
 
-type OpenWhisprExtra = {
+type MnemoExtra = {
   scheme?: string;
   googleCalendar?: {
     iosClientId?: string;
@@ -51,36 +51,41 @@ const deriveGoogleCalendarRedirectScheme = (clientId: string | null | undefined)
   return `com.googleusercontent.apps.${trimmed.slice(0, -suffix.length)}`;
 };
 
+function readMnemoExtra(): MnemoExtra | undefined {
+  const extra = Constants.expoConfig?.extra as { mnemo?: MnemoExtra; mnemo?: MnemoExtra } | undefined;
+  return extra?.mnemo ?? extra?.mnemo;
+}
+
 export function getGoogleCalendarClientId(): string | null {
-  const openWhispr = Constants.expoConfig?.extra?.openWhispr as OpenWhisprExtra | undefined;
+  const mnemo = readMnemoExtra();
   return (
     firstNonEmpty(
-      openWhispr?.googleCalendar?.iosClientId,
+      mnemo?.googleCalendar?.iosClientId,
       process.env.EXPO_PUBLIC_GOOGLE_CALENDAR_IOS_CLIENT_ID,
       process.env.EXPO_PUBLIC_GOOGLE_CALENDAR_IOS_CLIENT_ID_DEV,
-      openWhispr?.googleCalendar?.iosClientIdDev,
+      mnemo?.googleCalendar?.iosClientIdDev,
     ) ?? null
   );
 }
 
 export function getGoogleCalendarRedirectUri(): string {
-  const openWhispr = Constants.expoConfig?.extra?.openWhispr as OpenWhisprExtra | undefined;
+  const mnemo = readMnemoExtra();
   const configuredRedirectUri = firstNonEmpty(
-    openWhispr?.googleCalendar?.iosRedirectUri,
+    mnemo?.googleCalendar?.iosRedirectUri,
     process.env.EXPO_PUBLIC_GOOGLE_CALENDAR_IOS_REDIRECT_URI,
     process.env.EXPO_PUBLIC_GOOGLE_CALENDAR_IOS_REDIRECT_URI_DEV,
   );
   if (configuredRedirectUri) return configuredRedirectUri;
 
   const googleRedirectScheme = firstNonEmpty(
-    openWhispr?.googleCalendar?.iosRedirectScheme,
+    mnemo?.googleCalendar?.iosRedirectScheme,
     process.env.EXPO_PUBLIC_GOOGLE_CALENDAR_IOS_REDIRECT_SCHEME,
     process.env.EXPO_PUBLIC_GOOGLE_CALENDAR_IOS_REDIRECT_SCHEME_DEV,
     deriveGoogleCalendarRedirectScheme(getGoogleCalendarClientId()),
   );
   if (googleRedirectScheme) return `${googleRedirectScheme}:/oauth2redirect`;
 
-  const scheme = openWhispr?.scheme || firstScheme(Constants.expoConfig?.scheme) || 'openwhispr';
+  const scheme = mnemo?.scheme || firstScheme(Constants.expoConfig?.scheme) || 'mnemo';
   return AuthSession.makeRedirectUri({ scheme, path: 'google-calendar/oauth' });
 }
 

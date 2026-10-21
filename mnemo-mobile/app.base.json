@@ -1,19 +1,19 @@
 {
   "expo": {
-    "name": "OpenWhispr",
-    "slug": "openwhispr-mobile",
-    "scheme": "openwhispr",
+    "name": "mnemo",
+    "slug": "mnemo-mobile",
+    "scheme": "mnemo",
     "owner": "gizmo-labs",
     "version": "1.2.1",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "splash": {
-      "backgroundColor": "#007AFF"
+      "backgroundColor": "#FFFFFF"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.gizmolabs.openwhispr",
+      "bundleIdentifier": "com.pura.mnemo",
       "usesAppleSignIn": true,
       "infoPlist": {
         "NSMicrophoneUsageDescription": "This app needs access to the microphone to record audio for transcription.",
@@ -39,7 +39,7 @@
         "backgroundColor": "#ffffff"
       },
       "predictiveBackGestureEnabled": false,
-      "package": "com.gizmolabs.openwhispr",
+      "package": "com.pura.mnemo",
       "permissions": ["android.permission.RECORD_AUDIO", "android.permission.MODIFY_AUDIO_SETTINGS"]
     },
     "web": {
@@ -91,13 +91,13 @@
       [
         "expo-notifications",
         {
-          "color": "#007AFF"
+          "color": "#C81038"
         }
       ],
       [
         "expo-tracking-transparency",
         {
-          "userTrackingPermission": "Allow tracking to help us measure which ads lead to OpenWhispr installs and subscriptions. Your voice and text are never used for advertising."
+          "userTrackingPermission": "Allow tracking to help us measure which ads lead to mnemo installs and subscriptions. Your voice and text are never used for advertising."
         }
       ],
       "react-native-appsflyer"
@@ -113,17 +113,17 @@
             "ios": {
               "appExtensions": [
                 {
-                  "targetName": "OpenWhisprKeyboard",
-                  "bundleIdentifier": "com.gizmolabs.openwhispr.keyboard",
+                  "targetName": "MnemoKeyboard",
+                  "bundleIdentifier": "com.pura.mnemo.keyboard",
                   "entitlements": {
-                    "com.apple.security.application-groups": ["group.com.gizmolabs.openwhispr"]
+                    "com.apple.security.application-groups": ["it.puradigital.mnemo"]
                   }
                 },
                 {
-                  "targetName": "OpenWhisprActivity",
-                  "bundleIdentifier": "com.gizmolabs.openwhispr.activity",
+                  "targetName": "MnemoActivity",
+                  "bundleIdentifier": "com.pura.mnemo.activity",
                   "entitlements": {
-                    "com.apple.security.application-groups": ["group.com.gizmolabs.openwhispr"]
+                    "com.apple.security.application-groups": ["it.puradigital.mnemo"]
                   }
                 }
               ]

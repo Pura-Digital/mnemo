@@ -14,8 +14,8 @@ test("only gpt-transcribe takes the dictionary as keywords", async () => {
 
 test("keywords split the joined dictionary on commas and line breaks", async () => {
   const { dictionaryKeywords } = await load();
-  assert.deepEqual(dictionaryKeywords("OpenWhispr, Gizmo Labs,Corti\nVoxtral\r\nParakeet"), [
-    "OpenWhispr",
+  assert.deepEqual(dictionaryKeywords("Mnemo, Gizmo Labs,Corti\nVoxtral\r\nParakeet"), [
+    "Mnemo",
     "Gizmo Labs",
     "Corti",
     "Voxtral",
@@ -25,7 +25,7 @@ test("keywords split the joined dictionary on commas and line breaks", async () 
 
 test("keywords drop the characters OpenAI rejects and any entry left empty", async () => {
   const { dictionaryKeywords } = await load();
-  assert.deepEqual(dictionaryKeywords("<OpenWhispr>, < >, ,, a<b>c\n\n"), ["OpenWhispr", "abc"]);
+  assert.deepEqual(dictionaryKeywords("<Mnemo>, < >, ,, a<b>c\n\n"), ["Mnemo", "abc"]);
   assert.deepEqual(dictionaryKeywords(null), []);
   assert.deepEqual(dictionaryKeywords(""), []);
 });

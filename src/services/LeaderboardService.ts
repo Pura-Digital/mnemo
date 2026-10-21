@@ -221,7 +221,7 @@ async function serializeParticipationOperation<T>(
     const locks = globalThis.navigator?.locks;
     if (locks) {
       return await locks.request(
-        `openwhispr-leaderboard-participation:${userId}`,
+        `mnemo-leaderboard-participation:${userId}`,
         runForCapturedAccount
       );
     }

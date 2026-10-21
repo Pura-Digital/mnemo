@@ -63,9 +63,9 @@ test("buildMeetingContext names the owner and invited participants", async () =>
   const { buildMeetingContext } = await load();
   const identity = {
     selfName: "Gabriel Stein",
-    selfEmail: "gabe@openwhispr.com",
+    selfEmail: "gabe@mnemo.com",
     participants: [
-      attendee("gabe@openwhispr.com", "Gabriel Stein", true),
+      attendee("gabe@mnemo.com", "Gabriel Stein", true),
       attendee("michael@acme.com", "Michael Chen"),
       attendee("sean@acme.com", null),
     ],
@@ -74,7 +74,7 @@ test("buildMeetingContext names the owner and invited participants", async () =>
     buildMeetingContext(identity, "Gabriel Stein"),
     [
       "## Meeting Context",
-      'The user taking these notes ("Gabriel Stein" in the transcript) is Gabriel Stein <gabe@openwhispr.com>.',
+      'The user taking these notes ("Gabriel Stein" in the transcript) is Gabriel Stein <gabe@mnemo.com>.',
       "Invited participants: Michael Chen <michael@acme.com>, sean@acme.com.",
     ].join("\n")
   );
@@ -97,9 +97,9 @@ test("collectKnownPeople merges owner, participants, mappings, and named segment
   const people = collectKnownPeople(
     {
       selfName: "Gabriel Stein",
-      selfEmail: "gabe@openwhispr.com",
+      selfEmail: "gabe@mnemo.com",
       participants: [
-        attendee("gabe@openwhispr.com", "Gabriel Stein", true),
+        attendee("gabe@mnemo.com", "Gabriel Stein", true),
         attendee("michael@acme.com", "Michael Chen"),
         attendee("sean@acme.com", null),
       ],
@@ -108,7 +108,7 @@ test("collectKnownPeople merges owner, participants, mappings, and named segment
     [{ source: "system", speaker: "speaker_2", speakerName: "Ada", text: "hi" }]
   );
   assert.deepEqual(people, [
-    { name: "Gabriel Stein", email: "gabe@openwhispr.com" },
+    { name: "Gabriel Stein", email: "gabe@mnemo.com" },
     { name: "Michael Chen", email: "michael@acme.com" },
     { name: "sean", email: "sean@acme.com" },
     { name: "Priya", email: null },

@@ -139,7 +139,7 @@ async function loadNoteEditor(t) {
   });
 
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-note-editor-summary-",
+    cachePrefix: "mnemo-note-editor-summary-",
     noExternal: ["react-i18next"],
     mockModules: {
       "react-i18next": `

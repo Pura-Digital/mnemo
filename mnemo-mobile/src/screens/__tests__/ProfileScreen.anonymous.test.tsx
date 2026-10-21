@@ -11,7 +11,7 @@ type MockAuthState = {
   deleteAccount: jest.Mock;
 };
 const mockAuthState: MockAuthState = {
-  user: { id: 'anon-user', email: 'temp-1@anon.openwhispr.invalid', isAnonymous: true },
+  user: { id: 'anon-user', email: 'temp-1@anon.mnemo.invalid', isAnonymous: true },
   isGuest: false,
   signOut: mockSignOut,
   deleteAccount: mockDeleteAccount,
@@ -59,7 +59,7 @@ beforeEach(() => {
   jest.clearAllMocks();
   mockAuthState.user = {
     id: 'anon-user',
-    email: 'temp-1@anon.openwhispr.invalid',
+    email: 'temp-1@anon.mnemo.invalid',
     isAnonymous: true,
   };
   mockAuthState.isGuest = false;

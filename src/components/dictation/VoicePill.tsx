@@ -1,5 +1,5 @@
-import { forwardRef, type HTMLAttributes } from "react";
-import { ChevronUp } from "../icons";
+import { forwardRef, type HTMLAttributes, type SyntheticEvent } from "react";
+import { ChevronUp, X } from "../icons";
 import { cn } from "../lib/utils";
 import { PillWaveform } from "./PillWaveform";
 import { VoiceIdentityIcon } from "./VoiceIdentityIcon";
@@ -7,10 +7,23 @@ import { RESTING_WAVE_SILHOUETTE, WAVEFORM_BAR_COUNT } from "./waveformMath";
 import {
   VOICE_PILL_FOOTPRINT,
   VOICE_PILL_GROW_TRANSITION,
+  MEETING_PROMPT_TIMING,
 } from "../../helpers/voicePillPresentation";
 
 export type VoicePillState =
   "idle" | "hover" | "recording" | "processing" | "thinking" | "unavailable";
+
+/** A prompt the pill grows into (meeting detection), present until it has folded back. */
+export interface VoicePillNotice {
+  expanded: boolean;
+  contentVisible: boolean;
+  title: string;
+  body: string;
+  actionLabel: string;
+  closeLabel: string;
+  onAction: () => void;
+  onDismiss: () => void;
+}
 
 interface VoicePillProps extends Omit<HTMLAttributes<HTMLDivElement>, "children"> {
   variant: "floating" | "panel";
@@ -27,6 +40,7 @@ interface VoicePillProps extends Omit<HTMLAttributes<HTMLDivElement>, "children"
   showExpandChevron?: boolean;
   isDragging?: boolean;
   horizontalDirection?: "left" | "right";
+  notice?: VoicePillNotice | null;
 }
 
 // Sized from WAVEFORM_BAR_COUNT so a bar-count change can never silently
@@ -40,6 +54,16 @@ const RESTING_WAVE_HEIGHTS = Array.from(
 // recording footprint and pr-1.5, centering lands the documented 6/12 edge
 // insets (VOICE_PILL_FOOTPRINT in voicePillPresentation.js).
 const COMPACT_CONTENT_GAP_PX = 6;
+
+// While a notice is mounted the content is start-aligned so the identity never
+// jumps when the footprint changes; these left insets reproduce the centered
+// idle (40px) and compact (98px, pr-1.5) layouts at either end of the morph.
+const NOTICE_PADDING_LEFT_PX = 11;
+const IDLE_PADDING_LEFT_PX = 9;
+const COMPACT_PADDING_LEFT_PX = 6;
+
+// Swallow presses so a notice button never starts a pill drag or activation.
+const stopPillGesture = (event: SyntheticEvent) => event.stopPropagation();
 
 // Mirrored by .liquid-cancel-skin[data-pill-state] in dictation-panel.css,
 // which redraws this chrome while the cancel skin owns the fused surface —
@@ -69,6 +93,7 @@ export const VoicePill = forwardRef<HTMLDivElement, VoicePillProps>(function Voi
     showExpandChevron = false,
     isDragging = false,
     horizontalDirection = "right",
+    notice = null,
     className,
     style,
     ...props
@@ -86,21 +111,34 @@ export const VoicePill = forwardRef<HTMLDivElement, VoicePillProps>(function Voi
   const showSignalGlow = !isUnavailable && isThinking;
   const isPanel = variant === "panel";
   const collapseToIdentity = collapseToLogo || isThinking;
+  const noticeExpanded = Boolean(notice?.expanded);
   const showCompactPill =
-    !collapseToIdentity && (isRecording || expanded || (isPanel && !waveformOnlyWhileRecording));
+    !noticeExpanded &&
+    !collapseToIdentity &&
+    (isRecording || expanded || (isPanel && !waveformOnlyWhileRecording));
   const showDivider = showCompactPill && waveformVisible && !isRecording;
   // The hidden divider's margins are what carry the compact pill's 6px
   // icon↔waveform gap; a visible divider keeps 4px flanking its 1px rule.
   const dividerMargin = showCompactPill ? (showDivider ? 4 : COMPACT_CONTENT_GAP_PX / 2) : 0;
   const identitySize = 22;
   const floatingHover = !isPanel && state === "hover";
-  const footprint = showCompactPill ? VOICE_PILL_FOOTPRINT.recording : VOICE_PILL_FOOTPRINT.idle;
+  const footprint = noticeExpanded
+    ? VOICE_PILL_FOOTPRINT.meetingPrompt
+    : showCompactPill
+      ? VOICE_PILL_FOOTPRINT.recording
+      : VOICE_PILL_FOOTPRINT.idle;
+  const noticePaddingLeft = noticeExpanded
+    ? NOTICE_PADDING_LEFT_PX
+    : showCompactPill
+      ? COMPACT_PADDING_LEFT_PX
+      : IDLE_PADDING_LEFT_PX;
 
   const pill = (
     <div
       ref={ref}
       className={cn(
-        "voice-pill-control relative flex items-center justify-center overflow-hidden rounded-full border",
+        "voice-pill-control relative flex items-center overflow-hidden rounded-full border",
+        notice ? "justify-start" : "justify-center",
         showCompactPill && "pr-1.5",
         "shadow-[var(--shadow-card)]",
         STATE_APPEARANCE[state],
@@ -112,6 +150,8 @@ export const VoicePill = forwardRef<HTMLDivElement, VoicePillProps>(function Voi
         // surface and forced an unnecessary large window resize.
         width: footprint.width,
         height: footprint.height,
+        paddingLeft: notice ? noticePaddingLeft : undefined,
+        paddingRight: noticeExpanded ? 6 : undefined,
         cursor: isProcessing || isThinking ? "not-allowed" : isDragging ? "grabbing" : "pointer",
         // Yields to the fused rule's `box-shadow: none` while the liquid skin
         // owns the chrome — an inline shadow would outrank it and paint a
@@ -205,6 +245,55 @@ export const VoicePill = forwardRef<HTMLDivElement, VoicePillProps>(function Voi
           )}
         />
       </div>
+
+      {notice && (
+        <div
+          className="flex min-w-0 items-center gap-2 overflow-hidden"
+          style={{
+            flex: noticeExpanded ? "1 1 0%" : "0 0 0px",
+            marginLeft: noticeExpanded ? 8 : 0,
+            opacity: notice.contentVisible ? 1 : 0,
+            transform: notice.contentVisible ? "translateX(0)" : "translateX(-4px)",
+            transition: `margin-left ${VOICE_PILL_GROW_TRANSITION}, opacity ${MEETING_PROMPT_TIMING.contentFadeMs}ms ease-out, transform ${MEETING_PROMPT_TIMING.contentFadeMs}ms ease-out`,
+            pointerEvents: notice.contentVisible ? "auto" : "none",
+          }}
+          aria-hidden={!notice.contentVisible || undefined}
+        >
+          <div className="flex min-w-0 flex-1 flex-col leading-tight">
+            <span className="truncate text-[12px] font-semibold text-foreground">
+              {notice.title}
+            </span>
+            <span className="truncate text-[11px] text-muted-foreground">{notice.body}</span>
+          </div>
+          <button
+            type="button"
+            className="h-7 shrink-0 cursor-pointer rounded-full bg-foreground px-3 text-[12px] font-medium whitespace-nowrap text-background transition-opacity duration-150 hover:opacity-85"
+            tabIndex={notice.contentVisible ? 0 : -1}
+            onMouseDown={stopPillGesture}
+            onMouseUp={stopPillGesture}
+            onClick={(event) => {
+              event.stopPropagation();
+              notice.onAction();
+            }}
+          >
+            {notice.actionLabel}
+          </button>
+          <button
+            type="button"
+            className="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-full text-muted-foreground transition-colors duration-150 hover:bg-foreground/10 hover:text-foreground"
+            aria-label={notice.closeLabel}
+            tabIndex={notice.contentVisible ? 0 : -1}
+            onMouseDown={stopPillGesture}
+            onMouseUp={stopPillGesture}
+            onClick={(event) => {
+              event.stopPropagation();
+              notice.onDismiss();
+            }}
+          >
+            <X className="size-3.5" strokeWidth={2} />
+          </button>
+        </div>
+      )}
 
       {isUnavailable && (
         <div className="pointer-events-none absolute inset-0 rounded-full border-2 border-foreground/30 animate-pulse" />

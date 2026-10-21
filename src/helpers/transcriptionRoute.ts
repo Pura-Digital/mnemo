@@ -1,6 +1,6 @@
 // Single source of truth for batch speech-to-text routing across dictation,
 // retry, and upload. Callers resolve their scope's settings into the flat base
-// names and handle the OpenWhispr-cloud pipeline upstream; streaming provider
+// names and handle the Mnemo-cloud pipeline upstream; streaming provider
 // selection is a live-recorder concern and stays in audioManager.
 //
 // Loaded by the renderer and the main process alike (main uses dynamic import):

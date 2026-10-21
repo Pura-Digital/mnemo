@@ -79,7 +79,7 @@ async function setup(t) {
   globalThis.document.visibilityState = "visible";
   globalThis.document.hasFocus = () => true;
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-meeting-mount-saver-test-",
+    cachePrefix: "mnemo-meeting-mount-saver-test-",
     mockModules: { "/ui/useToast": TOAST_MOCK },
   });
   const { default: Mount } = await vite.ssrLoadModule("/components/MeetingRecordingMount.tsx");

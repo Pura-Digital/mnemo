@@ -3,7 +3,7 @@ const assert = require("node:assert/strict");
 const { loadAudioManager } = require("./harness/audioManager");
 
 const DICTIONARY_PROMPT = [
-  "OpenWhispr",
+  "Mnemo",
   "Parakeet",
   "Alcahest",
   "Chromium",
@@ -50,7 +50,7 @@ test("local Whisper recovers dictionary prompt echoes and fragments", async (t) 
     isSignedIn: false,
   };
   const { window, createManager, setSettings } = await loadAudioManager(t, {
-    cachePrefix: "openwhispr-dictionary-prompt-recovery-test-",
+    cachePrefix: "mnemo-dictionary-prompt-recovery-test-",
     settingsKey: "__dictionaryPromptRecoverySettings",
     settings: baseSettings,
     mockModules: {
@@ -123,7 +123,7 @@ test("local Whisper recovers dictionary prompt echoes and fragments", async (t) 
     // reject it — the fragment heuristic would discard a genuine two-term list.
     const calls = queueTranscriptions(window, [
       { success: true, text: DICTIONARY_PROMPT },
-      { success: true, text: "OpenWhispr, Parakeet" },
+      { success: true, text: "Mnemo, Parakeet" },
     ]);
     const { manager, processedTexts } = createRecoveryManager();
 
@@ -131,8 +131,8 @@ test("local Whisper recovers dictionary prompt echoes and fragments", async (t) 
       durationSeconds: 4,
     });
 
-    assert.equal(result.rawText, "OpenWhispr, Parakeet");
-    assert.deepEqual(processedTexts, ["OpenWhispr, Parakeet"]);
+    assert.equal(result.rawText, "Mnemo, Parakeet");
+    assert.deepEqual(processedTexts, ["Mnemo, Parakeet"]);
     assert.equal(calls.length, 2);
   });
 
@@ -171,7 +171,7 @@ test("local Whisper recovers dictionary prompt echoes and fragments", async (t) 
 
   await t.test("a genuinely doubled dictionary term is never retried", async () => {
     const calls = queueTranscriptions(window, [
-      { success: true, text: "OpenWhispr, OpenWhispr" },
+      { success: true, text: "Mnemo, Mnemo" },
       { success: true, text: "open whisper open whisper too" },
     ]);
     const { manager } = createRecoveryManager();
@@ -180,7 +180,7 @@ test("local Whisper recovers dictionary prompt echoes and fragments", async (t) 
       durationSeconds: 4,
     });
 
-    assert.equal(result.rawText, "OpenWhispr, OpenWhispr");
+    assert.equal(result.rawText, "Mnemo, Mnemo");
     assert.equal(calls.length, 1);
   });
 
@@ -327,7 +327,7 @@ test("local Whisper recovers dictionary prompt echoes and fragments", async (t) 
   await t.test("a repeated long dictionary term triggers recovery", async () => {
     const fullTranscript = "The application opened successfully.";
     const calls = queueTranscriptions(window, [
-      { success: true, text: "OpenWhispr, OpenWhispr, OpenWhispr" },
+      { success: true, text: "Mnemo, Mnemo, Mnemo" },
       { success: true, text: fullTranscript },
     ]);
     const { manager } = createRecoveryManager();
@@ -442,12 +442,12 @@ test("local Whisper recovers dictionary prompt echoes and fragments", async (t) 
       // also consult the dictionary alone (see isDictionaryEcho's rationale).
       const fullTranscript = "This is what I actually said.";
       const calls = queueTranscriptions(window, [
-        { success: true, text: "OpenWhispr, Parakeet" },
+        { success: true, text: "Mnemo, Parakeet" },
         { success: true, text: fullTranscript },
       ]);
       const { manager, processedTexts } = createRecoveryManager();
-      manager.getCustomDictionaryPrompt = () => "OpenWhispr, Parakeet";
-      manager.getWhisperPrompt = () => "OpenWhispr, Parakeet, 简体中文";
+      manager.getCustomDictionaryPrompt = () => "Mnemo, Parakeet";
+      manager.getWhisperPrompt = () => "Mnemo, Parakeet, 简体中文";
 
       const result = await manager.processWithLocalWhisper(AUDIO_BLOB, "base");
 

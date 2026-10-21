@@ -2,7 +2,7 @@ import React from 'react';
 import { Platform } from 'react-native';
 import { render } from '@testing-library/react-native';
 import { SuperwallProvider } from 'expo-superwall';
-import { OpenWhisprSuperwallProvider } from '@/components/superwall/OpenWhisprSuperwallProvider';
+import { MnemoSuperwallProvider } from '@/components/superwall/MnemoSuperwallProvider';
 
 jest.mock(
   'expo-superwall',
@@ -25,7 +25,7 @@ jest.mock('@/lib/sentry', () => ({
   Sentry: { captureException: jest.fn(), captureMessage: jest.fn() },
 }));
 
-describe('OpenWhisprSuperwallProvider', () => {
+describe('MnemoSuperwallProvider', () => {
   const originalPlatform = Platform.OS;
 
   beforeEach(() => {
@@ -42,9 +42,9 @@ describe('OpenWhisprSuperwallProvider', () => {
 
   it('never enters Superwall test mode so purchases always go through StoreKit', () => {
     render(
-      <OpenWhisprSuperwallProvider>
+      <MnemoSuperwallProvider>
         <></>
-      </OpenWhisprSuperwallProvider>,
+      </MnemoSuperwallProvider>,
     );
 
     const providerProps = jest.mocked(SuperwallProvider).mock.calls[0]?.[0];
@@ -55,9 +55,9 @@ describe('OpenWhisprSuperwallProvider', () => {
     Object.defineProperty(Platform, 'OS', { configurable: true, value: 'android' });
 
     render(
-      <OpenWhisprSuperwallProvider>
+      <MnemoSuperwallProvider>
         <></>
-      </OpenWhisprSuperwallProvider>,
+      </MnemoSuperwallProvider>,
     );
 
     const providerProps = jest.mocked(SuperwallProvider).mock.calls[0]?.[0];

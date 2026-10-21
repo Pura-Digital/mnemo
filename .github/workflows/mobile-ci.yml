@@ -33,12 +33,12 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version-file: openwhispr-mobile/.nvmrc
+          node-version-file: mnemo-mobile/.nvmrc
       # Validate before installing packages from the contributor's lockfile.
       - name: Validate dependency sources and integrity
-        run: npx --yes --ignore-scripts --package=lockfile-lint@5.0.1 lockfile-lint --path openwhispr-mobile/package-lock.json --type npm --validate-https --allowed-hosts npm --validate-integrity
+        run: npx --yes --ignore-scripts --package=lockfile-lint@5.0.1 lockfile-lint --path mnemo-mobile/package-lock.json --type npm --validate-https --allowed-hosts npm --validate-integrity
       - name: Reject high and critical dependency advisories
-        working-directory: openwhispr-mobile
+        working-directory: mnemo-mobile
         run: npm audit --package-lock-only --ignore-scripts --audit-level=high
 
   checks:
@@ -53,16 +53,16 @@ jobs:
         check: [static, tests, bundles]
     defaults:
       run:
-        working-directory: openwhispr-mobile
+        working-directory: mnemo-mobile
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           persist-credentials: false
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version-file: openwhispr-mobile/.nvmrc
+          node-version-file: mnemo-mobile/.nvmrc
           cache: npm
-          cache-dependency-path: openwhispr-mobile/package-lock.json
+          cache-dependency-path: mnemo-mobile/package-lock.json
       - name: Install locked dependencies without lifecycle scripts
         run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Apply reviewed dependency patches
@@ -82,8 +82,8 @@ jobs:
       - name: Validate development and production app configuration
         if: matrix.check == 'static'
         run: |
-          OPENWHISPR_APP_ENV=development node_modules/.bin/expo config --type public > /dev/null
-          OPENWHISPR_APP_ENV=production node_modules/.bin/expo config --type public > /dev/null
+          MNEMO_APP_ENV=development node_modules/.bin/expo config --type public > /dev/null
+          MNEMO_APP_ENV=production node_modules/.bin/expo config --type public > /dev/null
       - name: Build SQLite test binding
         if: matrix.check == 'tests'
         run: npm rebuild better-sqlite3
@@ -94,7 +94,7 @@ jobs:
         if: matrix.check == 'bundles'
         run: node_modules/.bin/expo export --platform ios --max-workers 2 --output-dir "$RUNNER_TEMP/mobile-export"
         env:
-          OPENWHISPR_APP_ENV: production
+          MNEMO_APP_ENV: production
 
   mobile-status:
     name: Mobile CI

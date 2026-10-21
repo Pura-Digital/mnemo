@@ -2,7 +2,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 
 const LARGE_DICTIONARY_PROMPT = [
-  "OpenWhispr",
+  "Mnemo",
   "Parakeet",
   "Alcahest",
   "Chromium",
@@ -23,7 +23,7 @@ const LARGE_DICTIONARY_PROMPT = [
 test("detects verbatim echo of dictionary prompt", async () => {
   const { matchesDictionaryPrompt } = await import("../../src/utils/dictionaryEchoFilter.js");
   assert.equal(
-    matchesDictionaryPrompt("OpenWhispr, Parakeet, Alcahest", "OpenWhispr, Parakeet, Alcahest"),
+    matchesDictionaryPrompt("Mnemo, Parakeet, Alcahest", "Mnemo, Parakeet, Alcahest"),
     true
   );
 });
@@ -31,7 +31,7 @@ test("detects verbatim echo of dictionary prompt", async () => {
 test("detects echo when Whisper adds trailing period", async () => {
   const { matchesDictionaryPrompt } = await import("../../src/utils/dictionaryEchoFilter.js");
   assert.equal(
-    matchesDictionaryPrompt("OpenWhispr, Parakeet, Alcahest.", "OpenWhispr, Parakeet, Alcahest"),
+    matchesDictionaryPrompt("Mnemo, Parakeet, Alcahest.", "Mnemo, Parakeet, Alcahest"),
     true
   );
 });
@@ -39,7 +39,7 @@ test("detects echo when Whisper adds trailing period", async () => {
 test("detects echo with different capitalization", async () => {
   const { matchesDictionaryPrompt } = await import("../../src/utils/dictionaryEchoFilter.js");
   assert.equal(
-    matchesDictionaryPrompt("openwhispr, parakeet, alcahest", "OpenWhispr, Parakeet, Alcahest"),
+    matchesDictionaryPrompt("mnemo, parakeet, alcahest", "Mnemo, Parakeet, Alcahest"),
     true
   );
 });
@@ -47,7 +47,7 @@ test("detects echo with different capitalization", async () => {
 test("detects echo when Whisper strips commas", async () => {
   const { matchesDictionaryPrompt } = await import("../../src/utils/dictionaryEchoFilter.js");
   assert.equal(
-    matchesDictionaryPrompt("OpenWhispr Parakeet Alcahest", "OpenWhispr, Parakeet, Alcahest"),
+    matchesDictionaryPrompt("Mnemo Parakeet Alcahest", "Mnemo, Parakeet, Alcahest"),
     true
   );
 });
@@ -55,7 +55,7 @@ test("detects echo when Whisper strips commas", async () => {
 test("detects echo with extra whitespace", async () => {
   const { matchesDictionaryPrompt } = await import("../../src/utils/dictionaryEchoFilter.js");
   assert.equal(
-    matchesDictionaryPrompt("OpenWhispr,  Parakeet,  Alcahest", "OpenWhispr, Parakeet, Alcahest"),
+    matchesDictionaryPrompt("Mnemo,  Parakeet,  Alcahest", "Mnemo, Parakeet, Alcahest"),
     true
   );
 });
@@ -64,8 +64,8 @@ test("does not flag legitimate speech containing dictionary words", async () => 
   const { matchesDictionaryPrompt } = await import("../../src/utils/dictionaryEchoFilter.js");
   assert.equal(
     matchesDictionaryPrompt(
-      "I just installed OpenWhispr and it works great",
-      "OpenWhispr, Parakeet, Alcahest"
+      "I just installed Mnemo and it works great",
+      "Mnemo, Parakeet, Alcahest"
     ),
     false
   );
@@ -74,7 +74,7 @@ test("does not flag legitimate speech containing dictionary words", async () => 
 test("does not flag speech that partially overlaps with dictionary", async () => {
   const { matchesDictionaryPrompt } = await import("../../src/utils/dictionaryEchoFilter.js");
   assert.equal(
-    matchesDictionaryPrompt("OpenWhispr, Parakeet", "OpenWhispr, Parakeet, Alcahest"),
+    matchesDictionaryPrompt("Mnemo, Parakeet", "Mnemo, Parakeet, Alcahest"),
     false
   );
 });
@@ -86,7 +86,7 @@ test("returns false when dictionary prompt is null", async () => {
 
 test("returns false when text is null", async () => {
   const { matchesDictionaryPrompt } = await import("../../src/utils/dictionaryEchoFilter.js");
-  assert.equal(matchesDictionaryPrompt(null, "OpenWhispr"), false);
+  assert.equal(matchesDictionaryPrompt(null, "Mnemo"), false);
 });
 
 test("returns false when both inputs are empty strings", async () => {
@@ -96,8 +96,8 @@ test("returns false when both inputs are empty strings", async () => {
 
 test("handles single-word dictionary", async () => {
   const { matchesDictionaryPrompt } = await import("../../src/utils/dictionaryEchoFilter.js");
-  assert.equal(matchesDictionaryPrompt("OpenWhispr", "OpenWhispr"), true);
-  assert.equal(matchesDictionaryPrompt("OpenWhispr is great", "OpenWhispr"), false);
+  assert.equal(matchesDictionaryPrompt("Mnemo", "Mnemo"), true);
+  assert.equal(matchesDictionaryPrompt("Mnemo is great", "Mnemo"), false);
 });
 
 test("handles unicode dictionary words with accents", async () => {
@@ -113,8 +113,8 @@ test("handles CJK dictionary words", async () => {
 
 test("detects repeated echo where Whisper loops the dictionary", async () => {
   const { matchesDictionaryPrompt } = await import("../../src/utils/dictionaryEchoFilter.js");
-  const dict = "OpenWhispr, Parakeet, Alcahest";
-  const repeated = "OpenWhispr, Parakeet, Alcahest, OpenWhispr, Parakeet, Alcahest";
+  const dict = "Mnemo, Parakeet, Alcahest";
+  const repeated = "Mnemo, Parakeet, Alcahest, Mnemo, Parakeet, Alcahest";
   assert.equal(matchesDictionaryPrompt(repeated, dict), true);
 });
 
@@ -130,7 +130,7 @@ test("does not flag completely unrelated text", async () => {
   assert.equal(
     matchesDictionaryPrompt(
       "The quick brown fox jumps over the lazy dog",
-      "OpenWhispr, Parakeet, Alcahest"
+      "Mnemo, Parakeet, Alcahest"
     ),
     false
   );
@@ -140,8 +140,8 @@ test("returns false when text or prompt normalizes to empty string (punctuation 
   const { matchesDictionaryPrompt } = await import("../../src/utils/dictionaryEchoFilter.js");
   assert.equal(matchesDictionaryPrompt("...", "..."), false);
   assert.equal(matchesDictionaryPrompt("!!!", ",,,"), false);
-  assert.equal(matchesDictionaryPrompt("???", "OpenWhispr, Parakeet"), false);
-  assert.equal(matchesDictionaryPrompt("OpenWhispr, Parakeet", "!!!"), false);
+  assert.equal(matchesDictionaryPrompt("???", "Mnemo, Parakeet"), false);
+  assert.equal(matchesDictionaryPrompt("Mnemo, Parakeet", "!!!"), false);
 });
 
 test("detects short repeated fragments from a large dictionary prompt", async () => {
@@ -160,7 +160,7 @@ test("does not classify normal or unrelated short speech as a dictionary fragmen
     await import("../../src/utils/dictionaryEchoFilter.js");
 
   assert.equal(
-    isLikelyDictionaryPromptFragment("OpenWhispr is working", LARGE_DICTIONARY_PROMPT),
+    isLikelyDictionaryPromptFragment("Mnemo is working", LARGE_DICTIONARY_PROMPT),
     false
   );
   assert.equal(isLikelyDictionaryPromptFragment("hello there", LARGE_DICTIONARY_PROMPT), false);
@@ -181,7 +181,7 @@ test("detects repeated long dictionary terms without a character cutoff", async 
     await import("../../src/utils/dictionaryEchoFilter.js");
 
   assert.equal(
-    isLikelyDictionaryPromptFragment("OpenWhispr, OpenWhispr, OpenWhispr", LARGE_DICTIONARY_PROMPT),
+    isLikelyDictionaryPromptFragment("Mnemo, Mnemo, Mnemo", LARGE_DICTIONARY_PROMPT),
     true
   );
 });
@@ -192,7 +192,7 @@ test("does not classify long non-repeated dictionary speech as a prompt fragment
 
   assert.equal(
     isLikelyDictionaryPromptFragment(
-      "OpenWhispr Parakeet Alcahest Chromium",
+      "Mnemo Parakeet Alcahest Chromium",
       LARGE_DICTIONARY_PROMPT
     ),
     false
@@ -245,7 +245,7 @@ test("does not classify a genuinely doubled term as a looped echo", async () => 
 
   // Whisper's echo pathology loops a term many times; saying it twice is speech.
   assert.equal(
-    isLikelyDictionaryPromptFragment("OpenWhispr, OpenWhispr", LARGE_DICTIONARY_PROMPT),
+    isLikelyDictionaryPromptFragment("Mnemo, Mnemo", LARGE_DICTIONARY_PROMPT),
     false
   );
 });

@@ -3,6 +3,7 @@ import { AppState } from 'react-native';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useOnboardingStore } from '@/store/useOnboardingStore';
 import { hasRealAccountHistory } from '@/sync/syncIdentity';
+import { isMnemoStandaloneProduct } from '@/config/mnemoProduct';
 import { FIRST_ONBOARDING_STEP } from '@/utils/onboarding';
 
 /**
@@ -27,6 +28,7 @@ export function useAnonymousOnboardingSession(): void {
   const currentStep = useOnboardingStore((state) => state.currentStep);
 
   useEffect(() => {
+    if (isMnemoStandaloneProduct()) return;
     if (!isInitialized || !onboardingHydrated || onboardingFinished || user) return;
     // Nothing before the dictation demo needs a session, and a row minted
     // behind the splash would outlive someone who opens the app once and

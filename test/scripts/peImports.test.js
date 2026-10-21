@@ -60,7 +60,7 @@ test("returns 0 and leaves the image untouched when the module is not imported",
 test("refuses a replacement name longer than the original", () => {
   const image = buildPeImage({ imports: ["onnxruntime.dll"] });
   assert.throws(
-    () => renameImportedModule(image, "onnxruntime.dll", "openwhispr-onnxruntime.dll"),
+    () => renameImportedModule(image, "onnxruntime.dll", "mnemo-onnxruntime.dll"),
     /longer/
   );
 });

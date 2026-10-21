@@ -69,9 +69,9 @@ export default function CleanupPromptScreen() {
       >
         <View className="mx-4 mb-2 px-4">
           <Text className="text-[13px] text-secondaryLabel">
-            The instructions OpenWhispr's cloud AI follows when it cleans up dictation from the app,
-            the keyboard, and uploaded recordings. Keep {AGENT_NAME_PLACEHOLDER} where your agent's
-            name belongs.
+            The instructions mnemo's cloud AI follows when it cleans up dictation from the app, the
+            keyboard, and uploaded recordings. Keep {AGENT_NAME_PLACEHOLDER} where your agent's name
+            belongs.
           </Text>
         </View>
 
@@ -114,7 +114,7 @@ export default function CleanupPromptScreen() {
             <Text className="text-[13px] text-systemOrange">Long prompts slow down cleanup.</Text>
           ) : null}
           <Text className="text-[13px] text-secondaryLabel">
-            Sent to OpenWhispr's cloud with every cleanup request. Language, dictionary, and tone
+            Sent to mnemo's cloud with every cleanup request. Language, dictionary, and tone
             instructions are added automatically.
           </Text>
         </View>

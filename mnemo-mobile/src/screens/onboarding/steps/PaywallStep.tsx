@@ -118,7 +118,7 @@ export function PaywallStep() {
 
   return (
     <OnboardingShell
-      title="Go further with OpenWhispr Pro."
+      title="Go further with mnemo Pro."
       titleAccent="Pro"
       subtitle="Unlock more with Pro, or close the offer to keep using Cloud with your current limits."
       ctaLabel="Continue"

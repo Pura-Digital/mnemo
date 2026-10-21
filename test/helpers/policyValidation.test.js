@@ -6,11 +6,11 @@ const { isValidPolicyShape } = require("../../src/helpers/policyValidation");
 const validPolicy = () => ({
   version: 1,
   transcription: {
-    allowedModes: ["openwhispr", "local"],
+    allowedModes: ["mnemo", "local"],
     allowedByokProviders: [],
   },
   llm: {
-    allowedModes: ["openwhispr"],
+    allowedModes: ["mnemo"],
     allowedByokProviders: ["openai"],
     allowedEnterpriseProviders: ["bedrock"],
   },
@@ -198,7 +198,7 @@ test("rejects non-array allowlists the renderer dereferences", () => {
     ["llm", "allowedEnterpriseProviders"],
   ]) {
     const policy = validPolicy();
-    policy[scope][field] = "openwhispr";
+    policy[scope][field] = "mnemo";
     assert.equal(isValidPolicyShape(policy), false, `${scope}.${field} as string`);
     delete policy[scope][field];
     assert.equal(isValidPolicyShape(policy), false, `${scope}.${field} missing`);

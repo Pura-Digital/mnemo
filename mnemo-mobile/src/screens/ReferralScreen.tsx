@@ -100,8 +100,8 @@ function GuestReferralEmptyState() {
             Give a month, get a month
           </Text>
           <Text className="mt-2 text-center text-[14px] leading-snug text-secondaryLabel">
-            Invite friends to OpenWhispr. Each friend who dictates 2,000 words earns you a free
-            month of Pro.
+            Invite friends to mnemo. Each friend who dictates 2,000 words earns you a free month of
+            Pro.
           </Text>
         </View>
 

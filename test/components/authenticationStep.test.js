@@ -88,7 +88,7 @@ async function createAuthenticationRenderer(t) {
   });
 
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-authentication-step-",
+    cachePrefix: "mnemo-authentication-step-",
     noExternal: ["react", "react-dom", "react-i18next"],
     mockModules: {
       // A minimal renderer rather than react-dom: it returns the element tree so

@@ -94,7 +94,7 @@ describe('requiresRealAccount', () => {
 
   const anonymous = {
     id: 'a',
-    email: 'temp-1@anon.openwhispr.invalid',
+    email: 'temp-1@anon.mnemo.invalid',
     emailVerified: false,
     isAnonymous: true,
   };

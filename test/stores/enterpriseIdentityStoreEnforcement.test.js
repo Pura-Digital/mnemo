@@ -26,7 +26,7 @@ const bedrockRequired = {
       mode: "managed_required",
       allowManualSetup: false,
       config: {
-        roleArn: "arn:aws:iam::123456789012:role/OpenWhispr",
+        roleArn: "arn:aws:iam::123456789012:role/Mnemo",
         region: "us-east-1",
         allowedModels: ["m"],
         scopeDefaults: Object.fromEntries(SCOPES.map((s) => [s, "m"])),
@@ -85,7 +85,7 @@ const policy = {
 
 async function boot(t, { electronAPI = {}, initialStorage = {} } = {}) {
   installBrowserGlobals(t, { initialStorage, window: { electronAPI } });
-  const vite = await createRendererServer(t, { cachePrefix: "openwhispr-identity-enforcement-" });
+  const vite = await createRendererServer(t, { cachePrefix: "mnemo-identity-enforcement-" });
   const { usePolicyStore } = await vite.ssrLoadModule("/stores/policyStore.ts");
   const { useEnterpriseIdentityStore, getManagedScopeResolution } = await vite.ssrLoadModule(
     "/stores/enterpriseIdentityStore.ts"
@@ -241,7 +241,7 @@ test("a retry after an error holds the scopes carried in memory even with no per
 
 test("the transcription opt-out is independent of the LLM setup mode", async (t) => {
   installBrowserGlobals(t, { initialStorage: { enterpriseSetupMode: "manual" } });
-  const vite = await createRendererServer(t, { cachePrefix: "openwhispr-stt-setup-mode-" });
+  const vite = await createRendererServer(t, { cachePrefix: "mnemo-stt-setup-mode-" });
   const { usePolicyStore } = await vite.ssrLoadModule("/stores/policyStore.ts");
   const { useSettingsStore } = await vite.ssrLoadModule("/stores/settingsStore.ts");
   const { useEnterpriseIdentityStore } = await vite.ssrLoadModule(

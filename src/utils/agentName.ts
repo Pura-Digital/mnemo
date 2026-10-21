@@ -3,10 +3,11 @@ import { getSettings, useSettingsStore } from "../stores/settingsStore";
 import { agentNameDictionaryChanges } from "../helpers/agentNameDictionary";
 
 const AGENT_NAME_KEY = "agentName";
-const DEFAULT_AGENT_NAME = "OpenWhispr";
+const DEFAULT_AGENT_NAME = "mnemo";
 
 export const getAgentName = (): string => {
-  return localStorage.getItem(AGENT_NAME_KEY) || DEFAULT_AGENT_NAME;
+  const savedName = localStorage.getItem(AGENT_NAME_KEY);
+  return savedName?.trim() || DEFAULT_AGENT_NAME;
 };
 
 function syncAgentNameToDictionary(newName: string, oldName?: string): void {

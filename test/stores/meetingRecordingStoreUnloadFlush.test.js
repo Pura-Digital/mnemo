@@ -85,7 +85,7 @@ async function loadStore(t, api) {
     },
   });
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-meeting-unload-flush-test-",
+    cachePrefix: "mnemo-meeting-unload-flush-test-",
   });
   const store = await vite.ssrLoadModule("/stores/meetingRecordingStore.ts");
   const unloadListeners = () => windowListeners.get("beforeunload") ?? [];

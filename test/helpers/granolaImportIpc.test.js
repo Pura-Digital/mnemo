@@ -8,7 +8,7 @@ const Module = require("node:module");
 const handlersModulePath = require.resolve("../../src/helpers/ipcHandlers");
 const originalLoad = Module._load;
 const handlers = new Map();
-const importDir = fs.mkdtempSync(path.join(os.tmpdir(), "openwhispr-granola-ipc-"));
+const importDir = fs.mkdtempSync(path.join(os.tmpdir(), "mnemo-granola-ipc-"));
 const csvPaths = ["granola-000.csv", "granola-001.csv", "granola-002.csv"].map((name, index) => {
   const filePath = path.join(importDir, name);
   fs.writeFileSync(

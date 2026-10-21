@@ -22,7 +22,7 @@ const LIVE_CATALOG = [
 test("tinfoil default model follows the glm-5-3 replacement", async (t) => {
   installBrowserGlobals(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-tinfoil-default-model-test-",
+    cachePrefix: "mnemo-tinfoil-default-model-test-",
   });
   const { pickDefaultTinfoilModel } = await vite.ssrLoadModule("/models/tinfoilModels.ts");
 
@@ -68,7 +68,7 @@ test("a cached catalog does not displace the named Tinfoil default", async (t) =
     },
   });
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-tinfoil-cached-default-test-",
+    cachePrefix: "mnemo-tinfoil-cached-default-test-",
   });
   // Loading the registry applies the cached list, exactly as app startup does.
   await vite.ssrLoadModule("/models/ModelRegistry.ts");
@@ -112,7 +112,7 @@ test("a persisted glm-5-2 selection is repointed before any request", async (t) 
     },
   });
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-tinfoil-retired-selection-test-",
+    cachePrefix: "mnemo-tinfoil-retired-selection-test-",
   });
   const { useSettingsStore } = await vite.ssrLoadModule("/stores/settingsStore.ts");
 
@@ -135,7 +135,7 @@ test("a deepseek-v4-flash selection is repointed where the first sweep already r
     },
   });
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-tinfoil-rotated-sweep-test-",
+    cachePrefix: "mnemo-tinfoil-rotated-sweep-test-",
   });
   const { useSettingsStore } = await vite.ssrLoadModule("/stores/settingsStore.ts");
 
@@ -163,7 +163,7 @@ test("the retirement notice fires when the startup sweep is what moved the user"
     },
   });
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-tinfoil-sweep-notice-test-",
+    cachePrefix: "mnemo-tinfoil-sweep-notice-test-",
   });
   const { useSettingsStore } = await vite.ssrLoadModule("/stores/settingsStore.ts");
   const { consumeTinfoilModelSwitches } = await vite.ssrLoadModule(
@@ -185,7 +185,7 @@ test("a Groq remap is not announced as a Tinfoil retirement", async (t) => {
     },
   });
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-groq-sweep-notice-test-",
+    cachePrefix: "mnemo-groq-sweep-notice-test-",
   });
   const { useSettingsStore } = await vite.ssrLoadModule("/stores/settingsStore.ts");
   const { consumeTinfoilModelSwitches } = await vite.ssrLoadModule(
@@ -201,7 +201,7 @@ test("a Groq remap is not announced as a Tinfoil retirement", async (t) => {
 test("a provider's named default beats its list position", async (t) => {
   installBrowserGlobals(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-provider-default-hops-test-",
+    cachePrefix: "mnemo-provider-default-hops-test-",
   });
   const { pickDefaultModelId } = await vite.ssrLoadModule("/models/providerDefaultModel.ts");
 
@@ -242,7 +242,7 @@ test("a replacement with no curated name is still announced, by id", async (t) =
     },
   });
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-tinfoil-unnamed-replacement-test-",
+    cachePrefix: "mnemo-tinfoil-unnamed-replacement-test-",
   });
   const { useSettingsStore } = await vite.ssrLoadModule("/stores/settingsStore.ts");
   const { consumeTinfoilModelSwitches } = await vite.ssrLoadModule(

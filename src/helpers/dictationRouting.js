@@ -1,5 +1,5 @@
 export function resolveModeReachability({ mode, provider, model, isCloud, isSelfHosted }) {
-  if (mode === "openwhispr") return isCloud;
+  if (mode === "pura") return isCloud;
   if (mode === "self-hosted") return isSelfHosted;
 
   const hasModel = (model?.trim()?.length ?? 0) > 0;
@@ -85,8 +85,8 @@ export function resolveDictationTranslationReachability({
 
 export function resolveModeProvider({ isCloud, mode, provider }) {
   switch (mode) {
-    case "openwhispr":
-      return isCloud ? "openwhispr" : undefined;
+    case "mnemo":
+      return isCloud ? "mnemo" : undefined;
     case "local":
       return "local";
     case "self-hosted":
@@ -112,7 +112,7 @@ export function resolveDictationAgentProvider({
 }
 
 function resolveModeDisplayProvider(mode, provider) {
-  if (mode === "openwhispr") return "openwhispr";
+  if (mode === "pura") return "pura";
   if (mode === "local") return "local";
   if (mode === "self-hosted") return "self-hosted";
   return provider?.trim() || "none";

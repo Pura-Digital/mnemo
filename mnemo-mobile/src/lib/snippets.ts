@@ -1,4 +1,4 @@
-// Mirrors the desktop snippet expansion (../openwhispr/src/utils/snippets.ts):
+// Mirrors the desktop snippet expansion (../mnemo/src/utils/snippets.ts):
 // spoken triggers are replaced with their saved text in the final dictation
 // transcript, and triggers double as dictionary hints so they survive STT/cleanup.
 

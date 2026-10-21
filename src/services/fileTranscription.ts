@@ -45,7 +45,7 @@ export interface FileTranscriptionConfig {
   whisperModel: string;
   parakeetModel: string;
   cohereModel: string;
-  isOpenWhisprCloud: boolean;
+  isMnemoCloud: boolean;
   getApiKey: () => string;
   cloudTranscriptionProvider: string;
   cloudTranscriptionBaseUrl: string;
@@ -128,7 +128,7 @@ export async function transcribeFile(
   diarize: boolean,
   opts: { requestId?: string; timestamps?: boolean } = {}
 ): Promise<FileTranscriptionResult> {
-  // Managed enterprise STT outranks every personal lane, OpenWhispr Cloud and
+  // Managed enterprise STT outranks every personal lane, Pura LLM and
   // local included: under managed_required no audio may leave the tenant.
   const managed = getManagedTranscriptionResolution();
   if (managed?.kind === "error") {
@@ -140,7 +140,7 @@ export async function transcribeFile(
     };
   }
 
-  if (!managed && cfg.isOpenWhisprCloud) {
+  if (!managed && cfg.isMnemoCloud) {
     return withSessionRefresh(async () => {
       const r = await window.electronAPI.transcribeAudioFileCloud!(filePath, opts);
       if (!r.success && r.code) {
@@ -210,7 +210,7 @@ export function shouldUseByokDiarize(
   return (
     diarizationEnabled &&
     !cfg.useLocalWhisper &&
-    !cfg.isOpenWhisprCloud &&
+    !cfg.isMnemoCloud &&
     cfg.transcriptionMode !== "self-hosted" &&
     (cfg.cloudTranscriptionProvider === "openai" || cfg.cloudTranscriptionProvider === "mistral")
   );

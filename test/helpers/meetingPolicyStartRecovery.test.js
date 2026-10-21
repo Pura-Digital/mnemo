@@ -29,7 +29,7 @@ const blockedMeetingPolicy = {
   version: 1,
   transcription: { allowedModes: [], allowedByokProviders: [] },
   llm: {
-    allowedModes: ["openwhispr"],
+    allowedModes: ["mnemo"],
     allowedByokProviders: [],
     allowedEnterpriseProviders: [],
   },
@@ -80,7 +80,7 @@ test("a policy-rejected automatic meeting start restores manager mode before cle
 
   installBrowserGlobals(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-meeting-policy-test-",
+    cachePrefix: "mnemo-meeting-policy-test-",
   });
 
   const { handleMeetingRecordingRequest } = await vite.ssrLoadModule(
@@ -142,7 +142,7 @@ test("a policy-rejected automatic meeting start restores manager mode before cle
 test("a repeated policy denial re-notifies the toast effect", async (t) => {
   installBrowserGlobals(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-meeting-denial-test-",
+    cachePrefix: "mnemo-meeting-denial-test-",
   });
 
   const { startRecording, useMeetingRecordingStore } = await vite.ssrLoadModule(

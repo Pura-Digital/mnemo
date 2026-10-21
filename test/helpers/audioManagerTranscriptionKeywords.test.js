@@ -2,7 +2,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const { loadAudioManager } = require("./harness/audioManager");
 
-const DICTIONARY = "OpenWhispr, Gizmo Labs";
+const DICTIONARY = "Mnemo, Gizmo Labs";
 const OPENAI_ENDPOINT = "https://api.openai.com/v1/audio/transcriptions";
 
 // Captures the dictionary-bearing fields of each transcription request.
@@ -30,7 +30,7 @@ function captureRequests(t) {
 
 test("the custom dictionary rides gpt-transcribe's keywords[] channel, legacy models' prompt", async (t) => {
   const { setSettings, createManager } = await loadAudioManager(t, {
-    cachePrefix: "openwhispr-transcription-keywords-test-",
+    cachePrefix: "mnemo-transcription-keywords-test-",
     settingsKey: "__transcriptionKeywordsSettings",
   });
   setSettings({
@@ -59,7 +59,7 @@ test("the custom dictionary rides gpt-transcribe's keywords[] channel, legacy mo
     const result = await manager("gpt-transcribe").processWithOpenAIAPI(audioBlob, {});
     assert.equal(result.success, true);
     assert.deepEqual(requests, [
-      { prompt: null, keywords: ["OpenWhispr", "Gizmo Labs"], stream: "true" },
+      { prompt: null, keywords: ["Mnemo", "Gizmo Labs"], stream: "true" },
     ]);
   });
 
@@ -71,9 +71,9 @@ test("the custom dictionary rides gpt-transcribe's keywords[] channel, legacy mo
         getEffectiveSttLanguage: () => "zh-TW",
       }).processWithOpenAIAPI(audioBlob, {});
       assert.equal(requests.length, 1);
-      assert.deepEqual(requests[0].keywords, ["OpenWhispr", "Gizmo Labs"]);
+      assert.deepEqual(requests[0].keywords, ["Mnemo", "Gizmo Labs"]);
       assert.match(requests[0].prompt, /繁體中文/);
-      assert.doesNotMatch(requests[0].prompt, /OpenWhispr/, "dictionary must not be sent twice");
+      assert.doesNotMatch(requests[0].prompt, /Mnemo/, "dictionary must not be sent twice");
     }
   );
 

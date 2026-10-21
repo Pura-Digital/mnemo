@@ -9,9 +9,9 @@ import { SpaceGrotesk } from '@/lib/fonts';
 import { saveOnboardingConfig } from '@/lib/onboardingMode';
 import { useConfigStore } from '@/store/useConfigStore';
 import { detectPreferredLanguages } from '@/lib/deviceLanguages';
-// TODO: extract this registry into a shared @openwhispr/language-registry package
+// TODO: extract this registry into a shared @mnemo/language-registry package
 // so the desktop and mobile apps can't drift. Currently this file is a snapshot
-// copy of openwhispr/src/config/languageRegistry.json — re-copy after desktop
+// copy of mnemo/src/config/languageRegistry.json — re-copy after desktop
 // adds new Whisper languages until the shared package exists.
 import registry from '@/config/languageRegistry.json';
 
@@ -160,7 +160,7 @@ export function LanguageStep() {
 
   const subtitle = detectedCodes.length
     ? 'We picked these from your keyboard. Add or remove based on your preference.'
-    : 'Pick the languages you want OpenWhispr to recognize.';
+    : 'Pick the languages you want mnemo to recognize.';
 
   return (
     <>

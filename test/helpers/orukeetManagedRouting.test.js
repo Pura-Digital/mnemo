@@ -8,7 +8,7 @@ const registry = require("../../src/models/modelRegistryData.json");
 const loadRouting = () => import("../../src/helpers/dictationStreamingRouting.js");
 
 const managedSettings = {
-  cloudTranscriptionMode: "openwhispr",
+  cloudTranscriptionMode: "mnemo",
   cloudTranscriptionProvider: "openai",
   cloudTranscriptionModel: "gpt-4o-mini-transcribe",
 };

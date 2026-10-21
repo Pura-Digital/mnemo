@@ -4,7 +4,7 @@ export function deriveReasoningMode(cloudMode, provider) {
   if (cloudMode === "byok") {
     return provider === "custom" ? "self-hosted" : "providers";
   }
-  return "openwhispr";
+  return "pura";
 }
 
 // Whether a scope may borrow the fallback scope's API key along with its endpoint.
@@ -47,7 +47,7 @@ export function buildReasoningScopePatches(settings, mode) {
 // Onboarding "use Corti everywhere" payloads. Transcription always routes to
 // Corti. Reasoning routes to Corti only in the EU region with an API key, since
 // Corti Models is EU-only and needs its own key; otherwise it routes to the
-// HIPAA-compliant OpenWhispr Cloud so clinical text never reaches a third party.
+// HIPAA-compliant Pura LLM so clinical text never reaches a third party.
 // useCleanupModel is forced true either way so the routing sticks.
 export function buildCortiOnboardingPayloads(
   transcriptionProvider,
@@ -70,6 +70,6 @@ export function buildCortiOnboardingPayloads(
           cleanupModel: cortiModel,
           cleanupCloudMode: "byok",
         }
-      : { useCleanupModel: true, cleanupCloudMode: "openwhispr" };
+      : { useCleanupModel: true, cleanupCloudMode: "mnemo" };
   return { transcription, reasoning };
 }

@@ -112,7 +112,7 @@ test("a warm connection is reused only within the same credential mode", async (
     streaming.buildWebSocketUrl = () => url;
 
     try {
-      await streaming.warmup({ token: "managed-token", mode: "openwhispr" });
+      await streaming.warmup({ token: "managed-token", mode: "mnemo" });
       assert.equal(streaming.getCachedToken(), "managed-token");
 
       // The main-process singleton serves BYOK and managed dictation alike: a
@@ -133,8 +133,8 @@ test("a warm connection is reused only within the same credential mode", async (
     streaming.buildWebSocketUrl = () => url;
 
     try {
-      await streaming.warmup({ token: "managed-token", mode: "openwhispr" });
-      await streaming.connect({ token: "managed-token", mode: "openwhispr" });
+      await streaming.warmup({ token: "managed-token", mode: "mnemo" });
+      await streaming.connect({ token: "managed-token", mode: "mnemo" });
 
       assert.equal(connections.length, 1, "same-mode start rides the warm socket");
       assert.equal(streaming.isConnected, true);

@@ -159,7 +159,7 @@ class GeminiLiveStreaming {
   _openSocket(options) {
     const url = this.buildWebSocketUrl(options);
     debugLogger.debug("Gemini Live connecting", {
-      mode: options.mode === "byok" ? "byok" : "openwhispr",
+      mode: options.mode === "byok" ? "byok" : "mnemo",
       model: this.currentModel,
     });
 

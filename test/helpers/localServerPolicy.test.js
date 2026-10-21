@@ -6,17 +6,17 @@ const load = () => import("../../src/helpers/localServerPolicy.js");
 // Every scope off local: the baseline each test switches one scope away from.
 const NOTHING_LOCAL = {
   useCleanupModel: true,
-  cleanupMode: "openwhispr",
+  cleanupMode: "mnemo",
   cleanupModel: "",
   useDictationAgent: true,
-  dictationAgentMode: "openwhispr",
+  dictationAgentMode: "mnemo",
   dictationAgentModel: "",
-  noteFormattingMode: "openwhispr",
+  noteFormattingMode: "mnemo",
   noteFormattingModel: "",
-  chatAgentMode: "openwhispr",
+  chatAgentMode: "mnemo",
   chatAgentModel: "",
   useDictationTranslation: false,
-  translationMode: "openwhispr",
+  translationMode: "mnemo",
   translationModel: "",
 };
 
@@ -89,7 +89,7 @@ test("the shared server survives one scope leaving while the other stays local",
 test("the server has no consumer once no scope runs locally", async () => {
   const { resolveLocalServerNeeds } = await load();
 
-  for (const mode of ["openwhispr", "providers", "self-hosted", "enterprise"]) {
+  for (const mode of ["mnemo", "providers", "self-hosted", "enterprise"]) {
     const needs = resolveLocalServerNeeds({
       ...NOTHING_LOCAL,
       useDictationTranslation: true,

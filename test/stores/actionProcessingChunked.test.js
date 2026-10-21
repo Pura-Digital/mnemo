@@ -45,7 +45,7 @@ async function loadStore(
 
   const calls = [];
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-action-chunked-test-",
+    cachePrefix: "mnemo-action-chunked-test-",
     mockModules: {
       "/services/ReasoningService": `
         export default {
@@ -122,7 +122,7 @@ test("material that fits is one request with today's prompt and no budget read",
 });
 
 test("cloud mode never reads the budget and never chunks", async (t) => {
-  const { store, calls, updates, budgetCalls } = await loadStore(t, { mode: "openwhispr" });
+  const { store, calls, updates, budgetCalls } = await loadStore(t, { mode: "mnemo" });
   run(store, 2, longMaterial(400), { isCloudMode: true });
   await waitFor(() => updates.length > 0, "save");
   assert.equal(calls.length, 1);
@@ -609,9 +609,9 @@ test("the merge preserves a follow-up email action without imposing exhaustive n
 
 test("a local model reached through dictation cleanup is summarised in parts too", async (t) => {
   // Note formatting on its default mode follows dictation cleanup when the user
-  // is not on OpenWhispr Cloud, so a local cleanup model answers the request.
+  // is not on Mnemo Cloud, so a local cleanup model answers the request.
   const { store, calls, updates, budgetCalls } = await loadStore(t, {
-    mode: "openwhispr",
+    mode: "mnemo",
     failFirst: true,
   });
   run(store, 22, longMaterial(400));

@@ -158,7 +158,7 @@ test("a note request through the real ReasoningService survives the dictation de
   installBrowserGlobals(t, {
     window: { electronAPI: { getOpenAIKey: async () => "test-key" } },
   });
-  const vite = await createRendererServer(t, { cachePrefix: "openwhispr-note-deadline-test-" });
+  const vite = await createRendererServer(t, { cachePrefix: "mnemo-note-deadline-test-" });
   const reasoningService = (await vite.ssrLoadModule("/services/ReasoningService.ts")).default;
   const { usePolicyStore } = await vite.ssrLoadModule("/stores/policyStore.ts");
   usePolicyStore.setState({ status: "unmanaged", appVersion: "1.10.1", policy: null });
@@ -202,7 +202,7 @@ test("enterprise note formatting sends the long deadline to the main process", a
     },
   });
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-enterprise-deadline-test-",
+    cachePrefix: "mnemo-enterprise-deadline-test-",
     mockModules: {
       "/models/ModelRegistry": `
         export const getOpenAiApiConfig = () => ({ supportsTemperature: true });
@@ -237,7 +237,7 @@ test("enterprise note formatting sends the long deadline to the main process", a
 test("Tinfoil note formatting passes the long deadline to the SDK and does not retry its timeout", async (t) => {
   installBrowserGlobals(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-tinfoil-deadline-test-",
+    cachePrefix: "mnemo-tinfoil-deadline-test-",
     mockModules: {
       "/tinfoilClient": `
         export const getTinfoilChatClient = async () => ({

@@ -63,7 +63,7 @@ describe('cleanupTranscript custom prompt — sent', () => {
     await cleanupTranscript('remind me to buy milk', { context: 'keyboard' });
     const req = lastRequest();
     expect(req.customPrompt).toBe('Always use bullet points, {{agentName}}.');
-    expect(req.agentName).toBe('OpenWhispr');
+    expect(req.agentName).toBe('mnemo');
     expect(req.timeoutMs).toBe(CLEANUP_TIMEOUT_MS);
   });
 
@@ -77,7 +77,7 @@ describe('cleanupTranscript custom prompt — sent', () => {
 
   it('still sends it when the agent is disabled even if the name is spoken', async () => {
     mockConfig = { cleanupEnabled: true, defaultMode: 'cloud', dictationAgentEnabled: false };
-    await cleanupTranscript('hey OpenWhispr rewrite this', { context: 'keyboard' });
+    await cleanupTranscript('hey mnemo rewrite this', { context: 'keyboard' });
     const req = lastRequest();
     expect(req.customPrompt).toBe('Always use bullet points, {{agentName}}.');
     expect(req.agentName).toBeUndefined();
@@ -86,7 +86,7 @@ describe('cleanupTranscript custom prompt — sent', () => {
   it('still sends it in private mode, where the agent is never applicable', async () => {
     mockActiveMode = 'private';
     mockConfig = { cleanupEnabled: true, defaultMode: 'private', dictationAgentEnabled: true };
-    await cleanupTranscript('hey OpenWhispr rewrite this', { context: 'keyboard' });
+    await cleanupTranscript('hey mnemo rewrite this', { context: 'keyboard' });
     const req = lastRequest();
     expect(req.customPrompt).toBe('Always use bullet points, {{agentName}}.');
     expect(req.agentName).toBeUndefined();
@@ -95,10 +95,10 @@ describe('cleanupTranscript custom prompt — sent', () => {
 
 describe('cleanupTranscript custom prompt — withheld for an agent mention', () => {
   it('omits the override so the server can route to the action prompt', async () => {
-    await cleanupTranscript('hey OpenWhispr rewrite this as a haiku', { context: 'keyboard' });
+    await cleanupTranscript('hey mnemo rewrite this as a haiku', { context: 'keyboard' });
     const req = lastRequest();
     expect(req.customPrompt).toBeUndefined();
-    expect(req.agentName).toBe('OpenWhispr');
+    expect(req.agentName).toBe('mnemo');
     expect(req.timeoutMs).toBe(AGENT_ACTION_TIMEOUT_MS);
   });
 });

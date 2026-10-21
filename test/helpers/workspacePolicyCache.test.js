@@ -17,7 +17,7 @@ const policyData = {
 };
 
 function withTempCache(run) {
-  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "openwhispr-policy-cache-"));
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "mnemo-policy-cache-"));
   const cachePath = path.join(tempDir, "workspace-policy.json");
   try {
     run(cachePath);
@@ -29,7 +29,7 @@ function withTempCache(run) {
 test("keys policy verdicts by API origin and the credential actually used", () => {
   withTempCache((cachePath) => {
     const identity = {
-      apiOrigin: "https://api.openwhispr.test",
+      apiOrigin: "https://api.mnemo.test",
       credentialHash: "credential-a",
       accountId: "account-a",
     };
@@ -43,7 +43,7 @@ test("keys policy verdicts by API origin and the credential actually used", () =
     assert.equal(
       readWorkspacePolicyCache(cachePath, {
         ...identity,
-        apiOrigin: "https://self-hosted.openwhispr.test",
+        apiOrigin: "https://self-hosted.mnemo.test",
       }),
       null
     );
@@ -57,12 +57,12 @@ test("keys policy verdicts by API origin and the credential actually used", () =
 test("preserves cached verdicts for multiple credentials and origins", () => {
   withTempCache((cachePath) => {
     const first = {
-      apiOrigin: "https://api.openwhispr.test",
+      apiOrigin: "https://api.mnemo.test",
       credentialHash: "credential-a",
       accountId: "account-a",
     };
     const second = {
-      apiOrigin: "https://self-hosted.openwhispr.test",
+      apiOrigin: "https://self-hosted.mnemo.test",
       credentialHash: "credential-b",
       accountId: "account-b",
     };
@@ -85,7 +85,7 @@ test("ignores legacy account-only and malformed cache envelopes", () => {
       "utf8"
     );
     const identity = {
-      apiOrigin: "https://api.openwhispr.test",
+      apiOrigin: "https://api.mnemo.test",
       credentialHash: "credential-a",
       accountId: "account-a",
     };

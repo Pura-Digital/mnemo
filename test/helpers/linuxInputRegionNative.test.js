@@ -11,7 +11,7 @@ test(
   "native input regions scale, clip and route clicks without changing the visible window",
   { skip: process.platform !== "linux", timeout: 30_000 },
   async (t) => {
-    const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "openwhispr-input-region-"));
+    const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "mnemo-input-region-"));
     let xvfb;
     t.after(async () => {
       if (xvfb && xvfb.exitCode === null && xvfb.signalCode === null) {

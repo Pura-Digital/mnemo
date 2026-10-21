@@ -4,7 +4,7 @@ import type { NewSegment, NewSpeaker, Segment, Speaker } from '@/data/types';
  * Bridges the desktop transcript format (a denormalized JSON array stored in
  * notes.transcript) and mobile's normalized transcript_segments + speakers
  * tables. Desktop is the origin of the wire format; see
- * openwhispr/src/utils/transcriptSpeakerState.ts serializeTranscriptSegments.
+ * mnemo/src/utils/transcriptSpeakerState.ts serializeTranscriptSegments.
  *
  * Pure functions only — no DB or network — mirroring cloudMeetingSegments.ts.
  */

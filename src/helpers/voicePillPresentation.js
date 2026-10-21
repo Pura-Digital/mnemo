@@ -11,6 +11,19 @@ export const VOICE_PILL_FOOTPRINT = Object.freeze({
   // 98 = 6px edge inset + 22px icon + 6px gap + 52px waveform + 12px edge
   // inset (the waveform side keeps extra air; insets include the 1px border).
   recording: Object.freeze({ width: 98, height: 36 }),
+  // The meeting prompt grows the same control into a wide pill. Its window,
+  // WINDOW_SIZES.MEETING_PROMPT, is this width plus both 12px dock insets.
+  meetingPrompt: Object.freeze({ width: 340, height: 44 }),
+});
+
+// The prompt borrows the listening entrance's beats: hold while the native
+// window widens, grow on the shared curve, reveal content once the footprint
+// settles. Leaving runs the same beats backwards.
+export const MEETING_PROMPT_TIMING = Object.freeze({
+  windowLeadMs: 120,
+  expansionMs: 300,
+  contentDelayMs: 100,
+  contentFadeMs: 160,
 });
 
 // The hover cancel control that emerges beside the pill (px). Same contract:

@@ -39,7 +39,7 @@ async function mountNudge(t, { settings = {}, prompted = true } = {}) {
   globalThis.__cloudNudgeToasts = { toasts, dismissed };
   t.after(() => delete globalThis.__cloudNudgeToasts);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-cloud-nudge-",
+    cachePrefix: "mnemo-cloud-nudge-",
     noExternal: ["react-i18next"],
     mockModules: {
       "react-i18next": `
@@ -140,9 +140,9 @@ test("dictation already on Cloud, or a policy that forbids it, gets no nudge", a
   await t.test("already on Cloud", async (t) => {
     const nudge = await mountNudge(t, {
       settings: {
-        transcriptionMode: "openwhispr",
-        cloudTranscriptionMode: "openwhispr",
-        cloudTranscriptionProvider: "openwhispr",
+        transcriptionMode: "mnemo",
+        cloudTranscriptionMode: "mnemo",
+        cloudTranscriptionProvider: "pura",
       },
     });
     await nudge.settlePolicy();
@@ -173,7 +173,7 @@ test("dictation already on Cloud, or a policy that forbids it, gets no nudge", a
     await nudge.signIn();
     await nudge.settlePolicy(
       "managed",
-      managedPolicy({ transcription: { allowedModes: ["openwhispr"] } })
+      managedPolicy({ transcription: { allowedModes: ["mnemo"] } })
     );
 
     assert.deepEqual(nudge.toasts, []);

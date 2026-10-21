@@ -28,7 +28,7 @@ export function detectPreferredLanguages(): string[] {
       // Installed iOS keyboard languages — picks up Hebrew, Russian, etc.
       // that the user has added as keyboards even if they're not in the
       // preferred-languages list. iOS returns special tags like 'emoji',
-      // 'dictation@en-US', and OpenWhispr's own 'mul' tag; matchSupportedCode
+      // 'dictation@en-US', and mnemo's own 'mul' tag; matchSupportedCode
       // returns null for them, so they don't pollute the user's selection.
       for (const tag of AppGroupStorage.getActiveInputModes()) {
         const matched = matchSupportedCode(tag);

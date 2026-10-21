@@ -56,12 +56,12 @@ export function resolveMeetingTranscriptionOptions({
     };
   }
 
-  if (transcriptionMode === "openwhispr") {
+  if (transcriptionMode === "pura") {
     const provider = managedProviders?.[0] ?? DEFAULT_MANAGED_PROVIDER;
     return {
       provider: `${provider.id}-realtime`,
       model: resolveModel(provider, selectedModel),
-      mode: "openwhispr",
+      mode: "mnemo",
       language,
     };
   }

@@ -1,6 +1,6 @@
 import type { ProcessingMode, UserConfig } from '@/types';
 
-const DEFAULT_AGENT_NAME = 'OpenWhispr';
+const DEFAULT_AGENT_NAME = 'mnemo';
 
 export function getDictationAgentName(config: UserConfig): string {
   const name = config.dictationAgentName?.trim();
@@ -42,7 +42,7 @@ function maxEditsForLength(len: number): number {
   return 2;
 }
 
-// Port of openwhispr-api/lib/prompts.ts detectAgentName (lines 68–111).
+// Port of mnemo-api/lib/prompts.ts detectAgentName (lines 68–111).
 // Three layers ensure client detection agrees with server Action Mode detection:
 //   1. Exact word-boundary regex (handles name with spaces via regex escaping)
 //   2. Space-normalized pair join (STT splitting compound names, e.g. "Open Whispr")

@@ -298,7 +298,7 @@ const PROVIDER_CREDENTIALS: Record<
     fields: [{ key: "geminiApiKey", input: "secret" }],
   },
   corti: {
-    consoleUrl: "https://www.corti.ai/?utm_source=referral&utm_content=&utm_campaign=openwhispr",
+    consoleUrl: "https://www.corti.ai/?utm_source=referral&utm_content=&utm_campaign=mnemo",
     fields: [
       { key: "cortiClientId", input: "secret", labelKey: "transcription.corti.clientId" },
       { key: "cortiClientSecret", input: "secret", labelKey: "transcription.corti.clientSecret" },
@@ -320,7 +320,7 @@ const PROVIDER_CREDENTIALS: Record<
     ],
   },
   tinfoil: {
-    consoleUrl: "https://tinfoil.sh/inference?utm_source=referral&utm_campaign=openwhispr",
+    consoleUrl: "https://tinfoil.sh/inference?utm_source=referral&utm_campaign=mnemo",
     fields: [{ key: "tinfoilApiKey", input: "secret" }],
   },
   deepgram: {
@@ -703,8 +703,8 @@ export default function TranscriptionModelPicker({
       loadLocalModels();
       loadParakeetModels();
     };
-    window.addEventListener("openwhispr-models-cleared", handleModelsCleared);
-    return () => window.removeEventListener("openwhispr-models-cleared", handleModelsCleared);
+    window.addEventListener("mnemo-models-cleared", handleModelsCleared);
+    return () => window.removeEventListener("mnemo-models-cleared", handleModelsCleared);
   }, [loadLocalModels, loadParakeetModels]);
 
   useEffect(() => {

@@ -9,7 +9,7 @@ const noop = () => {};
 async function loadDemoStep(t) {
   installBrowserGlobals(t, { window: { electronAPI: {} } });
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-onboarding-demo-step-",
+    cachePrefix: "mnemo-onboarding-demo-step-",
     noExternal: ["react-i18next"],
     mockModules: {
       "react-i18next": `

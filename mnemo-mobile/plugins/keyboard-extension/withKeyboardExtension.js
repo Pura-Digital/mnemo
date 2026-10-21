@@ -9,10 +9,10 @@ const xcode = require('xcode');
 const plist = require('@expo/plist').default;
 const {
   deriveAppGroupId,
-  resolveOpenWhisprEnvironment,
-} = require('../../config/openwhispr-environments');
+  resolveMnemoEnvironment,
+} = require('../../config/mnemo-environments');
 
-const EXTENSION_NAME = 'OpenWhisprKeyboard';
+const EXTENSION_NAME = 'MnemoKeyboard';
 const EXTENSION_BUNDLE_ID_SUFFIX = 'keyboard';
 
 function firstScheme(value) {
@@ -23,11 +23,11 @@ function firstScheme(value) {
 }
 
 function resolveKeyboardEnvironment(cfg) {
-  const configured = cfg.extra?.openWhispr ?? resolveOpenWhisprEnvironment();
+  const configured = cfg.extra?.mnemo ?? resolveMnemoEnvironment();
   const bundleIdentifier =
-    configured.iosBundleIdentifier || cfg.ios?.bundleIdentifier || 'com.gizmolabs.openwhispr';
-  const scheme = configured.scheme || firstScheme(cfg.scheme) || 'openwhispr';
-  const displayName = configured.displayName || cfg.name || 'OpenWhispr';
+    configured.iosBundleIdentifier || cfg.ios?.bundleIdentifier || 'com.pura.mnemo';
+  const scheme = configured.scheme || firstScheme(cfg.scheme) || 'mnemo';
+  const displayName = configured.displayName || cfg.name || 'mnemo';
 
   return {
     ...configured,
@@ -73,8 +73,8 @@ function writeExtensionSupportFiles(platformProjectRoot, environment) {
 
   const infoPlist = readPlist(path.join(pluginSourceDir, 'Info.plist'));
   infoPlist.CFBundleDisplayName = environment.keyboardDisplayName;
-  infoPlist.OpenWhisprAppScheme = environment.scheme;
-  infoPlist.OpenWhisprContainingAppBundleIdentifier = environment.iosBundleIdentifier;
+  infoPlist.MnemoAppScheme = environment.scheme;
+  infoPlist.MnemoContainingAppBundleIdentifier = environment.iosBundleIdentifier;
   infoPlist.LSApplicationQueriesSchemes = unique([
     environment.scheme,
     environment.iosBundleIdentifier,
@@ -82,7 +82,7 @@ function writeExtensionSupportFiles(platformProjectRoot, environment) {
   ]);
   writePlist(path.join(extensionDir, 'Info.plist'), infoPlist);
 
-  const entitlements = readPlist(path.join(pluginSourceDir, 'OpenWhisprKeyboard.entitlements'));
+  const entitlements = readPlist(path.join(pluginSourceDir, 'MnemoKeyboard.entitlements'));
   setApplicationGroup(entitlements, environment.appGroupId);
   writePlist(path.join(extensionDir, `${EXTENSION_NAME}.entitlements`), entitlements);
 }
@@ -425,9 +425,9 @@ function withKeyboardExtension(config) {
       GENERATE_INFOPLIST_FILE: 'NO',
       CURRENT_PROJECT_VERSION: '1',
       MARKETING_VERSION: appVersion,
-      OPENWHISPR_APP_SCHEME: environment.scheme,
-      OPENWHISPR_APP_GROUP_ID: environment.appGroupId,
-      OPENWHISPR_CONTAINING_APP_BUNDLE_ID: environment.iosBundleIdentifier,
+      MNEMO_APP_SCHEME: environment.scheme,
+      MNEMO_APP_GROUP_ID: environment.appGroupId,
+      MNEMO_CONTAINING_APP_BUNDLE_ID: environment.iosBundleIdentifier,
     };
 
     if (developmentTeamId) {

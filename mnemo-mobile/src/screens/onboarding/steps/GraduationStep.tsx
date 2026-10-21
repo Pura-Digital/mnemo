@@ -53,7 +53,7 @@ const TARGETS: AppTarget[] = [
     title: isIOS ? 'Mail' : 'Gmail',
     icon: 'envelope.fill',
     mdIcon: 'Mail',
-    iconBg: '#007AFF',
+    iconBg: '#C81038',
     iconAsset: isIOS
       ? require('../../../../assets/onboarding/app-icons/mail.png')
       : require('../../../../assets/onboarding/app-icons/gmail.png'),
@@ -211,8 +211,8 @@ export function GraduationStep() {
     <OnboardingShell
       title="Start speaking instead of typing."
       titleAccent="speaking"
-      subtitle="Try OpenWhispr anywhere — tap and hold the globe key in any app to switch keyboards."
-      ctaLabel="Start using OpenWhispr"
+      subtitle="Try mnemo anywhere — tap and hold the globe key in any app to switch keyboards."
+      ctaLabel="Start using mnemo"
       onCta={() => complete()}
       ctaLoading={busy}
     >

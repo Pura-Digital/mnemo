@@ -127,7 +127,7 @@ async function mountHarness(t, { settings, writeClipboard } = {}) {
   globalThis.__forceStopPastes = [];
 
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-audio-recording-force-stop-",
+    cachePrefix: "mnemo-audio-recording-force-stop-",
     noExternal: ["react-i18next"],
     mockModules: {
       "/helpers/audioManager": FAKE_AUDIO_MANAGER_SOURCE,

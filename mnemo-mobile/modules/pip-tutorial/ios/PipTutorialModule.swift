@@ -4,7 +4,7 @@ import AVFoundation
 import UIKit
 import os.log
 
-private let log = Logger(subsystem: "com.gizmolabs.openwhispr", category: "PipTutorial")
+private let log = Logger(subsystem: "com.pura.mnemo", category: "PipTutorial")
 
 public class PipTutorialModule: Module {
   private var player: AVPlayer?

@@ -100,7 +100,7 @@ export function MicrophoneStep() {
       if (!result.canAskAgain) {
         Alert.alert(
           'Microphone access blocked',
-          'Open Settings to grant OpenWhispr access. You can continue setup for now.',
+          'Open Settings to grant mnemo access. You can continue setup for now.',
           [
             { text: 'Open Settings', onPress: () => Linking.openSettings() },
             {
@@ -170,7 +170,7 @@ export function MicrophoneStep() {
         progress={progress}
         title="Microphone is blocked"
         titleAccent="blocked"
-        subtitle="Open Settings to grant OpenWhispr access to your microphone."
+        subtitle="Open Settings to grant mnemo access to your microphone."
         ctaLabel="Open Settings"
         onCta={handleOpenSettings}
         secondaryCtaLabel="Continue anyway"
@@ -204,7 +204,7 @@ export function MicrophoneStep() {
       progress={progress}
       title="Allow microphone access"
       titleAccent="microphone"
-      subtitle="Microphone access lets OpenWhispr convert your speech into text."
+      subtitle="Microphone access lets mnemo convert your speech into text."
       ctaLabel="Continue"
       ctaLoading={requesting}
       onCta={handleAllow}

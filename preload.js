@@ -512,6 +512,9 @@ contextBridge.exposeInMainWorld("electronAPI", {
   snapToMeetingMode: () => ipcRenderer.invoke("snap-to-meeting-mode"),
   restoreFromMeetingMode: () => ipcRenderer.invoke("restore-from-meeting-mode"),
   getPlatform: () => process.platform,
+  getNativeGlassCapabilities: () => ipcRenderer.invoke("get-native-glass-capabilities"),
+  syncNativeGlassAppearance: (appearance) =>
+    ipcRenderer.invoke("sync-native-glass-appearance", appearance),
 
   // Cleanup function
   cleanupApp: () => ipcRenderer.invoke("cleanup-app"),
@@ -580,6 +583,13 @@ contextBridge.exposeInMainWorld("electronAPI", {
 
   // External link opener
   openExternal: (url) => ipcRenderer.invoke("open-external", url),
+
+  puraGetConnectionState: () => ipcRenderer.invoke("pura-get-connection-state"),
+  puraStartConnection: (locale) => ipcRenderer.invoke("pura-start-connection", locale),
+  puraGetTokens: () => ipcRenderer.invoke("pura-get-tokens"),
+  puraSetTokens: (tokens) => ipcRenderer.invoke("pura-set-tokens", tokens),
+  puraDisconnect: () => ipcRenderer.invoke("pura-disconnect"),
+  onPuraConnectionChanged: registerListener("pura-connection-changed"),
 
   // Model management functions
   modelGetAll: () => ipcRenderer.invoke("model-get-all"),
@@ -759,7 +769,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
     (callback) => (_event, state) => callback(state)
   ),
 
-  // OpenWhispr Cloud API
+  // Mnemo Cloud API
   cloudHealthCheck: () => ipcRenderer.invoke("cloud-health-check"),
   cloudTranscribe: (audioBuffer, opts) => ipcRenderer.invoke("cloud-transcribe", audioBuffer, opts),
   cancelCloudTranscription: () => ipcRenderer.send("cloud-transcribe-cancel"),
@@ -1252,6 +1262,13 @@ contextBridge.exposeInMainWorld("electronAPI", {
   clearSnippetCloudId: (id) => ipcRenderer.invoke("db-clear-snippet-cloud-id", id),
   broadcastSnippetsUpdated: () => ipcRenderer.invoke("db-broadcast-snippets-updated"),
 
+  // ArchivEye
+  archiveyeStartOAuth: () => ipcRenderer.invoke("archiveye-start-oauth"),
+  archiveyeDisconnect: () => ipcRenderer.invoke("archiveye-disconnect"),
+  archiveyeGetStatus: () => ipcRenderer.invoke("archiveye-get-status"),
+  archiveyeUploadNote: (noteId, options) =>
+    ipcRenderer.invoke("archiveye-upload-note", noteId, options),
+
   // Google Calendar
   gcalStartOAuth: () => ipcRenderer.invoke("gcal-start-oauth"),
   gcalDisconnect: (email) => ipcRenderer.invoke("gcal-disconnect", email),
@@ -1282,6 +1299,11 @@ contextBridge.exposeInMainWorld("electronAPI", {
   searchContacts: (query) => ipcRenderer.invoke("search-contacts", query),
   upsertContact: (contact) => ipcRenderer.invoke("upsert-contact", contact),
   getMD5Hash: (text) => ipcRenderer.invoke("get-md5-hash", text),
+
+  onArchiveyeConnectionChanged: registerListener(
+    "archiveye-connection-changed",
+    (callback) => (_event, data) => callback(data)
+  ),
 
   // Google Calendar event listeners
   onGcalConnectionChanged: registerListener(
@@ -1325,6 +1347,10 @@ contextBridge.exposeInMainWorld("electronAPI", {
   onMeetingNotificationData: registerListener(
     "meeting-notification-data",
     (callback) => (_event, data) => callback(data)
+  ),
+  onMeetingNotificationDismissed: registerListener(
+    "meeting-notification-dismissed",
+    (callback) => (_event, detectionId) => callback(detectionId)
   ),
   onMeetingAutoEndRequested: registerListener(
     "meeting-auto-end-requested",

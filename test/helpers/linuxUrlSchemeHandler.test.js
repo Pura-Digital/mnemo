@@ -9,7 +9,7 @@ const helperPath = require.resolve("../../src/helpers/linuxUrlSchemeHandler");
 const originalLoad = Module._load;
 
 const MANAGED_ENV = ["XDG_DATA_HOME", "APPIMAGE", "FLATPAK_ID"];
-const HANDLER_FILE = "openwhispr-url-handler.desktop";
+const HANDLER_FILE = "mnemo-url-handler.desktop";
 
 // Assigning undefined to process.env coerces to the string "undefined".
 function setEnv(name, value) {
@@ -25,7 +25,7 @@ function setProcessPath(name, value) {
 // resources dir with no deb/rpm marker, so each case states only what differs.
 function withInstall(fn) {
   return async () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "openwhispr-url-handler-test-"));
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "mnemo-url-handler-test-"));
     const saved = Object.fromEntries(MANAGED_ENV.map((name) => [name, process.env[name]]));
     const savedExecPath = process.execPath;
     const savedResourcesPath = process.resourcesPath;
@@ -33,7 +33,7 @@ function withInstall(fn) {
     process.env.XDG_DATA_HOME = path.join(root, "data");
     const resourcesPath = path.join(root, "install", "resources");
     fs.mkdirSync(resourcesPath, { recursive: true });
-    setProcessPath("execPath", path.join(root, "install", "open-whispr-app"));
+    setProcessPath("execPath", path.join(root, "install", "mnemo-app"));
     setProcessPath("resourcesPath", resourcesPath);
     try {
       await fn({ root, resourcesPath, applicationsDir: path.join(root, "data", "applications") });
@@ -85,20 +85,20 @@ test(
   "the handler entry is hidden and declares only the scheme",
   withInstall(async ({ applicationsDir }) => {
     const { registerLinuxUrlSchemeHandler } = loadHelper(createXdg());
-    process.env.APPIMAGE = "/home/user/Apps/OpenWhispr.AppImage";
+    process.env.APPIMAGE = "/home/user/Apps/Mnemo.AppImage";
 
-    registerLinuxUrlSchemeHandler("openwhispr", []);
+    registerLinuxUrlSchemeHandler("mnemo", []);
 
     assert.equal(
       readHandler(applicationsDir),
       [
         "[Desktop Entry]",
         "Type=Application",
-        "Name=OpenWhispr",
-        "Exec=/home/user/Apps/OpenWhispr.AppImage %U",
+        "Name=mnemo",
+        "Exec=/home/user/Apps/Mnemo.AppImage %U",
         "Terminal=false",
         "NoDisplay=true",
-        "MimeType=x-scheme-handler/openwhispr;",
+        "MimeType=x-scheme-handler/mnemo;",
         "",
       ].join("\n")
     );
@@ -113,14 +113,14 @@ test(
   withInstall(async ({ applicationsDir }) => {
     const { registerLinuxUrlSchemeHandler } = loadHelper(createXdg());
     const cases = [
-      ["/home/u/My Apps/OpenWhispr.AppImage", '"/home/u/My Apps/OpenWhispr.AppImage" %U'],
-      ["/home/u/100%/OpenWhispr", "/home/u/100%%/OpenWhispr %U"],
+      ["/home/u/My Apps/Mnemo.AppImage", '"/home/u/My Apps/Mnemo.AppImage" %U'],
+      ["/home/u/100%/Mnemo", "/home/u/100%%/Mnemo %U"],
       ['/home/u/"$HOME"/x', '"/home/u/\\"\\$HOME\\"/x" %U'],
     ];
 
     for (const [appImage, expected] of cases) {
       process.env.APPIMAGE = appImage;
-      assert.deepEqual(registerLinuxUrlSchemeHandler("openwhispr", []), { registered: true });
+      assert.deepEqual(registerLinuxUrlSchemeHandler("mnemo", []), { registered: true });
       assert.equal(execLine(applicationsDir), expected);
     }
   })
@@ -132,14 +132,14 @@ test(
     const xdg = createXdg();
     const { registerLinuxUrlSchemeHandler } = loadHelper(xdg);
 
-    process.env.FLATPAK_ID = "com.gizmolabs.openwhispr";
-    assert.deepEqual(registerLinuxUrlSchemeHandler("openwhispr", []), { registered: false });
+    process.env.FLATPAK_ID = "com.pura.mnemo";
+    assert.deepEqual(registerLinuxUrlSchemeHandler("mnemo", []), { registered: false });
     setEnv("FLATPAK_ID", undefined);
 
     // The Nix package wraps the AppImage, so APPIMAGE may be set too.
-    process.env.APPIMAGE = "/nix/store/abc-openwhispr/OpenWhispr.AppImage";
-    setProcessPath("execPath", "/nix/store/abc-openwhispr-extracted/open-whispr-app");
-    assert.deepEqual(registerLinuxUrlSchemeHandler("openwhispr", []), { registered: false });
+    process.env.APPIMAGE = "/nix/store/abc-mnemo/Mnemo.AppImage";
+    setProcessPath("execPath", "/nix/store/abc-mnemo-extracted/mnemo-app");
+    assert.deepEqual(registerLinuxUrlSchemeHandler("mnemo", []), { registered: false });
 
     assert.equal(xdg.defaultHandler, "");
     assert.equal(fs.existsSync(applicationsDir), false);
@@ -149,11 +149,11 @@ test(
 test(
   "an AppImage writes its handler at the stable AppImage path and makes it the default",
   withInstall(async ({ applicationsDir }) => {
-    const xdg = createXdg({ defaultHandler: "open-whispr.desktop" });
+    const xdg = createXdg({ defaultHandler: "mnemo.desktop" });
     const { registerLinuxUrlSchemeHandler } = loadHelper(xdg);
-    process.env.APPIMAGE = "/home/user/Applications/OpenWhispr.AppImage";
+    process.env.APPIMAGE = "/home/user/Applications/Mnemo.AppImage";
 
-    assert.deepEqual(registerLinuxUrlSchemeHandler("openwhispr", []), { registered: true });
+    assert.deepEqual(registerLinuxUrlSchemeHandler("mnemo", []), { registered: true });
 
     assert.equal(execLine(applicationsDir), `${process.env.APPIMAGE} %U`);
     assert.equal(xdg.defaultHandler, HANDLER_FILE);
@@ -164,11 +164,11 @@ test(
   "a tar.gz points its handler at the launcher wrapper beside the binary",
   withInstall(async ({ root, applicationsDir }) => {
     const { registerLinuxUrlSchemeHandler } = loadHelper(createXdg());
-    fs.writeFileSync(path.join(root, "install", "open-whispr"), "#!/bin/bash\n");
+    fs.writeFileSync(path.join(root, "install", "mnemo"), "#!/bin/bash\n");
 
-    assert.deepEqual(registerLinuxUrlSchemeHandler("openwhispr", []), { registered: true });
+    assert.deepEqual(registerLinuxUrlSchemeHandler("mnemo", []), { registered: true });
 
-    const wrapper = path.join(root, "install", "open-whispr");
+    const wrapper = path.join(root, "install", "mnemo");
     assert.equal(execLine(applicationsDir), `${wrapper} %U`);
   })
 );
@@ -180,17 +180,17 @@ test(
     const { registerLinuxUrlSchemeHandler } = loadHelper(xdg);
     setProcessPath("execPath", "/repo/node_modules/electron/dist/electron");
 
-    assert.deepEqual(registerLinuxUrlSchemeHandler("openwhispr-staging", ["/repo"]), {
+    assert.deepEqual(registerLinuxUrlSchemeHandler("mnemo-staging", ["/repo"]), {
       registered: true,
     });
 
     const entry = fs.readFileSync(
-      path.join(applicationsDir, "openwhispr-staging-url-handler.desktop"),
+      path.join(applicationsDir, "mnemo-staging-url-handler.desktop"),
       "utf8"
     );
     assert.match(entry, /^Exec=\/repo\/node_modules\/electron\/dist\/electron \/repo %U$/m);
-    assert.match(entry, /^MimeType=x-scheme-handler\/openwhispr-staging;$/m);
-    assert.equal(xdg.defaultHandler, "openwhispr-staging-url-handler.desktop");
+    assert.match(entry, /^MimeType=x-scheme-handler\/mnemo-staging;$/m);
+    assert.equal(xdg.defaultHandler, "mnemo-staging-url-handler.desktop");
   })
 );
 
@@ -199,11 +199,11 @@ test(
   withInstall(async ({ applicationsDir }) => {
     const xdg = createXdg();
     const { registerLinuxUrlSchemeHandler } = loadHelper(xdg);
-    process.env.APPIMAGE = "/home/user/Applications/OpenWhispr.AppImage";
-    registerLinuxUrlSchemeHandler("openwhispr", []);
+    process.env.APPIMAGE = "/home/user/Applications/Mnemo.AppImage";
+    registerLinuxUrlSchemeHandler("mnemo", []);
     const firstEntry = readHandler(applicationsDir);
 
-    assert.deepEqual(registerLinuxUrlSchemeHandler("openwhispr", []), { registered: true });
+    assert.deepEqual(registerLinuxUrlSchemeHandler("mnemo", []), { registered: true });
 
     assert.equal(readHandler(applicationsDir), firstEntry);
     assert.equal(xdg.defaultHandler, HANDLER_FILE);
@@ -215,11 +215,11 @@ test(
   withInstall(async ({ applicationsDir }) => {
     const xdg = createXdg();
     const { registerLinuxUrlSchemeHandler } = loadHelper(xdg);
-    process.env.APPIMAGE = "/home/user/Downloads/OpenWhispr.AppImage";
-    registerLinuxUrlSchemeHandler("openwhispr", []);
+    process.env.APPIMAGE = "/home/user/Downloads/Mnemo.AppImage";
+    registerLinuxUrlSchemeHandler("mnemo", []);
 
-    process.env.APPIMAGE = "/home/user/Applications/OpenWhispr.AppImage";
-    assert.deepEqual(registerLinuxUrlSchemeHandler("openwhispr", []), { registered: true });
+    process.env.APPIMAGE = "/home/user/Applications/Mnemo.AppImage";
+    assert.deepEqual(registerLinuxUrlSchemeHandler("mnemo", []), { registered: true });
 
     assert.equal(execLine(applicationsDir), `${process.env.APPIMAGE} %U`);
     assert.equal(xdg.defaultHandler, HANDLER_FILE);
@@ -233,7 +233,7 @@ test(
     const { registerLinuxUrlSchemeHandler } = loadHelper(xdg);
     fs.writeFileSync(path.join(resourcesPath, "package-type"), "rpm");
 
-    assert.deepEqual(registerLinuxUrlSchemeHandler("openwhispr", []), { registered: false });
+    assert.deepEqual(registerLinuxUrlSchemeHandler("mnemo", []), { registered: false });
 
     assert.equal(xdg.defaultHandler, "other.desktop");
     assert.equal(fs.existsSync(applicationsDir), false);
@@ -249,9 +249,9 @@ test(
     const { registerLinuxUrlSchemeHandler } = loadHelper(xdg);
     fs.writeFileSync(path.join(resourcesPath, "package-type"), "deb");
 
-    assert.deepEqual(registerLinuxUrlSchemeHandler("openwhispr", []), { registered: false });
+    assert.deepEqual(registerLinuxUrlSchemeHandler("mnemo", []), { registered: false });
 
-    assert.equal(xdg.defaultHandler, "open-whispr.desktop");
+    assert.equal(xdg.defaultHandler, "mnemo.desktop");
   })
 );
 
@@ -261,7 +261,7 @@ test(
     const xdg = createXdg({ missing: ["update-desktop-database"] });
     const { registerLinuxUrlSchemeHandler } = loadHelper(xdg);
 
-    assert.deepEqual(registerLinuxUrlSchemeHandler("openwhispr", []), { registered: true });
+    assert.deepEqual(registerLinuxUrlSchemeHandler("mnemo", []), { registered: true });
     assert.equal(xdg.defaultHandler, HANDLER_FILE);
   })
 );
@@ -272,7 +272,7 @@ test(
     const xdg = createXdg({ missing: ["xdg-mime"] });
     const { registerLinuxUrlSchemeHandler } = loadHelper(xdg);
 
-    const result = registerLinuxUrlSchemeHandler("openwhispr", []);
+    const result = registerLinuxUrlSchemeHandler("mnemo", []);
 
     assert.equal(result.registered, false);
     assert.match(result.reason, /ENOENT/);
@@ -287,7 +287,7 @@ test(
     // A file where the directory should be fails the same way a read-only home does.
     fs.writeFileSync(path.join(root, "data"), "");
 
-    const result = registerLinuxUrlSchemeHandler("openwhispr", []);
+    const result = registerLinuxUrlSchemeHandler("mnemo", []);
 
     assert.equal(result.registered, false);
     assert.ok(result.reason);
@@ -301,7 +301,7 @@ test(
     const xdg = createXdg({ defaultHandler: "other.desktop", ignoresDefault: true });
     const { registerLinuxUrlSchemeHandler } = loadHelper(xdg);
 
-    assert.deepEqual(registerLinuxUrlSchemeHandler("openwhispr", []), {
+    assert.deepEqual(registerLinuxUrlSchemeHandler("mnemo", []), {
       registered: false,
       reason: "default stayed other.desktop",
     });

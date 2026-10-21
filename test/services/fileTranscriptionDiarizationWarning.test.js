@@ -9,7 +9,7 @@ function localConfig() {
     whisperModel: "base",
     parakeetModel: "parakeet-tdt-0.6b-v3",
     cohereModel: "command-a-transcribe",
-    isOpenWhisprCloud: false,
+    isMnemoCloud: false,
     getApiKey: () => "",
     cloudTranscriptionProvider: "openai",
     cloudTranscriptionBaseUrl: "",
@@ -22,7 +22,7 @@ function localConfig() {
 async function loadFileTranscription(t) {
   const { window } = installBrowserGlobals(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-file-diarization-warning-test-",
+    cachePrefix: "mnemo-file-diarization-warning-test-",
     mockModules: {
       "/lib/auth": "export const withSessionRefresh = (fn) => fn();",
     },

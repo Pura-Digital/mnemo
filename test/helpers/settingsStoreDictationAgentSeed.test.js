@@ -6,11 +6,11 @@ const { createRendererServer, installBrowserGlobals } = require("../lib/renderer
 // scope sat unconfigured (mode defaulting to cloud, empty provider and model).
 // Now that the panel answers on the Voice Assistant scope, a profile that never
 // configured it must inherit its Chat scope once, or a signed-in Local/BYOK chat
-// user would have spoken commands move to OpenWhispr Cloud silently.
+// user would have spoken commands move to Mnemo Cloud silently.
 test("the Voice Assistant scope is seeded from Chat once for profiles that never configured it", async (t) => {
   const { storage } = installBrowserGlobals(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-dictation-agent-seed-test-",
+    cachePrefix: "mnemo-dictation-agent-seed-test-",
   });
   const load = async (seed) => {
     storage.clear();
@@ -48,8 +48,8 @@ test("the Voice Assistant scope is seeded from Chat once for profiles that never
   });
 
   await t.test("a Voice Assistant scope the user configured is left alone", async () => {
-    const state = await load({ ...localChat, dictationAgentMode: "openwhispr" });
-    assert.equal(state.dictationAgentMode, "openwhispr");
+    const state = await load({ ...localChat, dictationAgentMode: "mnemo" });
+    assert.equal(state.dictationAgentMode, "mnemo");
     assert.equal(state.dictationAgentProvider, "");
     assert.equal(storage.getItem("_dictationAgentSeeded"), "1");
   });
@@ -60,23 +60,23 @@ test("the Voice Assistant scope is seeded from Chat once for profiles that never
       dictationAgentProvider: "groq",
       dictationAgentModel: "openai/gpt-oss-20b",
     });
-    assert.equal(state.dictationAgentMode, "openwhispr");
+    assert.equal(state.dictationAgentMode, "mnemo");
     assert.equal(state.dictationAgentProvider, "groq");
     assert.equal(state.dictationAgentModel, "openai/gpt-oss-20b");
   });
 
-  // The provider-settings and agent-mode migrations leave a fresh profile's Chat
-  // scope on the cloud default, so the copy is a no-op in effect.
-  await t.test("a fresh profile inherits the same cloud default Chat was migrated to", async () => {
+  await t.test("a fresh profile inherits BYOK defaults without an account", async () => {
     const state = await load({});
-    assert.equal(storage.getItem("chatAgentMode"), "openwhispr");
-    assert.equal(state.dictationAgentMode, "openwhispr");
+    assert.equal(storage.getItem("chatAgentMode"), "providers");
+    assert.equal(state.dictationAgentMode, "providers");
+    assert.equal(state.transcriptionMode, "providers");
+    assert.equal(state.cloudTranscriptionMode, "byok");
     assert.equal(state.dictationAgentProvider, "");
   });
 
   await t.test("a seeded profile is not seeded again after Chat changes", async () => {
     const state = await load({ ...localChat, _dictationAgentSeeded: "1" });
-    assert.equal(state.dictationAgentMode, "openwhispr");
+    assert.equal(state.dictationAgentMode, "mnemo");
     assert.equal(storage.getItem("dictationAgentMode"), null);
   });
 });

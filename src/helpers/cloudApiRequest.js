@@ -75,7 +75,7 @@ function createCloudApiRequestHandler({
   return async function handleCloudApiRequest(opts) {
     try {
       const apiUrl = getApiUrl();
-      if (!apiUrl) throw new Error("OpenWhispr API URL not configured");
+      if (!apiUrl) throw new Error("Cloud API URL not configured");
 
       if (typeof opts?.path !== "string" || !opts.path.startsWith("/")) {
         return { success: false, error: "Invalid API path" };
@@ -97,8 +97,8 @@ function createCloudApiRequestHandler({
       // v1 using the same exact headers as direct main-process request paths.
       const headers = fence
         ? withPolicyRequestHeaders({ Authorization: fence.authorization }, getAppVersion())
-        : { "x-openwhispr-version": getAppVersion() };
-      headers["x-openwhispr-source"] = "desktop";
+        : { "x-mnemo-version": getAppVersion() };
+      headers["x-mnemo-source"] = "desktop";
       const fetchOptions = {
         method,
         headers,

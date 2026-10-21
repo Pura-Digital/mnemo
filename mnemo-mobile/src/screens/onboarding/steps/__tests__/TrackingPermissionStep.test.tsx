@@ -46,7 +46,7 @@ jest.mock('@/components/ui/Text', () => {
   return { Text };
 });
 jest.mock('@/components/ui/SystemIcon', () => ({ SystemIcon: () => null }));
-jest.mock('@/components/ui/OpenWhisprMark', () => ({ OpenWhisprMark: () => null }));
+jest.mock('@/components/ui/MnemoMark', () => ({ MnemoMark: () => null }));
 
 jest.mock('@/store/useOnboardingStore', () => ({
   getStepProgress: () => undefined,
@@ -111,11 +111,11 @@ describe('TrackingPermissionStep', () => {
     expect(mockGoNext).not.toHaveBeenCalled();
   });
 
-  it('omits the decorative OpenWhispr logo from the education content', async () => {
+  it('omits the decorative mnemo logo from the education content', async () => {
     const { findByRole, queryByLabelText } = render(<TrackingPermissionStep />);
 
     expect(await findByRole('header')).toBeTruthy();
-    expect(queryByLabelText('OpenWhispr advertising measurement')).toBeNull();
+    expect(queryByLabelText('mnemo advertising measurement')).toBeNull();
   });
 
   it.each(['authorized', 'denied'] as const)(

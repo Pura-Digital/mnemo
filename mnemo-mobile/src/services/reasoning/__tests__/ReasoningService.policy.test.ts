@@ -18,7 +18,7 @@ describe('ReasoningService POLICY_MODE_BLOCKED mapping', () => {
     );
 
     await expect(ReasoningService.processText({ text: 'hi', language: 'en' })).rejects.toThrow(
-      "Your organization's policy doesn't allow OpenWhispr cloud AI.",
+      "Your organization's policy doesn't allow Pura LLM AI.",
     );
   });
 
@@ -63,6 +63,6 @@ describe('ReasoningService POLICY_MODE_BLOCKED mapping', () => {
         question: 'what happened?',
         history: [],
       }),
-    ).rejects.toThrow("Your organization's policy doesn't allow OpenWhispr cloud AI.");
+    ).rejects.toThrow("Your organization's policy doesn't allow Pura LLM AI.");
   });
 });

@@ -36,11 +36,11 @@ const sttDefault = {
 const policy = {
   version: 1,
   transcription: {
-    allowedModes: ["enterprise", "openwhispr", "local"],
+    allowedModes: ["enterprise", "mnemo", "local"],
     allowedByokProviders: [],
     allowedEnterpriseProviders: ["azure"],
   },
-  llm: { allowedModes: ["openwhispr"], allowedByokProviders: [], allowedEnterpriseProviders: [] },
+  llm: { allowedModes: ["mnemo"], allowedByokProviders: [], allowedEnterpriseProviders: [] },
   features: { agentEnabled: true, webSearchEnabled: false },
   sharing: { externalLinkSharing: "disabled" },
   dataRetention: {
@@ -56,7 +56,7 @@ const cfg = (overrides) => ({
   whisperModel: "base",
   parakeetModel: "p",
   cohereModel: "c",
-  isOpenWhisprCloud: false,
+  isMnemoCloud: false,
   getApiKey: () => "",
   cloudTranscriptionProvider: "openai",
   cloudTranscriptionBaseUrl: "",
@@ -66,10 +66,10 @@ const cfg = (overrides) => ({
   ...overrides,
 });
 
-test("managed transcription outranks OpenWhispr Cloud and local Whisper on the upload lane", async (t) => {
+test("managed transcription outranks Mnemo Cloud and local Whisper on the upload lane", async (t) => {
   const { window } = installBrowserGlobals(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-file-managed-",
+    cachePrefix: "mnemo-file-managed-",
     mockModules: { "/lib/auth": "export const withSessionRefresh = (fn) => fn();" },
   });
   const { usePolicyStore } = await vite.ssrLoadModule("/stores/policyStore.ts");
@@ -104,7 +104,7 @@ test("managed transcription outranks OpenWhispr Cloud and local Whisper on the u
   };
 
   for (const config of [
-    cfg({ isOpenWhisprCloud: true }),
+    cfg({ isMnemoCloud: true }),
     cfg({ useLocalWhisper: true }),
     cfg({}),
   ]) {
@@ -133,7 +133,7 @@ test("managed transcription outranks OpenWhispr Cloud and local Whisper on the u
     managedScopes: ["transcription"],
     enforcedScopes: ["transcription"],
   });
-  const errorResult = await transcribeFile("/tmp/a.wav", cfg({ isOpenWhisprCloud: true }), true);
+  const errorResult = await transcribeFile("/tmp/a.wav", cfg({ isMnemoCloud: true }), true);
   assert.equal(errorResult.success, false);
   assert.equal(errorResult.code, "MANAGED_CONFIG_UNAVAILABLE");
   assert.equal(calls.cloud, 0);

@@ -216,7 +216,7 @@ function buildWhisperServerArgs({
 // "ggml_vulkan: 0 = Intel(R) UHD Graphics 770 (Intel Corporation) | uma: 1 | fp16: 1 | ..."
 // The leading number is the logical index --device selects; uma: 1 marks an
 // integrated (host-memory) device. Format verified against the pinned
-// OpenWhispr/whisper.cpp tag (ggml-vulkan.cpp, ggml_vk_print_gpu_info).
+// Mnemo/whisper.cpp tag (ggml-vulkan.cpp, ggml_vk_print_gpu_info).
 const VULKAN_DEVICE_LINE = /^ggml_vulkan: (\d+) = (.+?) \((.+?)\) \| uma: ([01]) \|/gm;
 
 function parseVulkanDevices(stderr) {

@@ -30,7 +30,7 @@ test("closing settings refreshes a stale transcription GPU offer", async (t) => 
   });
   const container = installHookDom(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-gpu-banner-availability-test-",
+    cachePrefix: "mnemo-gpu-banner-availability-test-",
   });
   const { useGpuBannerAvailability } = await vite.ssrLoadModule(
     "/hooks/useGpuBannerAvailability.ts"
@@ -40,9 +40,9 @@ test("closing settings refreshes a stale transcription GPU offer", async (t) => 
     useLocalWhisper: true,
     localTranscriptionProvider: "whisper",
     useCleanupModel: false,
-    cleanupMode: "openwhispr",
+    cleanupMode: "mnemo",
     useDictationAgent: false,
-    dictationAgentMode: "openwhispr",
+    dictationAgentMode: "mnemo",
   };
   let props = {
     settings,

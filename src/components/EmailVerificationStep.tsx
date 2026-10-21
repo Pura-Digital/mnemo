@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
-import { OPENWHISPR_API_URL } from "../config/constants";
-import { authClient } from "../lib/auth";
+import { authClient, AUTH_URL } from "../lib/auth";
 import { Button } from "./ui/button";
 import { CircleCheck, Loader, Loader2, MailCheck, RefreshCw } from "./icons";
 import { CompactOnboardingFrame } from "./onboarding/OnboardingShell";
@@ -50,9 +49,9 @@ export default function EmailVerificationStep({
   }, [resendCooldown]);
 
   useEffect(() => {
-    if (!OPENWHISPR_API_URL) return;
+    if (!AUTH_URL) return;
 
-    const url = `${OPENWHISPR_API_URL}/api/auth/verification-status?email=${encodeURIComponent(email)}`;
+    const url = `${AUTH_URL}/api/auth/verification-status?email=${encodeURIComponent(email)}`;
     let stopped = false;
 
     const checkVerificationStatus = async () => {

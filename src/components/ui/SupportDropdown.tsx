@@ -54,7 +54,7 @@ export default function SupportDropdown({ className, trigger }: SupportDropdownP
         )}
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => openExternal("https://docs.openwhispr.com")}>
+        <DropdownMenuItem onClick={() => openExternal("https://docs.mnemo.com")}>
           <BookOpen className="me-2 h-4 w-4" />
           {t("support.documentation")}
         </DropdownMenuItem>
@@ -64,9 +64,9 @@ export default function SupportDropdown({ className, trigger }: SupportDropdownP
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={async () => {
-            const result = await window.electronAPI?.openExternal("mailto:support@openwhispr.com");
+            const result = await window.electronAPI?.openExternal("mailto:support@mnemo.com");
             if (!result?.success) {
-              openExternal("https://mail.google.com/mail/?view=cm&to=support@openwhispr.com");
+              openExternal("https://mail.google.com/mail/?view=cm&to=support@mnemo.com");
             }
           }}
         >
@@ -74,7 +74,7 @@ export default function SupportDropdown({ className, trigger }: SupportDropdownP
           {t("support.contactSupport")}
         </DropdownMenuItem>
         <DropdownMenuItem
-          onClick={() => openExternal("https://github.com/OpenWhispr/openwhispr/issues")}
+          onClick={() => openExternal("https://github.com/Pura-Digital/mnemo/issues")}
         >
           <Bug className="me-2 h-4 w-4" />
           {t("support.submitBug")}

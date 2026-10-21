@@ -8,7 +8,7 @@ const { createRendererServer, installBrowserGlobals } = require("../lib/renderer
 async function renderBottomBar(t, props) {
   installBrowserGlobals(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-note-bottom-bar-test-",
+    cachePrefix: "mnemo-note-bottom-bar-test-",
     mockModules: {
       "/stores/meetingRecordingStore": `
         export const getMicAnalyser = () => null;

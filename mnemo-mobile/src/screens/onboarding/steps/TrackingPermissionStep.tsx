@@ -140,9 +140,9 @@ export function TrackingPermissionStep(): ReactElement {
 
   return (
     <OnboardingShell
-      title="Help OpenWhispr grow"
+      title="Help mnemo grow"
       titleAccent="grow"
-      subtitle="Allowing tracking helps us see which ads lead to installs and subscriptions, so we can invest more in improving OpenWhispr."
+      subtitle="Allowing tracking helps us see which ads lead to installs and subscriptions, so we can invest more in improving mnemo."
       ctaLabel="Continue"
       ctaLoading={requesting}
       onCta={handleContinue}

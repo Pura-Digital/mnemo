@@ -147,7 +147,7 @@ describe('client version header', () => {
 
     const [, init] = mockFetch.mock.calls[0] as [string, RequestInit];
     const headers = init.headers as Record<string, string>;
-    expect(headers['x-openwhispr-version']).toBe('2.5.0');
+    expect(headers['x-mnemo-version']).toBe('2.5.0');
   });
 
   it('is absent when the app version is undefined (never sent empty)', async () => {
@@ -158,7 +158,7 @@ describe('client version header', () => {
 
     const [, init] = mockFetch.mock.calls[0] as [string, RequestInit];
     const headers = init.headers as Record<string, string>;
-    expect(headers).not.toHaveProperty('x-openwhispr-version');
+    expect(headers).not.toHaveProperty('x-mnemo-version');
   });
 
   it('is absent when expoConfig itself is unavailable', async () => {
@@ -169,7 +169,7 @@ describe('client version header', () => {
 
     const [, init] = mockFetch.mock.calls[0] as [string, RequestInit];
     const headers = init.headers as Record<string, string>;
-    expect(headers).not.toHaveProperty('x-openwhispr-version');
+    expect(headers).not.toHaveProperty('x-mnemo-version');
   });
 });
 
@@ -177,17 +177,17 @@ describe('getClientVersionHeader', () => {
   it('identifies mobile alongside the version and policy capability', () => {
     const { apiClient } = loadApiClient({ expoConfig: { version: '9.9.9' } });
     expect(apiClient.getClientVersionHeader()).toEqual({
-      'x-openwhispr-version': '9.9.9',
-      'x-openwhispr-policy-version': '1',
-      'x-openwhispr-platform': 'mobile',
+      'x-mnemo-version': '9.9.9',
+      'x-mnemo-policy-version': '1',
+      'x-mnemo-platform': 'mobile',
     });
   });
 
   it('identifies mobile even when the version is unknown', () => {
     const { apiClient } = loadApiClient({ expoConfig: {} });
     expect(apiClient.getClientVersionHeader()).toEqual({
-      'x-openwhispr-policy-version': '1',
-      'x-openwhispr-platform': 'mobile',
+      'x-mnemo-policy-version': '1',
+      'x-mnemo-platform': 'mobile',
     });
   });
 });
@@ -205,7 +205,7 @@ describe('mobile cloud request identification', () => {
       await apiClient.api.post(
         path,
         {},
-        { headers: { 'X-OpenWhispr-Client-Timeout-Ms': '45000' } },
+        { headers: { 'X-Mnemo-Client-Timeout-Ms': '45000' } },
       );
 
       expect(mockFetch).toHaveBeenCalledWith(
@@ -213,10 +213,10 @@ describe('mobile cloud request identification', () => {
         expect.objectContaining({
           headers: expect.objectContaining({
             Cookie: 'test-session-cookie',
-            'x-openwhispr-version': '1.2.1',
-            'x-openwhispr-policy-version': '1',
-            'x-openwhispr-platform': 'mobile',
-            'X-OpenWhispr-Client-Timeout-Ms': '45000',
+            'x-mnemo-version': '1.2.1',
+            'x-mnemo-policy-version': '1',
+            'x-mnemo-platform': 'mobile',
+            'X-Mnemo-Client-Timeout-Ms': '45000',
           }),
         }),
       );
@@ -237,7 +237,7 @@ describe('client policy header', () => {
 
     const [, init] = mockFetch.mock.calls[0] as [string, RequestInit];
     const headers = init.headers as Record<string, string>;
-    expect(headers['x-openwhispr-policy-version']).toBe('1');
+    expect(headers['x-mnemo-policy-version']).toBe('1');
   });
 
   it('is sent with the exact value "1"', async () => {
@@ -248,8 +248,8 @@ describe('client policy header', () => {
 
     const [, init] = mockFetch.mock.calls[0] as [string, RequestInit];
     const headers = init.headers as Record<string, string>;
-    expect(headers['x-openwhispr-policy-version']).toBe('1');
-    expect(headers['x-openwhispr-version']).toBe('3.0.0');
+    expect(headers['x-mnemo-policy-version']).toBe('1');
+    expect(headers['x-mnemo-version']).toBe('3.0.0');
   });
 });
 
@@ -265,7 +265,7 @@ describe('426 UPGRADE_REQUIRED handling', () => {
     );
 
     await expect(apiClient.apiRequest('/api/reason')).rejects.toMatchObject({
-      message: 'Update OpenWhispr to keep using cloud features.',
+      message: 'Update mnemo to keep using cloud features.',
       status: 426,
       code: 'UPGRADE_REQUIRED',
     });
@@ -280,7 +280,7 @@ describe('426 UPGRADE_REQUIRED handling', () => {
     );
 
     await expect(apiClient.apiRequest('/api/reason')).rejects.toMatchObject({
-      message: 'Update OpenWhispr to keep using cloud features.',
+      message: 'Update mnemo to keep using cloud features.',
       status: 426,
     });
   });

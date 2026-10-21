@@ -3,14 +3,16 @@ import { ScrollView, View } from 'react-native';
 import { Text } from '@/components/ui/Text';
 import { OnboardingShell } from '@/components/onboarding/OnboardingShell';
 import { SystemIcon } from '@/components/ui/SystemIcon';
-import { OpenWhisprMark } from '@/components/ui/OpenWhisprMark';
+import { MnemoMark } from '@/components/ui/MnemoMark';
 import { BRAND } from '@/config/colors';
+import { isMnemoStandaloneProduct } from '@/config/mnemoProduct';
 import { useOnboardingStep } from '@/hooks/useOnboardingStep';
 import { chooseOnboardingMode } from '@/lib/onboardingMode';
 import { useModelDownloadStore } from '@/store/useModelDownloadStore';
 import { useOnboardingStore } from '@/store/useOnboardingStore';
 
 export function PrivacyModeStep(): ReactElement {
+  const standaloneProduct = isMnemoStandaloneProduct();
   const { goBack, progress } = useOnboardingStep('privacy-mode');
   const selectedMode = useOnboardingStore((state) => state.selectedMode);
   const cancelActiveDownloads = useModelDownloadStore((state) => state.cancelActiveDownloads);
@@ -29,12 +31,22 @@ export function PrivacyModeStep(): ReactElement {
       onBack={goBack}
       title="How should we transcribe?"
       titleAccent="transcribe"
-      subtitle="Your voice stays yours. Pick a mode — you can change it anytime."
-      ctaLabel="Use Cloud"
-      onCta={chooseCloud}
-      secondaryCtaLabel="Use Local"
+      subtitle={
+        standaloneProduct
+          ? 'Everything runs on your device. Nothing is uploaded.'
+          : 'Your voice stays yours. Pick a mode — you can change it anytime.'
+      }
+      ctaLabel={standaloneProduct ? 'Use On-Device' : 'Use Cloud'}
+      onCta={
+        standaloneProduct
+          ? () => chooseOnboardingMode('private', 'privacy-mode')
+          : chooseCloud
+      }
+      secondaryCtaLabel={standaloneProduct ? undefined : 'Use Local'}
       secondaryCtaVariant="card"
-      onSecondaryCta={() => chooseOnboardingMode('private', 'privacy-mode')}
+      onSecondaryCta={
+        standaloneProduct ? undefined : () => chooseOnboardingMode('private', 'privacy-mode')
+      }
     >
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -65,11 +77,13 @@ export function PrivacyModeStep(): ReactElement {
             One-time ~140–461 MB download, depending on language
           </Text>
         </ModeCard>
-        <ModeCard title="OpenWhispr Cloud" icon={<OpenWhisprMark size={20} color={BRAND} />}>
-          <Bullet text="Faster transcription" />
-          <Bullet text="Higher quality" />
-          <Bullet text="Automatic cleanup & formatting" />
-        </ModeCard>
+        {!standaloneProduct ? (
+          <ModeCard title="Pura LLM" icon={<MnemoMark size={20} color={BRAND} />}>
+            <Bullet text="Faster transcription" />
+            <Bullet text="Higher quality" />
+            <Bullet text="Automatic cleanup & formatting" />
+          </ModeCard>
+        ) : null}
       </ScrollView>
     </OnboardingShell>
   );

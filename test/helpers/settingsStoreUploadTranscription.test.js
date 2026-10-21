@@ -13,7 +13,7 @@ const { createRendererServer, installBrowserGlobals } = require("../lib/renderer
 test("upload transcription never inherits a realtime-only dictation provider", async (t) => {
   installBrowserGlobals(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-upload-transcription-test-",
+    cachePrefix: "mnemo-upload-transcription-test-",
   });
   const { useSettingsStore, selectResolvedUploadTranscription } = await vite.ssrLoadModule(
     "/stores/settingsStore.ts"
@@ -76,7 +76,7 @@ const LATCHED_SELF_HOSTED = { ...SELF_HOSTED_DICTATION, uploadTranscriptionMigra
 test("audio upload has its own self-hosted server", async (t) => {
   const { storage } = installBrowserGlobals(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-upload-self-hosted-test-",
+    cachePrefix: "mnemo-upload-self-hosted-test-",
     resolveAlias: { "@": path.resolve(__dirname, "../../src") },
   });
   // Migrations run once per module evaluation, so every case re-evaluates the store.

@@ -19,7 +19,7 @@ test("team space creation is offered to workspace managers and to users with non
   const container = installHookDom(t);
 
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-can-create-team-space-",
+    cachePrefix: "mnemo-can-create-team-space-",
     mockModules: {
       "/useAuth": "export const useAuth = () => ({ isSignedIn: globalThis.__state.isSignedIn });",
       "/useTeamSpacesCapability": `

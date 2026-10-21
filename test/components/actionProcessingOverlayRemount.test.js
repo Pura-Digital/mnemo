@@ -12,7 +12,7 @@ const { createRendererServer, installBrowserGlobals } = require("../lib/renderer
 async function renderOverlay(t, props) {
   installBrowserGlobals(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-action-overlay-remount-test-",
+    cachePrefix: "mnemo-action-overlay-remount-test-",
   });
   const mod = await vite.ssrLoadModule("/components/notes/ActionProcessingOverlay.tsx");
   return renderToStaticMarkup(createElement(mod.default, props));

@@ -10,7 +10,7 @@ const { createRendererServer, installBrowserGlobals } = require("../lib/renderer
 async function renderMenu(t, { canCreateTeamSpace, withAssistant = true }) {
   installBrowserGlobals(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-new-note-menu-test-",
+    cachePrefix: "mnemo-new-note-menu-test-",
     mockModules: {
       "/ui/dropdown-menu": `
         import { createElement } from "react";

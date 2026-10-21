@@ -42,7 +42,7 @@ const PROVIDER_CONFIG: Record<string, ProviderConfig> = {
   groq: { label: "Groq", apiKeyStorageKey: "groqApiKey" },
   openrouter: { label: "OpenRouter", apiKeyStorageKey: "openrouterApiKey" },
   tinfoil: { label: "Tinfoil", apiKeyStorageKey: "tinfoilApiKey" },
-  openwhispr: { label: "OpenWhispr Cloud" },
+  mnemo: { label: "Pura LLM" },
   custom: {
     label: "Custom endpoint",
     apiKeyStorageKey: "openaiApiKey",
@@ -217,7 +217,7 @@ export default function PromptStudio({ className = "", kind = "cleanup" }: Promp
       }
 
       const cleanupProvider = isCloudMode
-        ? "openwhispr"
+        ? "mnemo"
         : (cleanupModel && getModelProvider(cleanupModel)) || "openai";
 
       logger.debug(
@@ -472,14 +472,14 @@ export default function PromptStudio({ className = "", kind = "cleanup" }: Promp
               isAgent || isTranslate
                 ? scopeProvider
                 : testIsCloud
-                  ? "openwhispr"
+                  ? "mnemo"
                   : scopeProvider || (testModel && getModelProvider(testModel)) || "openai";
             const providerConfig = PROVIDER_CONFIG[testProvider] || {
               label: testProvider.charAt(0).toUpperCase() + testProvider.slice(1),
             };
 
             const displayModel = testIsCloud
-              ? t("promptStudio.test.openwhisprCloud")
+              ? t("promptStudio.test.mnemoCloud")
               : testModel || t("promptStudio.test.none");
             const displayProvider =
               testProvider === "custom"

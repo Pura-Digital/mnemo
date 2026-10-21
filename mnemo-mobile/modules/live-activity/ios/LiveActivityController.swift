@@ -14,11 +14,11 @@ import ActivityKit
 final class LiveActivityController {
   static let shared = LiveActivityController()
 
-  private let log = Logger(subsystem: "com.gizmolabs.openwhispr", category: "LiveActivity")
+  private let log = Logger(subsystem: "com.pura.mnemo", category: "LiveActivity")
 
   private init() {}
 
-  private var bundleId: String { Bundle.main.bundleIdentifier ?? "com.gizmolabs.openwhispr" }
+  private var bundleId: String { Bundle.main.bundleIdentifier ?? "com.pura.mnemo" }
   private var statusNotificationName: String { "\(bundleId).keyboardStatusChanged" }
   private var dictationModeNotificationName: String { "\(bundleId).dictationModeChanged" }
   private var sharedDefaults: UserDefaults? { UserDefaults(suiteName: "group.\(bundleId)") }

@@ -12,9 +12,11 @@ import { useOnboardingAssistantDemo } from "./hooks/useOnboardingAssistantDemo";
 import { useLiveTranscriptPanel } from "./hooks/useLiveTranscriptPanel";
 import { useMainWindowSizeOwner } from "./hooks/useMainWindowSizeOwner";
 import { useMainProcessNotifications } from "./hooks/useMainProcessNotifications";
+import { useMeetingPillPrompt } from "./hooks/useMeetingPillPrompt";
 import { useListeningEntrancePhase } from "./hooks/useListeningEntrancePhase";
 import { useWindowResizeCompensation } from "./hooks/useWindowResizeCompensation";
 import { useSettingsStore } from "./stores/settingsStore";
+import { isConversationalAgentEnabled } from "./config/mnemoProduct";
 import { isAgentAllowed } from "./stores/policyRules";
 import { usePolicyStore } from "./stores/policyStore";
 import { useTranscriptionContextAllowed } from "./hooks/usePolicy";
@@ -118,7 +120,8 @@ export default function App() {
   useWindowResizeCompensation();
   useMainProcessNotifications({ toast, dismiss, t });
 
-  const agentAllowed = usePolicyStore(isAgentAllowed);
+  const conversationalAgentEnabled = isConversationalAgentEnabled();
+  const agentAllowed = conversationalAgentEnabled && usePolicyStore(isAgentAllowed);
   const meetingAllowed = useTranscriptionContextAllowed("meeting");
   // Both allowances fail closed while the policy is loading or its fetch failed,
   // so the tray's refusals need to tell those apart from a real org restriction.
@@ -220,11 +223,15 @@ export default function App() {
   } = useAudioRecording(toast, {
     onToggle: handleDictationToggle,
     onDemoEvent: publishOnboardingDemoEvent,
-    onAssistantCommand: assistant.handleCommand,
-    onOnboardingAssistantCommand: runOnboardingAssistantDemo,
+    onAssistantCommand: conversationalAgentEnabled ? assistant.handleCommand : undefined,
+    onOnboardingAssistantCommand: conversationalAgentEnabled
+      ? runOnboardingAssistantDemo
+      : undefined,
     dismissDictationError,
     onDictationError: handleDictationError,
-    getAssistantSelectionContext: assistant.getSelectionContext,
+    getAssistantSelectionContext: conversationalAgentEnabled
+      ? assistant.getSelectionContext
+      : undefined,
     onShowTranscript: (text) => {
       // While the Agent panel is open the main window's transcript is suppressed
       // (openPanel refuses under assistantOpenRef); the companion hosts it instead.
@@ -321,12 +328,20 @@ export default function App() {
   // a menu opening over the compact pill resolves to EXPANDED geometry.
   const windowFitsCompactPill = voicePillIsRecording || voiceActivity.compactPill;
 
+  const meetingPrompt = useMeetingPillPrompt({
+    t,
+    paused: isHovered,
+    isRecording: isRecording || isPreparing,
+  });
+  const meetingPromptMounted = meetingPrompt.phase !== null;
+
   const { dictationErrorPillHandoffActive, panelReturnResizeActive } = useMainWindowSizeOwner({
     requestMainWindowSize,
     dictationErrorActionCount,
     toastCount,
     isCommandMenuOpen,
     isCompactPill: windowFitsCompactPill,
+    meetingPromptActive: meetingPrompt.windowActive,
     isDictationActive: isRecording || isVisuallyProcessing,
     assistantOpen: assistant.open,
     assistantMounted: assistant.mounted,
@@ -337,7 +352,13 @@ export default function App() {
   });
 
   useEffect(() => {
-    if (isCommandMenuOpen || toastCount > 0 || assistant.mounted || liveTranscript.mounted) {
+    if (
+      isCommandMenuOpen ||
+      toastCount > 0 ||
+      meetingPromptMounted ||
+      assistant.mounted ||
+      liveTranscript.mounted
+    ) {
       setWindowInteractivity(true);
     } else if (!isHovered) {
       setWindowInteractivity(false);
@@ -346,6 +367,7 @@ export default function App() {
     isCommandMenuOpen,
     isHovered,
     toastCount,
+    meetingPromptMounted,
     assistant.mounted,
     liveTranscript.mounted,
     setWindowInteractivity,
@@ -420,6 +442,7 @@ export default function App() {
       !isRecording &&
       !isVisuallyProcessing &&
       toastCount === 0 &&
+      !meetingPromptMounted &&
       !dictationErrorPillHandoffActive &&
       !assistant.mounted &&
       !liveTranscript.mounted
@@ -439,6 +462,7 @@ export default function App() {
     isVisuallyProcessing,
     floatingIconAutoHide,
     toastCount,
+    meetingPromptMounted,
     dictationErrorPillHandoffActive,
     assistant.mounted,
     liveTranscript.mounted,
@@ -549,7 +573,7 @@ export default function App() {
     ? VOICE_PILL_FOOTPRINT.recording
     : VOICE_PILL_FOOTPRINT.idle;
   const activateVoicePill = () => {
-    if (!pillIsInteractive) return;
+    if (!pillIsInteractive || meetingPromptMounted) return;
     if (canReopenLiveTranscript) {
       liveTranscript.reopen();
       return;
@@ -631,7 +655,8 @@ export default function App() {
 
   useLinuxPillInteractivity({
     pillRef: pillPresenceRef,
-    captureWindow: isCommandMenuOpen || toastCount > 0 || anyPanelMounted || isDragging,
+    captureWindow:
+      isCommandMenuOpen || toastCount > 0 || meetingPromptMounted || anyPanelMounted || isDragging,
     pillInteractive: pillIsInteractive && !pillVisuallySuppressed,
   });
 
@@ -666,14 +691,14 @@ export default function App() {
           onMouseLeave={() => {
             setIsHovered(false);
             if (!pillIsInteractive) return;
-            if (!isCommandMenuOpen && !assistant.mounted) {
+            if (!isCommandMenuOpen && !assistant.mounted && !meetingPromptMounted) {
               setWindowInteractivity(false);
             }
           }}
         >
           <PillTooltip
             content={canReopenLiveTranscript ? t("transcriptionPreview.label") : micTooltip}
-            disabled={anyPanelMounted}
+            disabled={anyPanelMounted || meetingPromptMounted}
             align={voicePillPopoverAlign}
           >
             <VoicePill
@@ -693,16 +718,32 @@ export default function App() {
               getAudioLevel={getAudioLevel}
               isDragging={isDragging}
               horizontalDirection={voiceHorizontalDirection}
-              role={pillIsInteractive ? "button" : "status"}
-              tabIndex={pillIsInteractive ? 0 : undefined}
+              notice={
+                meetingPromptMounted
+                  ? {
+                      expanded: meetingPrompt.expanded,
+                      contentVisible: meetingPrompt.contentVisible,
+                      title: meetingPrompt.title,
+                      body: meetingPrompt.body,
+                      actionLabel: meetingPrompt.actionLabel,
+                      closeLabel: t("common.close"),
+                      onAction: meetingPrompt.onAction,
+                      onDismiss: meetingPrompt.onDismiss,
+                    }
+                  : null
+              }
+              role={meetingPromptMounted ? "group" : pillIsInteractive ? "button" : "status"}
+              tabIndex={pillIsInteractive && !meetingPromptMounted ? 0 : undefined}
               aria-label={
-                canReopenLiveTranscript
-                  ? t("transcriptionPreview.label")
-                  : assistant.mounted
-                    ? t("settingsPage.agentConfig.title")
-                    : liveTranscript.mounted
-                      ? t("transcriptionPreview.label")
-                      : micTooltip
+                meetingPromptMounted
+                  ? meetingPrompt.title
+                  : canReopenLiveTranscript
+                    ? t("transcriptionPreview.label")
+                    : assistant.mounted
+                      ? t("settingsPage.agentConfig.title")
+                      : liveTranscript.mounted
+                        ? t("transcriptionPreview.label")
+                        : micTooltip
               }
               onMouseDown={(e) => {
                 if (anyPanelMounted) {
@@ -742,7 +783,7 @@ export default function App() {
                 activateVoicePill();
               }}
               onContextMenu={(e) => {
-                if (anyPanelMounted) return;
+                if (anyPanelMounted || meetingPromptMounted) return;
                 e.preventDefault();
                 if (!hasDragged) {
                   setWindowInteractivity(true);
@@ -812,27 +853,29 @@ export default function App() {
         onPreferredHeightChange={liveTranscript.requestHeight}
         onClosingFadeComplete={assistant.completeContentFade}
       >
-        {activeVoicePanelMode === "assistant" && assistant.mounted && (
-          <AssistantPanel
-            pendingCommand={assistant.pendingCommand}
-            onCommandConsumed={assistant.handleCommandConsumed}
-            onCommandDiscarded={assistant.handleCommandDiscarded}
-            onCommandSettled={assistant.handleCommandSettled}
-            initialConversationId={assistant.conversationId}
-            onConversationIdChange={assistant.setConversationId}
-            voiceState={assistantVoiceState}
-            thinking={assistant.thinking && assistant.open}
-            open={assistant.open}
-            footerPhase={assistant.footerPhase}
-            horizontalDirection={voiceHorizontalDirection}
-            onClose={assistant.handleClose}
-            onBusyChange={assistant.setBusy}
-            onResponseReadyChange={assistant.setResponseReady}
-            onResponseContent={assistant.handleResponseContent}
-            onConversationReset={assistant.handleConversationReset}
-            onSelectionContextChange={assistant.handleSelectionContextChange}
-          />
-        )}
+        {conversationalAgentEnabled &&
+          activeVoicePanelMode === "assistant" &&
+          assistant.mounted && (
+            <AssistantPanel
+              pendingCommand={assistant.pendingCommand}
+              onCommandConsumed={assistant.handleCommandConsumed}
+              onCommandDiscarded={assistant.handleCommandDiscarded}
+              onCommandSettled={assistant.handleCommandSettled}
+              initialConversationId={assistant.conversationId}
+              onConversationIdChange={assistant.setConversationId}
+              voiceState={assistantVoiceState}
+              thinking={assistant.thinking && assistant.open}
+              open={assistant.open}
+              footerPhase={assistant.footerPhase}
+              horizontalDirection={voiceHorizontalDirection}
+              onClose={assistant.handleClose}
+              onBusyChange={assistant.setBusy}
+              onResponseReadyChange={assistant.setResponseReady}
+              onResponseContent={assistant.handleResponseContent}
+              onConversationReset={assistant.handleConversationReset}
+              onSelectionContextChange={assistant.handleSelectionContextChange}
+            />
+          )}
 
         {activeVoicePanelMode !== "assistant" && (
           <LiveTranscriptPanel

@@ -3,7 +3,7 @@
 **Date:** 2026-09-10, revised 2026-09-11 (markdown-friendly targets)
 **Status:** approved by Josh, 2026-09-13 — build may proceed against the plan; nothing merges without him
 **Origin:** Finding 3 of the 1.10.0 release testing report (titan,
-`artefacts/reports/2026-09-10-openwhispr-1-10-0-release-testing.md`)
+`artefacts/reports/2026-09-10-mnemo-1-10-0-release-testing.md`)
 
 ## The problem
 
@@ -29,7 +29,7 @@ And a fourth, raised by Josh on 2026-09-11: **plain text is wrong for a large
 class of targets.** Markdown-native editors (Obsidian, Typora), apps that
 convert pasted markdown (Notion, Craft), chat tools whose composer is standard
 markdown (Discord, Mattermost), AI prompt boxes (ChatGPT, Claude, Cursor's
-chat) and code editors all want the markdown left alone. Many OpenWhispr users
+chat) and code editors all want the markdown left alone. Many Mnemo users
 are developers, and AI prompt boxes in particular are a daily surface for them.
 
 ## The decision
@@ -321,7 +321,7 @@ All under the repo's `node --test` runner (`npm test`, Node 24).
   contain it (so panel answers are unaffected).
 - `test/helpers/retiredPrompts.test.js`: unchanged and still green, which is
   the proof the hash protocol was not triggered.
-- Manual, on a dev build (`openwhispr-dev-build` skill), macOS: ask a question
+- Manual, on a dev build (`mnemo-dev-build` skill), macOS: ask a question
   that invites a list while the caret is in TextEdit; confirm prose with no
   markers lands and the log shows `acceptsMarkdown: false`. Repeat with the
   caret in the ChatGPT desktop app's prompt box (a native app, so paste works

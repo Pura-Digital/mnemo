@@ -5,7 +5,7 @@ const os = require("node:os");
 const path = require("node:path");
 const Module = require("node:module");
 
-let userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "openwhispr-note-sync-db-"));
+let userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "mnemo-note-sync-db-"));
 const originalLoad = Module._load;
 
 Module._load = function patchedLoad(request, parent, isMain) {
@@ -28,7 +28,7 @@ const loadGuards = () => import("../../src/helpers/cloudSyncGuards.js");
 const { skipOrFail } = require("./harness/db.js");
 
 function createDb(t) {
-  userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "openwhispr-note-sync-db-"));
+  userDataDir = fs.mkdtempSync(path.join(os.tmpdir(), "mnemo-note-sync-db-"));
   try {
     const BetterSqlite = require("better-sqlite3");
     const probe = new BetterSqlite(path.join(userDataDir, "probe.db"));

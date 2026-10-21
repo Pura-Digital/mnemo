@@ -33,7 +33,7 @@ function buildPolicy({ agentEnabled = true, llmModes = [], llmByokProviders = []
 test("ReasoningService entry points enforce the org policy", async (t) => {
   installBrowserGlobals(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-reasoning-enforcement-test-",
+    cachePrefix: "mnemo-reasoning-enforcement-test-",
   });
 
   const reasoningService = (await vite.ssrLoadModule("/services/ReasoningService.ts")).default;
@@ -83,9 +83,9 @@ test("ReasoningService entry points enforce the org policy", async (t) => {
     );
   });
 
-  await t.test("dispatch-mode mapping: openwhispr is not smuggled through providers", async () => {
+  await t.test("dispatch-mode mapping: mnemo is not smuggled through providers", async () => {
     setPolicy({ llmModes: ["providers"], llmByokProviders: ["openai"] });
-    await assert.rejects(reasoningService.processText("hi", "", null, { provider: "openwhispr" }), {
+    await assert.rejects(reasoningService.processText("hi", "", null, { provider: "mnemo" }), {
       message: REASONING_RESTRICTED,
     });
   });
@@ -125,7 +125,7 @@ test("ReasoningService entry points enforce the org policy", async (t) => {
     await assert.rejects(stream.next(), { message: REASONING_RESTRICTED });
   });
 
-  await t.test("cloud agent streaming enforces the openwhispr mode", async () => {
+  await t.test("cloud agent streaming enforces the mnemo mode", async () => {
     setPolicy({ llmModes: ["providers"], llmByokProviders: ["openai"] });
     const stream = reasoningService.processTextStreamingCloud([{ role: "user", content: "hi" }], {
       systemPrompt: "s",

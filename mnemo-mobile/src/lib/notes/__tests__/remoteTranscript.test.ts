@@ -6,7 +6,7 @@ import {
 } from '../remoteTranscript';
 
 // A realistic desktop-serialized transcript (shape from
-// openwhispr/src/utils/transcriptSpeakerState.ts serializeTranscriptSegments).
+// mnemo/src/utils/transcriptSpeakerState.ts serializeTranscriptSegments).
 const desktopRaw = JSON.stringify([
   {
     text: 'Hello everyone.',

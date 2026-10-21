@@ -53,7 +53,7 @@ const mockCaptureException = Sentry.captureException as jest.Mock;
 const snippet = (overrides: Record<string, unknown> = {}) => ({
   id: 1,
   trigger: ';ow',
-  replacement: 'OpenWhispr',
+  replacement: 'mnemo',
   clientSnippetId: 'client-snippet-1',
   remoteId: null,
   deletedAt: null,

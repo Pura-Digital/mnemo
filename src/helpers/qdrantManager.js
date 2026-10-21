@@ -12,6 +12,7 @@ const {
 } = require("../utils/serverUtils");
 const sidecarPidFile = require("./sidecarPidFile");
 const { waitForExit } = require("./sidecarReaper");
+const { getHomeCacheDir } = require("./cachePaths");
 
 const PORT_RANGE_START = 6333;
 const PORT_RANGE_END = 6350;
@@ -30,9 +31,7 @@ const MAX_RESTARTS_PER_SESSION = 3;
 const RESTART_EXIT_WAIT_MS = 2000;
 
 const STORAGE_DIR = path.join(
-  os.homedir(),
-  ".cache",
-  "openwhispr",
+  getHomeCacheDir(),
   process.env.NODE_ENV === "development" ? "qdrant-data-dev" : "qdrant-data"
 );
 

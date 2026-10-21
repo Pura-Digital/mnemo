@@ -648,13 +648,13 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
       if (mode === "cloud") {
         settingsStore.setCloudTranscriptionForAllScopes({
           useLocalWhisper: false,
-          cloudTranscriptionMode: "openwhispr",
-          cloudTranscriptionProvider: "openwhispr",
+          cloudTranscriptionMode: "mnemo",
+          cloudTranscriptionProvider: "pura",
         });
         if (agentAllowed) {
           settingsStore.setCloudReasoningForAllScopes({
-            cleanupCloudMode: "openwhispr",
-            cleanupProvider: "openwhispr",
+            cleanupCloudMode: "mnemo",
+            cleanupProvider: "pura",
           });
         } else {
           // The policy-shortened route has no assistant setup. Avoid persisting
@@ -832,7 +832,9 @@ export default function OnboardingFlow({ onComplete }: OnboardingFlowProps) {
                 // hotkey the guest route exists to guarantee (see flow.ts).
                 setReturnedToAuth(false);
                 setAuthPath("guest");
-                goTo("permissions");
+                const cancellingPura = session.setupMode === "cloud";
+                if (cancellingPura) setSetupMode(null);
+                goTo(cancellingPura ? "setup-choice" : "permissions");
               }}
               onAuthComplete={() => {
                 setReturnedToAuth(false);

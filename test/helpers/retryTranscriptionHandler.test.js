@@ -208,11 +208,11 @@ test("retry: custom misconfiguration fails closed with a coded error", async () 
   assert.equal(fetches.length, 0);
 });
 
-test("retry: openwhispr cloud masks a leftover BYOK misconfiguration", async () => {
+test("retry: mnemo cloud masks a leftover BYOK misconfiguration", async () => {
   fetches.length = 0;
   const result = await invoke({
     cloudTranscriptionProvider: "custom",
-    cloudTranscriptionMode: "openwhispr",
+    cloudTranscriptionMode: "mnemo",
     transcriptionMode: "providers",
     cloudTranscriptionBaseUrl: "",
   });
@@ -413,7 +413,7 @@ const fsNode = require("node:fs");
 const osNode = require("node:os");
 const pathNode = require("node:path");
 
-const uploadTempFile = pathNode.join(osNode.tmpdir(), "openwhispr-upload-handler-test.webm");
+const uploadTempFile = pathNode.join(osNode.tmpdir(), "mnemo-upload-handler-test.webm");
 
 const invokeUpload = (payload) => {
   const uploadHandler = handlers.get("transcribe-audio-file-byok");

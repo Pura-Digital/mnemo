@@ -7,7 +7,7 @@ on:
       - "**.md"
       - "LICENSE"
       - ".github/ISSUE_TEMPLATE/**"
-      - "openwhispr-mobile/**"
+      - "mnemo-mobile/**"
   pull_request:
   workflow_dispatch:
 
@@ -145,9 +145,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
           # Forks and Dependabot get no GH_TOKEN; github.token can't read the private font release.
           BRAND_FONTS_REQUIRED: ${{ secrets.GH_TOKEN && '1' || '0' }}
-          VITE_AUTH_URL: ${{ vars.VITE_AUTH_URL || 'https://auth.openwhispr.com' }}
-          VITE_OPENWHISPR_API_URL: ${{ vars.VITE_OPENWHISPR_API_URL }}
-          VITE_OPENWHISPR_OAUTH_CALLBACK_URL: ${{ vars.VITE_OPENWHISPR_OAUTH_CALLBACK_URL }}
+          VITE_AUTH_URL: ${{ vars.VITE_AUTH_URL || 'https://auth.mnemo.com' }}
+          VITE_MNEMO_OAUTH_CALLBACK_URL: ${{ vars.VITE_MNEMO_OAUTH_CALLBACK_URL }}
 
       - name: Upload Artifacts
         if: github.event_name != 'pull_request'
@@ -260,9 +259,8 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
-          VITE_AUTH_URL: ${{ vars.VITE_AUTH_URL || 'https://auth.openwhispr.com' }}
-          VITE_OPENWHISPR_API_URL: ${{ vars.VITE_OPENWHISPR_API_URL }}
-          VITE_OPENWHISPR_OAUTH_CALLBACK_URL: ${{ vars.VITE_OPENWHISPR_OAUTH_CALLBACK_URL }}
+          VITE_AUTH_URL: ${{ vars.VITE_AUTH_URL || 'https://auth.mnemo.com' }}
+          VITE_MNEMO_OAUTH_CALLBACK_URL: ${{ vars.VITE_MNEMO_OAUTH_CALLBACK_URL }}
           AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
@@ -395,9 +393,8 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN || github.token }}
           # Forks and Dependabot get no GH_TOKEN; github.token can't read the private font release.
           BRAND_FONTS_REQUIRED: ${{ secrets.GH_TOKEN && '1' || '0' }}
-          VITE_AUTH_URL: ${{ vars.VITE_AUTH_URL || 'https://auth.openwhispr.com' }}
-          VITE_OPENWHISPR_API_URL: ${{ vars.VITE_OPENWHISPR_API_URL }}
-          VITE_OPENWHISPR_OAUTH_CALLBACK_URL: ${{ vars.VITE_OPENWHISPR_OAUTH_CALLBACK_URL }}
+          VITE_AUTH_URL: ${{ vars.VITE_AUTH_URL || 'https://auth.mnemo.com' }}
+          VITE_MNEMO_OAUTH_CALLBACK_URL: ${{ vars.VITE_MNEMO_OAUTH_CALLBACK_URL }}
           CSC_IDENTITY_AUTO_DISCOVERY: ${{ github.event_name != 'pull_request' && 'true' || 'false' }}
           CSC_KEY_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
           APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
@@ -406,7 +403,7 @@ jobs:
 
       - name: Verify packaged macOS native binaries
         run: |
-          APP_PATH=$(ls -d dist/mac*/OpenWhispr.app | head -n1)
+          APP_PATH=$(ls -d dist/mac*/Mnemo.app | head -n1)
           for bin in macos-audio-tap macos-globe-listener macos-fast-paste macos-mic-listener macos-text-monitor macos-media-remote; do
             test -x "$APP_PATH/Contents/Resources/bin/$bin" || { echo "Missing in bundle: $bin"; exit 1; }
           done

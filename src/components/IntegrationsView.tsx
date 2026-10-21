@@ -24,11 +24,13 @@ import type { CalendarAccount } from "../types/calendar";
 import ApiKeysSection from "./ApiKeysSection";
 import CliIntegrationCard from "./CliIntegrationCard";
 import McpIntegrationCard from "./McpIntegrationCard";
+import ArchivEyeIntegrationCard from "./ArchivEyeIntegrationCard";
+import { isArchiveyeIntegrationEnabled } from "../config/mnemoProduct";
 import googleCalendarIcon from "../assets/icons/google-calendar.svg";
 import microsoftCalendarIcon from "../assets/icons/microsoft-calendar.svg";
 import appleCalendarIcon from "../assets/icons/apple-calendar.svg";
 
-const API_DOCS_URL = "https://docs.openwhispr.com/api/overview";
+const API_DOCS_URL = "https://docs.mnemo.com/api/overview";
 
 interface IntegrationsViewProps {
   isPaid: boolean;
@@ -431,50 +433,63 @@ export default function IntegrationsView({ isPaid, onUpgrade }: IntegrationsView
         </SettingsPanel>
       </div>
 
-      <div>
-        <SectionLabel>{t("integrations.sections.api")}</SectionLabel>
-        <SettingsPanel>
-          <SettingsPanelRow>
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-primary/5 dark:bg-primary/10 flex items-center justify-center shrink-0">
-                <Code2 className="h-4 w-4 text-primary/80" strokeWidth={2} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-foreground">
-                  {t("integrations.api.title")}
-                </p>
-                <p className="text-xs text-muted-foreground/70 mt-0.5 leading-relaxed">
-                  {isPaid ? t("integrations.api.description") : t("integrations.api.proRequired")}
-                </p>
-              </div>
-              {isPaid ? (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setApiKeysDialogOpen(true)}
-                  className="shrink-0"
-                >
-                  {t("integrations.api.manage")}
-                </Button>
-              ) : (
-                <Button size="sm" onClick={onUpgrade} className="shrink-0">
-                  {t("integrations.api.viewPlans")}
-                </Button>
-              )}
-            </div>
-          </SettingsPanelRow>
-        </SettingsPanel>
-      </div>
+      {isArchiveyeIntegrationEnabled() && (
+        <div>
+          <SectionLabel>{t("integrations.sections.knowledge")}</SectionLabel>
+          <ArchivEyeIntegrationCard />
+        </div>
+      )}
 
-      <div>
-        <SectionLabel>{t("integrations.sections.mcp")}</SectionLabel>
-        <McpIntegrationCard isPaid={isPaid} onUpgrade={onUpgrade} />
-      </div>
+      {!isArchiveyeIntegrationEnabled() && (
+        <>
+          <div>
+            <SectionLabel>{t("integrations.sections.api")}</SectionLabel>
+            <SettingsPanel>
+              <SettingsPanelRow>
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-lg bg-primary/5 dark:bg-primary/10 flex items-center justify-center shrink-0">
+                    <Code2 className="h-4 w-4 text-primary/80" strokeWidth={2} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-semibold text-foreground">
+                      {t("integrations.api.title")}
+                    </p>
+                    <p className="text-xs text-muted-foreground/70 mt-0.5 leading-relaxed">
+                      {isPaid
+                        ? t("integrations.api.description")
+                        : t("integrations.api.proRequired")}
+                    </p>
+                  </div>
+                  {isPaid ? (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setApiKeysDialogOpen(true)}
+                      className="shrink-0"
+                    >
+                      {t("integrations.api.manage")}
+                    </Button>
+                  ) : (
+                    <Button size="sm" onClick={onUpgrade} className="shrink-0">
+                      {t("integrations.api.viewPlans")}
+                    </Button>
+                  )}
+                </div>
+              </SettingsPanelRow>
+            </SettingsPanel>
+          </div>
 
-      <div>
-        <SectionLabel>{t("integrations.sections.cli")}</SectionLabel>
-        <CliIntegrationCard isPaid={isPaid} onUpgrade={onUpgrade} />
-      </div>
+          <div>
+            <SectionLabel>{t("integrations.sections.mcp")}</SectionLabel>
+            <McpIntegrationCard isPaid={isPaid} onUpgrade={onUpgrade} />
+          </div>
+
+          <div>
+            <SectionLabel>{t("integrations.sections.cli")}</SectionLabel>
+            <CliIntegrationCard isPaid={isPaid} onUpgrade={onUpgrade} />
+          </div>
+        </>
+      )}
 
       {!hasAccounts && (
         <div className="rounded-lg border border-border/70 dark:border-border-subtle/60 bg-muted/20 dark:bg-surface-2/30 p-4 flex items-start gap-3">

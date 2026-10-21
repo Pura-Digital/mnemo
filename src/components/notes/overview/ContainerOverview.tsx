@@ -12,6 +12,7 @@ import {
   useSpaceRootCounts,
 } from "../../../stores/noteStore";
 import { useContainerChat } from "../../../hooks/useContainerChat";
+import { isConversationalAgentEnabled } from "../../../config/mnemoProduct";
 import { cn } from "../../lib/utils";
 import { PAGE_CONTENT_WIDTH_CLASS } from "../../ui/pageWidth";
 import { ContainerIcon } from "./ContainerIcon";
@@ -142,17 +143,19 @@ export function ContainerOverview({
 
         <OverviewExplainerBanner kind={space.kind === "team" ? "team" : "private"} />
 
-        <OverviewAskSection
-          messages={chat.messages}
-          agentState={chat.agentState}
-          onTextSubmit={chat.sendMessage}
-          onCancel={chat.cancelStream}
-          conversations={chat.conversations}
-          activeConversationId={chat.activeConversationId}
-          onSwitchConversation={chat.switchConversation}
-          onNewChat={chat.startNewChat}
-          onOpenNote={onOpenNote}
-        />
+        {isConversationalAgentEnabled() && (
+          <OverviewAskSection
+            messages={chat.messages}
+            agentState={chat.agentState}
+            onTextSubmit={chat.sendMessage}
+            onCancel={chat.cancelStream}
+            conversations={chat.conversations}
+            activeConversationId={chat.activeConversationId}
+            onSwitchConversation={chat.switchConversation}
+            onNewChat={chat.startNewChat}
+            onOpenNote={onOpenNote}
+          />
+        )}
 
         <div className="border-t border-border/70 dark:border-white/10">
           <OverviewNoteList

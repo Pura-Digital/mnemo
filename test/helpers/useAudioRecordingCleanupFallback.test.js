@@ -56,7 +56,7 @@ test("raw cleanup fallback is reported only after the original dictation is past
   });
   const container = installHookDom(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-cleanup-fallback-hook-",
+    cachePrefix: "mnemo-cleanup-fallback-hook-",
     mockModules: {
       "/helpers/audioManager": FAKE_AUDIO_MANAGER_SOURCE,
       "/utils/logger": `

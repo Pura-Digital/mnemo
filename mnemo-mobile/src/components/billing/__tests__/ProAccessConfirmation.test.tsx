@@ -15,7 +15,7 @@ describe('ProAccessConfirmation', () => {
 
     expect(onConsumed).toHaveBeenCalledTimes(1);
     expect(Alert.alert).toHaveBeenCalledWith(
-      'Welcome to OpenWhispr Pro',
+      'Welcome to mnemo Pro',
       'Your purchase was successful. Pro features are ready to use.',
       [{ text: 'Start using Pro' }],
     );
@@ -28,7 +28,7 @@ describe('ProAccessConfirmation', () => {
     render(<ProAccessConfirmation completion="restored" onConsumed={jest.fn()} />);
 
     expect(Alert.alert).toHaveBeenCalledWith(
-      'OpenWhispr Pro Restored',
+      'mnemo Pro Restored',
       'Your subscription was restored. Pro features are ready to use.',
       [{ text: 'Start using Pro' }],
     );

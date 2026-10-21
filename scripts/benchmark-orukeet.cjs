@@ -1,7 +1,7 @@
 "use strict";
 
 // Operator-only: this combines backend token issuance and desktop streaming.
-// The shipped desktop receives a session from OpenWhispr's authenticated backend.
+// The shipped desktop receives a session from Mnemo's authenticated backend.
 const fs = require("node:fs");
 const { createHash } = require("node:crypto");
 const { performance } = require("node:perf_hooks");

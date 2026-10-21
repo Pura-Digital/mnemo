@@ -36,7 +36,7 @@ test("local sherpa silence resolves to the upload no-speech message, while decod
   }
 });
 
-// OpenWhispr Cloud rethrows coded failures through withSessionRefresh, so the
+// Mnemo Cloud rethrows coded failures through withSessionRefresh, so the
 // upload views only see them in a catch block — resolving from the returned
 // result alone silently left cloud users with the raw English message.
 test("a thrown failure resolves the same key as a returned one", async () => {

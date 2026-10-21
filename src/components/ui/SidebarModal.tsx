@@ -84,6 +84,9 @@ export default function SidebarModal<T extends string>({
     return groups;
   }, [sidebarItems]);
 
+  const suppressGroupLabels =
+    groupedItems.length === 1 && groupedItems[0]?.label != null && groupedItems[0].label !== "";
+
   const renderBadge = (item: SidebarItem<T>) => {
     if (!item.badge && item.badgeVariant !== "dot") return null;
 
@@ -155,7 +158,7 @@ export default function SidebarModal<T extends string>({
                 >
                   {groupedItems.map((group, groupIndex) => (
                     <div key={groupIndex} className={groupIndex > 0 ? "mt-4" : ""}>
-                      {!isCompact && group.label && (
+                      {!isCompact && group.label && !suppressGroupLabels && (
                         <div className="px-2 pb-1">
                           <span className="text-[11px] font-medium text-muted-foreground/70 dark:text-muted-foreground/65">
                             {group.label}

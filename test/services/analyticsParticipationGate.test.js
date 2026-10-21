@@ -34,7 +34,7 @@ test("analytics uploads depend on Sync consent, not leaderboard participation", 
   globalThis.__analyticsUploadAllowed = [];
 
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-analytics-participation-gate-",
+    cachePrefix: "mnemo-analytics-participation-gate-",
     mockModules: {
       "/services/NotesService.js": "export const NotesService = {};",
       "/services/ConversationsService.js": "export const ConversationsService = {};",

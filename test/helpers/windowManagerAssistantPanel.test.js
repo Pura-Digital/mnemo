@@ -13,6 +13,7 @@ Module._load = function loadWindowManagerWithStubs(request, parent, isMain) {
   if (request === "electron") {
     return {
       app: { on: () => undefined },
+      nativeTheme: { shouldUseDarkColors: false, on: () => undefined },
       screen: {
         getPrimaryDisplay: () => ({}),
         getDisplayMatching: () => ({ workArea: { x: 0, y: 0, width: 1440, height: 900 } }),
@@ -452,7 +453,7 @@ test("opening the assistant panel surfaces a hidden pill window without activati
     const { manager, calls } = makeManager({ visible: false });
     manager.setAssistantPanelOpen(true);
     // focus() answers a user-granted activation with a whole-desktop Space
-    // slide when another OpenWhispr window lives on a different Space. The
+    // slide when another Mnemo window lives on a different Space. The
     // non-activating panel becomes key on click instead.
     assert.deepEqual(calls, ["showInactive", "focusable:true"]);
   });

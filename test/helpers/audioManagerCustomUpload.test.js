@@ -15,7 +15,7 @@ async function loadCustomManager(t, decode) {
     else globalThis.OfflineAudioContext = originalContext;
   });
   const { createManager } = await loadAudioManager(t, {
-    cachePrefix: "openwhispr-custom-upload-test-",
+    cachePrefix: "mnemo-custom-upload-test-",
     settingsKey: "__customUploadSettings",
     settings: {
       useLocalWhisper: false,

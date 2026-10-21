@@ -1,7 +1,7 @@
 import { CACHE_CONFIG } from "../config/constants.ts";
 import { clearIsSubscribed, writeIsSubscribed } from "./subscriptionFlag.ts";
 
-const USAGE_ACCOUNT_KEY = "openwhispr:usageAccountId";
+const USAGE_ACCOUNT_KEY = "mnemo:usageAccountId";
 const USAGE_CACHE_TTL = CACHE_CONFIG.API_KEY_TTL;
 const RETRY_DELAYS_MS = [2000, 4000, 8000];
 const PAID_PLANS = new Set(["pro", "business", "enterprise"]);

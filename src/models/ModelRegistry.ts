@@ -364,7 +364,7 @@ export function getProviderDisplayName(provider: string): string {
 
 export function getModelProvider(modelId: string): string {
   if (isCloudCleanupMode()) {
-    return "openwhispr";
+    return "pura";
   }
 
   const storedProvider = getSettings().cleanupProvider;

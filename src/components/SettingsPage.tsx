@@ -145,6 +145,13 @@ import {
 import { usePolicyModeOptions, usePolicySnapshot } from "../hooks/usePolicy";
 import { usePolicyStore } from "../stores/policyStore";
 import { stopRecording } from "../stores/meetingRecordingStore";
+import {
+  filterInferenceModeOptions,
+  isConversationalAgentEnabled,
+  isMnemoStandaloneProduct,
+  MNEMO_HIDDEN_LLM_TABS,
+  MNEMO_HIDDEN_SETTINGS_SECTIONS,
+} from "../config/mnemoProduct";
 import { requestSignIn } from "../utils/requestSignIn";
 import { canManageSystemAudioInApp } from "../utils/systemAudioAccess";
 import WorkspaceSection from "./settings/WorkspaceSection";
@@ -153,6 +160,14 @@ import WorkspaceBillingOverview from "./settings/WorkspaceBillingOverview";
 import EnterpriseCheckoutDialog from "./settings/EnterpriseCheckoutDialog";
 import CreateWorkspaceDialog from "./CreateWorkspaceDialog";
 import ProfileSection from "./settings/ProfileSection";
+import AiSettingsShell, { type AiSettingsArea } from "./settings/AiSettingsShell";
+import { useAiSetupLane } from "../contexts/AiSetupLaneContext";
+import {
+  isAiSetupLaneLocked,
+  resolveTranscriptionUiMode,
+  transcriptionPickerModeForSetupLane,
+} from "../helpers/aiSetupLanePolicy";
+import { useAlignTranscriptionWithSetupLane } from "../hooks/useAlignTranscriptionWithSetupLane";
 import { formatAmount } from "../utils/formatAmount";
 import { enterpriseProviderName, getTranscriptionProvider } from "../models/ModelRegistry";
 import { useManagedScopeResolution } from "../stores/enterpriseIdentityStore";
@@ -162,6 +177,8 @@ export type SettingsSectionType =
   | "account"
   | "plansBilling"
   | "workspace"
+  | "puraLlm"
+  | "ai"
   | "general"
   | "hotkeys"
   | "speechToText"
@@ -553,6 +570,8 @@ function TranscriptionSection({
   toast,
 }: TranscriptionSectionProps) {
   const { t } = useTranslation();
+  const setupLane = useAiSetupLane();
+  const laneLocked = isAiSetupLaneLocked(setupLane);
   const policySnapshot = usePolicySnapshot();
   const enterpriseTranscriptionSetupMode = useSettingsStore(
     (s) => s.enterpriseTranscriptionSetupMode
@@ -567,11 +586,11 @@ function TranscriptionSection({
     effectiveMode: effectiveTranscriptionMode,
     isModeAllowed,
   } = usePolicyModeOptions<InferenceModeOption>(
-    [
+    filterInferenceModeOptions([
       {
-        id: "openwhispr",
-        label: t("settingsPage.transcription.modes.openwhispr"),
-        description: t("settingsPage.transcription.modes.openwhisprDesc"),
+        id: "pura",
+        label: t("settingsPage.transcription.modes.mnemo"),
+        description: t("settingsPage.transcription.modes.mnemoCloudDesc"),
         icon: <Cloud className="w-4 h-4" />,
         disabled: !isSignedIn,
         badge: !isSignedIn ? t("common.freeAccountRequired") : undefined,
@@ -604,7 +623,7 @@ function TranscriptionSection({
             },
           ]
         : []),
-    ],
+    ]),
     "transcription",
     transcriptionMode,
     {
@@ -612,9 +631,19 @@ function TranscriptionSection({
       enterpriseProviders: TRANSCRIPTION_ENTERPRISE_POLICY_PROVIDER_IDS,
     }
   );
+  useAlignTranscriptionWithSetupLane(
+    setupLane,
+    transcriptionMode,
+    setTranscriptionMode,
+    (useLocal) => {
+      setUseLocalWhisper(useLocal);
+      updateTranscriptionSettings({ useLocalWhisper: useLocal });
+    }
+  );
+  const uiTranscriptionMode = resolveTranscriptionUiMode(setupLane, effectiveTranscriptionMode);
   const handleTranscriptionModeSelect = (mode: InferenceMode) => {
     if (!isModeAllowed(mode)) return;
-    if (mode === "openwhispr" && !isSignedIn) {
+    if (mode === "pura" && !isSignedIn) {
       requestSignIn();
       return;
     }
@@ -622,11 +651,11 @@ function TranscriptionSection({
     setTranscriptionMode(mode);
     setUseLocalWhisper(mode === "local");
     updateTranscriptionSettings({ useLocalWhisper: mode === "local" });
-    setCloudTranscriptionMode(mode === "openwhispr" ? "openwhispr" : "byok");
+    setCloudTranscriptionMode(mode === "pura" ? "mnemo" : "byok");
     if (mode === "enterprise") setEnterpriseTranscriptionSetupMode("managed");
 
     const toastKey = {
-      openwhispr: "switchedCloud",
+      mnemo: "switchedCloud",
       providers: "switchedProviders",
       local: "switchedLocal",
       "self-hosted": "switchedSelfHosted",
@@ -660,7 +689,7 @@ function TranscriptionSection({
     )
   );
   const previewAvailable = supportsLiveTranscriptionPreview(
-    effectiveTranscriptionMode,
+    uiTranscriptionMode,
     selectedCloudModelStreams
   );
 
@@ -794,17 +823,22 @@ function TranscriptionSection({
               </Button>
             </div>
           )}
-          <InferenceModeSelector
-            modes={transcriptionModes}
-            activeMode={effectiveTranscriptionMode}
-            onSelect={handleTranscriptionModeSelect}
-          />
+          {!laneLocked && (
+            <InferenceModeSelector
+              modes={transcriptionModes}
+              activeMode={effectiveTranscriptionMode}
+              onSelect={handleTranscriptionModeSelect}
+            />
+          )}
 
-          {effectiveTranscriptionMode === "providers" && renderTranscriptionPicker("cloud")}
-          {effectiveTranscriptionMode === "local" && renderTranscriptionPicker("local")}
+          {laneLocked && setupLane
+            ? renderTranscriptionPicker(transcriptionPickerModeForSetupLane(setupLane))
+            : null}
+          {!laneLocked && uiTranscriptionMode === "providers" && renderTranscriptionPicker("cloud")}
+          {!laneLocked && uiTranscriptionMode === "local" && renderTranscriptionPicker("local")}
           {previewAvailable && renderPreviewToggle()}
 
-          {effectiveTranscriptionMode === "self-hosted" && (
+          {!laneLocked && uiTranscriptionMode === "self-hosted" && (
             <SelfHostedPanel
               service="transcription"
               url={remoteTranscriptionUrl}
@@ -834,7 +868,7 @@ interface AiModelsSectionProps {
 }
 
 const CLEANUP_MODE_TOAST_KEY: Record<InferenceMode, string> = {
-  openwhispr: "switchedCloud",
+  mnemo: "switchedCloud",
   providers: "switchedProviders",
   local: "switchedLocal",
   "self-hosted": "switchedSelfHosted",
@@ -993,11 +1027,13 @@ export function AccountAvatar({ image, name }: { image?: string | null; name: st
 
 function SpeechToTextTabs({
   initialTab,
+  hideHeader,
   renderDictation,
   renderNoteRecording,
   renderUpload,
 }: {
   initialTab?: SpeechTab;
+  hideHeader?: boolean;
   renderDictation: () => React.ReactNode;
   renderNoteRecording: () => React.ReactNode;
   renderUpload: () => React.ReactNode;
@@ -1013,10 +1049,12 @@ function SpeechToTextTabs({
 
   return (
     <div className="space-y-4">
-      <SectionHeader
-        title={t("settingsPage.speechToText.title")}
-        description={t("settingsPage.speechToText.description")}
-      />
+      {!hideHeader && (
+        <SectionHeader
+          title={t("settingsPage.speechToText.title")}
+          description={t("settingsPage.speechToText.description")}
+        />
+      )}
       <ProviderTabs
         providers={subTabs}
         selectedId={tab}
@@ -1038,8 +1076,22 @@ function SpeechToTextTabs({
   );
 }
 
+function resolveAiNavigationFromLegacySubTab(
+  sub?: string
+): { area: AiSettingsArea; speechTab?: SpeechTab; llmTab?: LlmTab } {
+  if (!sub) return { area: "speech" };
+  if ((SPEECH_TABS as readonly string[]).includes(sub)) {
+    return { area: "speech", speechTab: sub as SpeechTab };
+  }
+  if ((LLM_TABS as readonly string[]).includes(sub)) {
+    return { area: "models", llmTab: sub as LlmTab };
+  }
+  return { area: "speech" };
+}
+
 function LlmsTabs({
   initialTab,
+  hideHeader,
   renderDictationCleanup,
   renderDictationAgent,
   renderDictationTranslation,
@@ -1047,6 +1099,7 @@ function LlmsTabs({
   renderChatIntelligence,
 }: {
   initialTab?: LlmTab;
+  hideHeader?: boolean;
   renderDictationCleanup: () => React.ReactNode;
   renderDictationAgent: () => React.ReactNode;
   renderDictationTranslation: () => React.ReactNode;
@@ -1055,9 +1108,12 @@ function LlmsTabs({
 }) {
   const { t } = useTranslation();
   const agentAllowed = usePolicyStore(isAgentAllowed);
-  const visibleTabIds = agentAllowed
+  let visibleTabIds = agentAllowed
     ? LLM_TABS
     : LLM_TABS.filter((tabId) => !AGENT_LLM_TABS.has(tabId));
+  if (!isConversationalAgentEnabled()) {
+    visibleTabIds = visibleTabIds.filter((tabId) => !MNEMO_HIDDEN_LLM_TABS.has(tabId));
+  }
   const [tab, setTab] = useSubTab<LlmTab>("settings.llmsTab", visibleTabIds, initialTab);
 
   const subTabs = [
@@ -1070,10 +1126,12 @@ function LlmsTabs({
 
   return (
     <div className="space-y-4">
-      <SectionHeader
-        title={t("settingsPage.llms.title")}
-        description={t("settingsPage.llms.description")}
-      />
+      {!hideHeader && (
+        <SectionHeader
+          title={t("settingsPage.llms.title")}
+          description={t("settingsPage.llms.description")}
+        />
+      )}
       <ProviderTabs
         providers={subTabs}
         selectedId={tab}
@@ -1317,8 +1375,8 @@ export default function SettingsPage({
   const [isRemovingModels, setIsRemovingModels] = useState(false);
   const [cachePathHint, setCachePathHint] = useState(
     typeof navigator !== "undefined" && /Windows/i.test(navigator.userAgent)
-      ? "%USERPROFILE%\\.cache\\openwhispr"
-      : "~/.cache/openwhispr"
+      ? "%USERPROFILE%\\.cache\\mnemo"
+      : "~/.cache/mnemo"
   );
   useEffect(() => {
     window.electronAPI
@@ -1370,16 +1428,29 @@ export default function SettingsPage({
   // then keep them mounted so model-download progress and IPC listeners survive
   // section switches. The setState-during-render pattern flips the flag in the
   // same commit as the section change, so there's no blank frame on first visit.
+  const usesUnifiedAiSettings = isMnemoStandaloneProduct();
   const [hasMountedSpeechToText, setHasMountedSpeechToText] = useState(
-    activeSection === "speechToText"
+    activeSection === "speechToText" || (usesUnifiedAiSettings && activeSection === "ai")
   );
-  const [hasMountedLlms, setHasMountedLlms] = useState(activeSection === "llms");
+  const [hasMountedLlms, setHasMountedLlms] = useState(
+    activeSection === "llms" || (usesUnifiedAiSettings && activeSection === "ai")
+  );
+  const [hasMountedAi, setHasMountedAi] = useState(
+    usesUnifiedAiSettings && activeSection === "ai"
+  );
   if (activeSection === "speechToText" && !hasMountedSpeechToText) {
     setHasMountedSpeechToText(true);
   }
   if (activeSection === "llms" && !hasMountedLlms) {
     setHasMountedLlms(true);
   }
+  if (usesUnifiedAiSettings && activeSection === "ai" && !hasMountedAi) {
+    setHasMountedAi(true);
+    setHasMountedSpeechToText(true);
+    setHasMountedLlms(true);
+  }
+
+  const aiNav = resolveAiNavigationFromLegacySubTab(initialSubTab);
 
   const handleClearAllAudio = async () => {
     if (!window.electronAPI?.deleteAllAudio) return;
@@ -1790,7 +1861,7 @@ export default function SettingsPage({
           } else {
             // Every local model is gone, so no local selection can still resolve.
             clearMissingLocalModelSelections(() => false);
-            window.dispatchEvent(new Event("openwhispr-models-cleared"));
+            window.dispatchEvent(new Event("mnemo-models-cleared"));
             showAlertDialog({
               title: t("settingsPage.developer.removeModels.successTitle"),
               description: t("settingsPage.developer.removeModels.successDescription"),
@@ -2183,7 +2254,16 @@ export default function SettingsPage({
   );
 
   const renderSectionContent = () => {
+    if (isMnemoStandaloneProduct() && MNEMO_HIDDEN_SETTINGS_SECTIONS.has(activeSection)) {
+      return null;
+    }
     switch (activeSection) {
+      case "ai":
+        return null;
+
+      case "puraLlm":
+        return null;
+
       case "account":
         return (
           <div className="space-y-5">
@@ -2873,7 +2953,7 @@ export default function SettingsPage({
                             className="w-full h-6 text-[10px] text-muted-foreground"
                             onClick={() =>
                               window.electronAPI?.openExternal?.(
-                                "https://openwhispr.com/contact-sales"
+                                "https://mnemo.com/contact-sales"
                               )
                             }
                           >
@@ -2889,7 +2969,7 @@ export default function SettingsPage({
                             className="w-full h-6 text-[10px]"
                             onClick={() =>
                               window.electronAPI?.openExternal?.(
-                                "https://openwhispr.com/contact-sales"
+                                "https://mnemo.com/contact-sales"
                               )
                             }
                           >
@@ -2911,7 +2991,7 @@ export default function SettingsPage({
                           className="mt-2 w-full h-6 text-[10px]"
                           onClick={() =>
                             window.electronAPI?.openExternal?.(
-                              "https://openwhispr.com/contact-sales"
+                              "https://mnemo.com/contact-sales"
                             )
                           }
                         >
@@ -3686,7 +3766,7 @@ export default function SettingsPage({
                           }),
                           desc: t("settingsPage.general.waylandPaste.guide.group.step2Desc", {
                             defaultValue:
-                              "Group changes only take effect after a new login session. Log out of your desktop and log back in, then reopen OpenWhispr.",
+                              "Group changes only take effect after a new login session. Log out of your desktop and log back in, then reopen mnemo.",
                           }),
                         },
                       ],
@@ -4054,7 +4134,7 @@ EOF`,
             </div>
 
             {/* Voice Agent Hotkey */}
-            {agentAllowedByPolicy && (
+            {isConversationalAgentEnabled() && agentAllowedByPolicy && (
               <div>
                 <SectionHeader
                   title={t("settingsPage.general.voiceAgentHotkey.title")}
@@ -5020,6 +5100,98 @@ EOF`,
             renderDictationAgent={() => <DictationAgentSettings />}
             renderDictationTranslation={() => <DictationTranslationSettings />}
             renderNoteFormatting={() => <NoteFormattingSettings />}
+          />
+        </TabPanel>
+      )}
+      {hasMountedAi && (
+        <TabPanel active={activeSection === "ai"}>
+          <AiSettingsShell
+            initialArea={aiNav.area}
+            renderSpeech={() => (
+              <SpeechToTextTabs
+                hideHeader
+                initialTab={aiNav.speechTab}
+                renderDictation={() => (
+                  <div className="space-y-6">
+                    <TranscriptionSection
+                      isSignedIn={isSignedIn ?? false}
+                      cloudTranscriptionMode={cloudTranscriptionMode}
+                      setCloudTranscriptionMode={setCloudTranscriptionMode}
+                      useLocalWhisper={useLocalWhisper}
+                      setUseLocalWhisper={setUseLocalWhisper}
+                      updateTranscriptionSettings={updateTranscriptionSettings}
+                      cloudTranscriptionProvider={cloudTranscriptionProvider}
+                      setCloudTranscriptionProvider={setCloudTranscriptionProvider}
+                      cloudTranscriptionModel={cloudTranscriptionModel}
+                      setCloudTranscriptionModel={setCloudTranscriptionModel}
+                      localTranscriptionProvider={localTranscriptionProvider}
+                      setLocalTranscriptionProvider={setLocalTranscriptionProvider}
+                      whisperModel={whisperModel}
+                      setWhisperModel={setWhisperModel}
+                      parakeetModel={parakeetModel}
+                      setParakeetModel={setParakeetModel}
+                      cohereModel={cohereModel}
+                      setCohereModel={setCohereModel}
+                      cloudTranscriptionBaseUrl={cloudTranscriptionBaseUrl}
+                      setCloudTranscriptionBaseUrl={setCloudTranscriptionBaseUrl}
+                      transcriptionMode={transcriptionMode}
+                      setTranscriptionMode={setTranscriptionMode}
+                      remoteTranscriptionUrl={remoteTranscriptionUrl}
+                      setRemoteTranscriptionUrl={setRemoteTranscriptionUrl}
+                      remoteTranscriptionModel={remoteTranscriptionModel}
+                      setRemoteTranscriptionModel={setRemoteTranscriptionModel}
+                      showTranscriptionPreview={showTranscriptionPreview}
+                      setShowTranscriptionPreview={setShowTranscriptionPreview}
+                      toast={toast}
+                    />
+                    {transcriptionMode === "local" &&
+                      localTranscriptionProvider === "whisper" &&
+                      renderWhisperVadSettings()}
+                  </div>
+                )}
+                renderNoteRecording={() => (
+                  <div className="space-y-6">
+                    <MeetingTranscriptionPanel />
+                    {transcriptionMode === "local" &&
+                      localTranscriptionProvider === "whisper" &&
+                      renderWhisperVadSettings()}
+                  </div>
+                )}
+                renderUpload={() => (
+                  <div className="space-y-6">
+                    <UploadTranscriptionPanel />
+                  </div>
+                )}
+              />
+            )}
+            renderModels={() => (
+              <LlmsTabs
+                hideHeader
+                initialTab={aiNav.llmTab}
+                renderChatIntelligence={() => <ChatAgentSettings />}
+                renderDictationCleanup={() => (
+                  <div className="space-y-6">
+                    <AiModelsSection
+                      useCleanupModel={useCleanupModel}
+                      setUseCleanupModel={(value) => {
+                        updateCleanupSettings({ useCleanupModel: value });
+                      }}
+                      toast={toast}
+                    />
+                    <div className="border-t border-border/70 pt-6">
+                      <SectionHeader
+                        title={t("settingsPage.prompts.title")}
+                        description={t("settingsPage.prompts.description")}
+                      />
+                      <PromptStudio />
+                    </div>
+                  </div>
+                )}
+                renderDictationAgent={() => <DictationAgentSettings />}
+                renderDictationTranslation={() => <DictationTranslationSettings />}
+                renderNoteFormatting={() => <NoteFormattingSettings />}
+              />
+            )}
           />
         </TabPanel>
       )}

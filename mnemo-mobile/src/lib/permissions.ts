@@ -41,7 +41,7 @@ export function isNoSpeechError(err: unknown): boolean {
 export function showMicPermissionAlert(): void {
   showPermissionAlert({
     title: 'Microphone Access Needed',
-    message: 'OpenWhispr needs microphone access to dictate. Enable it in Settings to continue.',
+    message: 'mnemo needs microphone access to dictate. Enable it in Settings to continue.',
     primaryLabel: 'Open Settings',
     onPrimary: () => Linking.openSettings(),
   });

@@ -20,6 +20,7 @@ import { Sentry } from '@/lib/sentry';
 import { reconcileStoreBilling } from '@/lib/billingReconciliation';
 import { logPaywallViewed, logSubscription } from '@/lib/appsflyer';
 import { identifyRevenueCatUser, recordRevenueCatPurchase } from '@/lib/revenuecat';
+import { isMnemoStandaloneProduct, runStandaloneSuperwallBypass } from '@/config/mnemoProduct';
 
 type Props = {
   children: React.ReactNode;
@@ -269,6 +270,12 @@ export function DisabledSuperwallGateProvider({ children }: Props) {
     }: RegisterSuperwallGateOptions): Promise<boolean> => {
       debugLog('register (Superwall DISABLED — no API key in this build)', { placement });
       activePlacementRef.current = placement;
+
+      if (isMnemoStandaloneProduct()) {
+        runStandaloneSuperwallBypass({ feature, onAccessGrantedWithoutPurchase });
+        activePlacementRef.current = null;
+        return true;
+      }
 
       if (requiresAccount && requiresRealAccount(user)) {
         routeToAuth();
@@ -528,6 +535,13 @@ export function EnabledSuperwallGateProvider({ children }: Props) {
     }: RegisterSuperwallGateOptions): Promise<boolean> => {
       const isOnboarding = placement === SUPERWALL_PLACEMENTS.onboardingPaywall;
       if (isOnboarding && signal?.aborted) return false;
+
+      if (isMnemoStandaloneProduct()) {
+        runStandaloneSuperwallBypass({ feature, onAccessGrantedWithoutPurchase });
+        activePlacementRef.current = null;
+        return true;
+      }
+
       debugLog('register', {
         placement,
         requiresAccount,

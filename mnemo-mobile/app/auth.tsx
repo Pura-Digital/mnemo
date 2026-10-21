@@ -3,6 +3,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import AuthScreen from '@/screens/AuthScreen';
 import { requiresRealAccount } from '@/lib/accountAccess';
 import { useAuthStore } from '@/store/useAuthStore';
+import { isMnemoStandaloneProduct } from '@/config/mnemoProduct';
 
 export default function AuthRoute() {
   const params = useLocalSearchParams<{ returnTo?: string; superwallPlacement?: string }>();
@@ -10,6 +11,10 @@ export default function AuthRoute() {
   const isGuest = useAuthStore((state) => state.isGuest);
 
   useEffect(() => {
+    if (isMnemoStandaloneProduct()) {
+      router.replace('/(tabs)/(record)');
+      return;
+    }
     // An anonymous session is here to become an account; only a real one is
     // done and gets sent on.
     if (requiresRealAccount(user)) return;

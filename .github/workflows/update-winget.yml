@@ -58,7 +58,7 @@ jobs:
         # handed a PAT that can write to every public repo the owner can reach.
         uses: vedantmgoyal9/winget-releaser@4ffc7888bffd451b357355dc214d43bb9f23917e # v2
         with:
-          identifier: OpenWhispr.OpenWhispr
+          identifier: Mnemo.Mnemo
           release-tag: v${{ steps.release.outputs.version }}
-          installers-regex: 'OpenWhispr-Setup-.*\.exe$'
+          installers-regex: 'Mnemo-Setup-.*\.exe$'
           token: ${{ secrets.WINGET_TOKEN }}

@@ -215,7 +215,7 @@ test("a Linux AppImage is supported, but deb/rpm/tar.gz installs never touch the
   t.mock.timers.enable({ apis: ["setTimeout", "setInterval"] });
   setPlatform("linux");
 
-  process.env.APPIMAGE = "/opt/OpenWhispr.AppImage";
+  process.env.APPIMAGE = "/opt/Mnemo.AppImage";
   const appImage = createUpdateManager(makeAutoUpdater());
   assert.equal((await appImage.getUpdateStatus()).isSupported, true);
   appImage.cleanup();

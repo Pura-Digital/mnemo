@@ -41,10 +41,10 @@ event.sender.id = 1;
 const backendFetch = async (url, options) => {
   assert.ok(
     [
-      "https://api.openwhispr.test/api/stt/orukeet/session",
-      "https://api.openwhispr.test/api/reason",
-      "https://api.openwhispr.test/api/streaming-usage",
-      "https://api.openwhispr.test/api/transcribe",
+      "https://api.mnemo.test/api/stt/orukeet/session",
+      "https://api.mnemo.test/api/reason",
+      "https://api.mnemo.test/api/streaming-usage",
+      "https://api.mnemo.test/api/transcribe",
     ].includes(url)
   );
   assert.equal(options.headers.Authorization, "Bearer account-a");
@@ -52,7 +52,7 @@ const backendFetch = async (url, options) => {
 };
 const managedOptions = {
   provider: "orukeet",
-  mode: "openwhispr",
+  mode: "mnemo",
   model: "orukeet-v0.1.0",
   baseUrl: "https://untrusted-renderer.test",
 };
@@ -162,7 +162,7 @@ function buildFakeThis() {
 }
 
 test.before(async () => {
-  process.env.OPENWHISPR_API_URL = "https://api.openwhispr.test";
+  process.env.CLOUD_API_URL = "https://api.mnemo.test";
   server = new WebSocketServer({ host: "127.0.0.1", port: 0 });
   await once(server, "listening");
   server.on("connection", (socket) => {
@@ -332,7 +332,7 @@ test("closing the owning window releases the managed socket and auth subscriptio
 test("cloud cleanup forwards fallback telemetry to its combined log request", async () => {
   const requests = [];
   backendResponse = async (url, options) => {
-    assert.equal(url, "https://api.openwhispr.test/api/reason");
+    assert.equal(url, "https://api.mnemo.test/api/reason");
     requests.push(JSON.parse(options.body));
     return Response.json({ text: "clean transcript" });
   };

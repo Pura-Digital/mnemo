@@ -39,7 +39,7 @@ test("renderer fails closed when a managed-unresolvable refresh supersedes unman
   });
 
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-policy-transition-test-",
+    cachePrefix: "mnemo-policy-transition-test-",
     mockModules: { "/utils/logger": "export default { error() {} };" },
   });
 

@@ -72,7 +72,7 @@ async function renderChatStreaming(
   installBrowserGlobals(t, { window: { electronAPI } });
   const container = live ? installHookDom(t) : null;
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-chat-streaming-flush-test-",
+    cachePrefix: "mnemo-chat-streaming-flush-test-",
   });
   const [{ default: viteI18next }, { initReactI18next }] = await Promise.all([
     vite.ssrLoadModule("i18next"),

@@ -384,7 +384,7 @@ describe('426 UPGRADE_REQUIRED during sync', () => {
     // pull call (which propagates ApiError untouched — see pullFolders.ts)
     // arrives here with the friendly message already attached.
     mockPullFolders.mockRejectedValue(
-      new ApiError('Update OpenWhispr to keep using cloud features.', 426, 'UPGRADE_REQUIRED'),
+      new ApiError('Update mnemo to keep using cloud features.', 426, 'UPGRADE_REQUIRED'),
     );
 
     requestSync('manual');
@@ -392,7 +392,7 @@ describe('426 UPGRADE_REQUIRED during sync', () => {
 
     const state = useSyncStore.getState();
     expect(state.status).toBe('error');
-    expect(state.lastError?.message).toBe('Update OpenWhispr to keep using cloud features.');
+    expect(state.lastError?.message).toBe('Update mnemo to keep using cloud features.');
     expect(state.policyBlocked).toBe(false);
     expect(state.subscriptionRequired).toBe(false);
   });

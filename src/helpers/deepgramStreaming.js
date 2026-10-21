@@ -180,7 +180,7 @@ class DeepgramStreaming {
   // socket minted under one credential kind must never serve the other. Callers
   // that read the cache before connecting must adopt the mode first.
   adoptMode(options) {
-    const mode = options.mode === "byok" ? "byok" : "openwhispr";
+    const mode = options.mode === "byok" ? "byok" : "mnemo";
     if (this.mode !== null && this.mode !== mode) {
       debugLogger.debug("Deepgram credential mode changed, dropping cached session state", {
         from: this.mode,

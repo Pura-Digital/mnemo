@@ -166,7 +166,7 @@ const cleanupFailureFromError = (error) => ({
 
 const cloudSignInRequiredError = () => {
   const err = new Error(
-    "OpenWhispr Cloud requires sign-in. Please sign in again or switch to BYOK mode."
+    "Pura LLM requires sign-in. Please sign in again or switch to BYOK mode."
   );
   err.code = "AUTH_REQUIRED";
   err.messageKey = "hooks.audioRecording.errorDescriptions.sessionExpired";
@@ -2032,8 +2032,8 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
       const cloudTranscriptionMode = settings.cloudTranscriptionMode;
       const isSignedIn = settings.isSignedIn;
 
-      const isOpenWhisprCloudMode = !useLocalWhisper && cloudTranscriptionMode === "openwhispr";
-      const useCloud = isOpenWhisprCloudMode && isSignedIn;
+      const isMnemoCloudMode = !useLocalWhisper && cloudTranscriptionMode === "pura";
+      const useCloud = isMnemoCloudMode && isSignedIn;
       logger.debug(
         "Transcription routing",
         { useLocalWhisper, useCloud, isSignedIn, cloudTranscriptionMode },
@@ -2042,7 +2042,7 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
 
       let result;
       let activeModel;
-      // Managed enterprise STT outranks the local and OpenWhispr Cloud lanes,
+      // Managed enterprise STT outranks the local and Pura LLM lanes,
       // matching the LLM scopes; users opt out via "Use personal setup" when
       // the administrator allows it. Error resolutions fail closed inside
       // processWithOpenAIAPI with their own code.
@@ -2069,10 +2069,10 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
             wasCancelled
           );
         }
-      } else if (isOpenWhisprCloudMode) {
+      } else if (isMnemoCloudMode) {
         if (!isSignedIn) throw cloudSignInRequiredError();
-        activeModel = "openwhispr-cloud";
-        result = await this.processWithOpenWhisprCloud(audioBlob, metadata, wasCancelled);
+        activeModel = "mnemo-cloud";
+        result = await this.processWithMnemoCloud(audioBlob, metadata, wasCancelled);
       } else {
         activeModel = this.getTranscriptionModel();
         result = await this.processWithOpenAIAPI(audioBlob, metadata, wasCancelled);
@@ -2103,7 +2103,7 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
       };
       this.onTranscriptionComplete?.(result);
 
-      if (result?.source === "openwhispr") {
+      if (result?.source === "mnemo") {
         window.dispatchEvent(new Event("usage-changed"));
       }
 
@@ -2837,7 +2837,7 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
       temperature: config?.temperature ?? 0.2,
       requireCompleteOutput: true,
     };
-    const completionMarker = `__OPENWHISPR_SELECTION_COMPLETE_${crypto.randomUUID()}__`;
+    const completionMarker = `__MNEMO_SELECTION_COMPLETE_${crypto.randomUUID()}__`;
     selectionConfig.systemPrompt = buildSelectionEditSystemPrompt(
       config?.systemPrompt,
       completionMarker
@@ -2999,7 +2999,7 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
           settings.translationSourceLanguage,
           settings.translationTargetLanguage
         ),
-        translateIsCloud: route.config?.provider === "openwhispr",
+        translateIsCloud: route.config?.provider === "mnemo",
         onCleanupError: (cleanupError) => {
           const { level = "error", channel, extra } = cleanup.log || {};
           logger[level](
@@ -3064,7 +3064,7 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
     const cleanupReachable = !!settings.useCleanupModel && (!!cleanupModel || isCloud);
     const agentReachable = dictationAgentReachable(settings);
     const agentName =
-      typeof window !== "undefined" && window.localStorage ? getAgentName() : "OpenWhispr";
+      typeof window !== "undefined" && window.localStorage ? getAgentName() : "mnemo";
     if (
       !cleanupReachable &&
       !agentReachable &&
@@ -3347,7 +3347,7 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
     return result;
   }
 
-  async processWithOpenWhisprCloud(audioBlob, metadata = {}, wasCancelled = neverCancelled) {
+  async processWithMnemoCloud(audioBlob, metadata = {}, wasCancelled = neverCancelled) {
     if (!navigator.onLine) {
       const err = new Error("You're offline. Cloud transcription requires an internet connection.");
       err.code = "OFFLINE";
@@ -3378,12 +3378,12 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
       opts.analyticsOccurredAt = analyticsOccurredAt.toISOString();
       opts.localDate = localDateKey(analyticsOccurredAt);
     }
-    const cleanupCloudMode = settings.cleanupCloudMode || "openwhispr";
+    const cleanupCloudMode = settings.cleanupCloudMode || "mnemo";
     // Only cloud cleanup writes a combined STT log; translation alone does not.
     // A voice assistant recording never runs cleanup, so this upload is its log.
     if (
       settings.useCleanupModel &&
-      cleanupCloudMode === "openwhispr" &&
+      cleanupCloudMode === "mnemo" &&
       !this.voiceAgentRequested
     ) {
       opts.sendLogs = "false";
@@ -3431,7 +3431,7 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
       if (this.translationRequested && route.kind !== "translation") {
         this.notifyTranslationFallback("unreachable");
       }
-      const cleanupCloudMode = settings.cleanupCloudMode || "openwhispr";
+      const cleanupCloudMode = settings.cleanupCloudMode || "mnemo";
 
       try {
         if (route.kind === "agent") {
@@ -3446,7 +3446,7 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
             wasCancelled
           );
           if (hasTextContent(reasoned)) processedText = reasoned;
-        } else if (route.kind === "cleanup" && cleanupCloudMode === "openwhispr") {
+        } else if (route.kind === "cleanup" && cleanupCloudMode === "mnemo") {
           const customPrompt = this.getCustomPrompt();
           const reasonResult = await withSessionRefresh(async () => {
             const res = await window.electronAPI.cloudReason(processedText, {
@@ -3499,7 +3499,7 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
             agentName,
             route,
             cleanup:
-              cleanupCloudMode === "openwhispr"
+              cleanupCloudMode === "mnemo"
                 ? {
                     mode: "cloudReason",
                     meta: {
@@ -3545,7 +3545,7 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
       success: true,
       text: await this.finalizeChineseScript(processedText, settings),
       rawText,
-      source: "openwhispr",
+      source: "mnemo",
       timings,
       limitReached: result.limitReached,
       wordsUsed: result.wordsUsed,
@@ -3837,7 +3837,7 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
         const err = new Error(`API Error: ${response.status} ${errorText}`);
         if (response.status === 401) err.code = "INVALID_KEY";
         else if (response.status === 429) {
-          // The user's own provider rate-limited the request — not an OpenWhispr plan limit
+          // The user's own provider rate-limited the request — not an mnemo plan limit
           err.code = "PROVIDER_RATE_LIMITED";
           err.messageKey = "hooks.audioRecording.errorDescriptions.providerRateLimited";
         } else if (response.status >= 500) err.code = "SERVER_ERROR";
@@ -4288,7 +4288,7 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
     if (isSelfHostedTranscription(s)) return false;
 
     if (
-      s.cloudTranscriptionMode === "openwhispr" &&
+      s.cloudTranscriptionMode === "pura" &&
       this.sttConfig?.streamingProvider === "orukeet"
     ) {
       // A language the model does not cover takes the batch path, which
@@ -4301,12 +4301,12 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
       return route === "orukeet" && Boolean(isSignedInOverride ?? s.isSignedIn);
     }
 
-    // Corti (BYOK) streams over its own WSS — independent of OpenWhispr Cloud.
+    // Corti (BYOK) streams over its own WSS — independent of Pura LLM.
     if (s.cloudTranscriptionProvider === "corti" && s.cloudTranscriptionMode === "byok") {
       return !!(s.cortiClientId && s.cortiClientSecret);
     }
 
-    // Tinfoil realtime streams without an OpenWhispr account.
+    // Tinfoil realtime streams without an mnemo account.
     if (s.cloudTranscriptionProvider === "tinfoil") {
       const provider = getTranscriptionProvider("tinfoil");
       const model = provider?.models.find((m) => m.id === s.cloudTranscriptionModel);
@@ -4333,10 +4333,10 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
       return Boolean(getTranscriptionApiKey(s.cloudTranscriptionProvider, s));
     }
 
-    // The managed-cloud bootstrap only controls OpenWhispr Cloud. A user's
+    // The managed-cloud bootstrap only controls Pura LLM. A user's
     // BYOK realtime model must not be downgraded because managed dictation is
     // configured for batch processing.
-    if (s.cloudTranscriptionMode === "openwhispr" && this.sttConfig?.dictation?.mode === "batch") {
+    if (s.cloudTranscriptionMode === "pura" && this.sttConfig?.dictation?.mode === "batch") {
       return false;
     }
 
@@ -4344,11 +4344,11 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
       // Realtime WS is OpenAI-only — other providers fall through to HTTP.
       if ((s.cloudTranscriptionProvider || "openai") !== "openai") return false;
       if (s.cloudTranscriptionMode === "byok") return !!s.openaiApiKey;
-      if (s.cloudTranscriptionMode === "openwhispr") return !!(isSignedInOverride ?? s.isSignedIn);
+      if (s.cloudTranscriptionMode === "pura") return !!(isSignedInOverride ?? s.isSignedIn);
       return false;
     }
 
-    if (s.cloudTranscriptionMode !== "openwhispr" || !(isSignedInOverride ?? s.isSignedIn)) {
+    if (s.cloudTranscriptionMode !== "mnemo" || !(isSignedInOverride ?? s.isSignedIn)) {
       return false;
     }
     if (!this.sttConfig) return false;
@@ -4917,7 +4917,7 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
       } else if (error.code === "AUTH_EXPIRED" || error.code === "AUTH_REQUIRED") {
         errorTitle = "Sign-in Required";
         errorDescription =
-          "Your OpenWhispr Cloud session is unavailable. Please sign in again from Settings.";
+          "Your Pura LLM session is unavailable. Please sign in again from Settings.";
       } else if (error.code === "NETWORK_ERROR") {
         errorTitle = "streaming.errors.cloudUnreachable.title";
         errorDescription = error.messageKey || "streaming.errors.cloudUnreachable.generic";
@@ -5348,7 +5348,7 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
         }
       };
       try {
-        const batchResult = await this.processWithOpenWhisprCloud(
+        const batchResult = await this.processWithMnemoCloud(
           fallbackBlob,
           {
             durationSeconds,
@@ -5394,7 +5394,7 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
       if (this.translationRequested && route.kind !== "translation") {
         this.notifyTranslationFallback("unreachable");
       }
-      const cleanupCloudMode = stSettings.cleanupCloudMode || "openwhispr";
+      const cleanupCloudMode = stSettings.cleanupCloudMode || "mnemo";
 
       try {
         if (route.kind === "agent") {
@@ -5414,7 +5414,7 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
             { reasoningDurationMs: Math.round(performance.now() - reasoningStart) },
             "streaming"
           );
-        } else if (route.kind === "cleanup" && cleanupCloudMode === "openwhispr") {
+        } else if (route.kind === "cleanup" && cleanupCloudMode === "mnemo") {
           const customPrompt = this.getCustomPrompt();
           const reasonResult = await withSessionRefresh(async () => {
             const res = await window.electronAPI.cloudReason(finalText, {
@@ -5480,7 +5480,7 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
             agentName,
             route,
             cleanup:
-              cleanupCloudMode === "openwhispr"
+              cleanupCloudMode === "mnemo"
                 ? {
                     mode: "cloudReason",
                     meta: {
@@ -5567,11 +5567,7 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
     ) {
       const target = resolveStreamingFallbackTarget(getSettings());
       if (target === "skip") {
-        logger.warn(
-          "Skipping batch fallback: OpenWhispr Cloud session signed out",
-          {},
-          "streaming"
-        );
+        logger.warn("Skipping batch fallback: Pura LLM session signed out", {}, "streaming");
         failBatchFallback(cloudSignInRequiredError());
       } else {
         logger.info(
@@ -5583,7 +5579,7 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
           // Cloud records usage server-side via /api/transcribe; BYOK has no metering.
           const batchResult =
             target === "cloud"
-              ? await this.processWithOpenWhisprCloud(
+              ? await this.processWithMnemoCloud(
                   fallbackBlob,
                   {
                     durationSeconds,
@@ -5678,7 +5674,7 @@ registerProcessor("pcm-streaming-processor", PCMStreamingProcessor);
                   // event. Held back until opt-in, a later sync would push the
                   // local copy under a second id and double every total.
                   // Cosmetic caveat: the server labels its row mode
-                  // "openwhispr_cloud" whatever actually transcribed the audio,
+                  // "mnemo_cloud" whatever actually transcribed the audio,
                   // and BYOK streaming reaches here too (tinfoil-realtime,
                   // corti, openai-realtime — see resolveStreamingProviderName).
                   // That row only exists when localDate rides along, which is

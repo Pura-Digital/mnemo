@@ -35,7 +35,8 @@ import { PermissionAlertMount } from '@/components/ui/PermissionAlert';
 import { startKeyboardToneSync } from '@/lib/keyboardToneSync';
 import { startKeyboardAgentSync } from '@/lib/keyboardAgentSync';
 import { startKeyboardFullAccessProbe } from '@/lib/keyboardFullAccessProbe';
-import { OpenWhisprSuperwallProvider } from '@/components/superwall/OpenWhisprSuperwallProvider';
+import { MnemoSuperwallProvider } from '@/components/superwall/MnemoSuperwallProvider';
+import { isMnemoStandaloneProduct } from '@/config/mnemoProduct';
 
 initSentry();
 initAppsFlyer();
@@ -58,6 +59,7 @@ function RootLayout() {
 
   const colorScheme = useColorScheme();
   const initialize = useAuthStore((state) => state.initialize);
+  const continueAsGuest = useAuthStore((state) => state.continueAsGuest);
   const isInitialized = useAuthStore((state) => state.isInitialized);
   const user = useAuthStore((state) => state.user);
   const isGuest = useAuthStore((state) => state.isGuest);
@@ -142,6 +144,13 @@ function RootLayout() {
     }
   }, [isInitialized, onboardingFinished, user, isGuest]);
 
+  useEffect(() => {
+    if (!appReady || !onboardingFinished || !isMnemoStandaloneProduct()) return;
+    if (!user && !isGuest) {
+      void continueAsGuest();
+    }
+  }, [appReady, continueAsGuest, isGuest, onboardingFinished, user]);
+
   // Returning to a still-in-memory app (background→foreground) should land on
   // Home, not wherever it was suspended (e.g. the Account screen). Cold launches
   // go through app/index.tsx; warm resume never re-resolves "/", so it needs this
@@ -183,7 +192,7 @@ function RootLayout() {
     // account step, so asking for an account up front would defeat the point.
     // Once onboarding is done, an explicit sign-out still lands on AuthScreen.
     if (!onboardingFinished) return <OnboardingFlow />;
-    if (!user && !isGuest) return <AuthScreen />;
+    if (!isMnemoStandaloneProduct() && !user && !isGuest) return <AuthScreen />;
     return (
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <Stack screenOptions={{ headerShown: false }}>
@@ -221,11 +230,11 @@ function RootLayout() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <OpenWhisprSuperwallProvider>
+      <MnemoSuperwallProvider>
         <SafeAreaProvider>{renderInner()}</SafeAreaProvider>
         <PermissionAlertMount />
         {showSplash && <AnimatedSplash appReady={appReady} onFinish={() => setShowSplash(false)} />}
-      </OpenWhisprSuperwallProvider>
+      </MnemoSuperwallProvider>
     </GestureHandlerRootView>
   );
 }

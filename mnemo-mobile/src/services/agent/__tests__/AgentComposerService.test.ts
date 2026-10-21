@@ -442,7 +442,7 @@ describe('config integration', () => {
     const { config } = makeConfig();
     mockUseDictionaryStore.getState.mockReturnValue({
       entries: [
-        { word: 'OpenWhispr', source: 'manual' as const, addedAt: null },
+        { word: 'mnemo', source: 'manual' as const, addedAt: null },
         { word: 'TDD', source: 'manual' as const, addedAt: null },
       ],
       isLoaded: true,
@@ -459,7 +459,7 @@ describe('config integration', () => {
     await generateForJob(job, 'write it', config);
 
     const systemPrompt = mockStreamAgentText.mock.calls[0][0].systemPrompt ?? '';
-    expect(systemPrompt).toContain('OpenWhispr');
+    expect(systemPrompt).toContain('mnemo');
     expect(systemPrompt).toContain('TDD');
 
     mockUseDictionaryStore.getState.mockReturnValue({

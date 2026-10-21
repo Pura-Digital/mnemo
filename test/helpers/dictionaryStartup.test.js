@@ -6,18 +6,18 @@ const load = () => import("../../src/helpers/dictionaryStartup.js");
 test("startup prefers SQLite when the DB is ahead of the renderer cache (#1295)", async () => {
   const { chooseDictionaryStartupAction } = await load();
   const decision = chooseDictionaryStartupAction(
-    ["OpenWhispr", "Alice", "Bob"],
-    ["OpenWhispr"]
+    ["Mnemo", "Alice", "Bob"],
+    ["Mnemo"]
   );
   assert.equal(decision.action, "pull-db-to-local");
-  assert.deepEqual(decision.words, ["OpenWhispr", "Alice", "Bob"]);
+  assert.deepEqual(decision.words, ["Mnemo", "Alice", "Bob"]);
 });
 
 test("startup pushes the renderer cache into an empty DB", async () => {
   const { chooseDictionaryStartupAction } = await load();
-  const decision = chooseDictionaryStartupAction([], ["OpenWhispr", "Alice"]);
+  const decision = chooseDictionaryStartupAction([], ["Mnemo", "Alice"]);
   assert.equal(decision.action, "push-local-to-db");
-  assert.deepEqual(decision.words, ["OpenWhispr", "Alice"]);
+  assert.deepEqual(decision.words, ["Mnemo", "Alice"]);
 });
 
 test("startup is a no-op when both sides are empty", async () => {
@@ -29,7 +29,7 @@ test("startup is a no-op when both sides are empty", async () => {
 
 test("startup still prefers DB when the renderer cache is empty", async () => {
   const { chooseDictionaryStartupAction } = await load();
-  const decision = chooseDictionaryStartupAction(["OpenWhispr", "Carol"], []);
+  const decision = chooseDictionaryStartupAction(["Mnemo", "Carol"], []);
   assert.equal(decision.action, "pull-db-to-local");
-  assert.deepEqual(decision.words, ["OpenWhispr", "Carol"]);
+  assert.deepEqual(decision.words, ["Mnemo", "Carol"]);
 });

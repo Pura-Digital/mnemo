@@ -1,24 +1,22 @@
 # Network Allowlist
 
-Outbound hosts the OpenWhispr desktop app contacts. For firewall, proxy, and
+Outbound hosts the Mnemo desktop app contacts. For firewall, proxy, and
 DNS filter configuration.
 
 All connections are client-initiated over TLS. No inbound ports.
 
 ## Required by default
 
-Contacted by every install using OpenWhispr Cloud (the default after
-onboarding).
-
 | Host                                          | Protocol | Port | Purpose                                                                            |
 | --------------------------------------------- | -------- | ---- | ---------------------------------------------------------------------------------- |
-| `api.openwhispr.com`                          | HTTPS    | 443  | Cloud API: transcription, sync, agent reasoning, settings, usage.                  |
-| `auth.openwhispr.com`                         | HTTPS    | 443  | Account sign-in and session refresh (Better Auth).                                 |
 | `github.com`, `objects.githubusercontent.com` | HTTPS    | 443  | Application auto-update (release artifacts via electron-updater, GitHub provider). |
+
+mnemo standalone does not contact a hosted cloud API. Optional account sign-in
+(if `VITE_AUTH_URL` is set) uses that host for Better Auth.
 
 ## Required for streaming transcription
 
-OpenWhispr Cloud routes streaming sessions through one of four providers.
+Mnemo Cloud routes streaming sessions through one of four providers.
 Allowlist all four unless a specific provider is pinned in configuration.
 
 | Host                                | Protocol   | Port | Purpose                                                                                 |
@@ -48,7 +46,7 @@ Contacted only if the user connects Google Calendar in settings.
 | `accounts.google.com`   | HTTPS    | 443  | OAuth authorization.                                        |
 | `oauth2.googleapis.com` | HTTPS    | 443  | OAuth token exchange and revoke.                            |
 | `www.googleapis.com`    | HTTPS    | 443  | Calendar event and calendar list reads.                     |
-| `openwhispr.com`        | HTTPS    | 443  | OAuth desktop callback redirect (`/auth/desktop-callback`). |
+| `mnemo.com`        | HTTPS    | 443  | OAuth desktop callback redirect (`/auth/desktop-callback`). |
 
 ## Required for URL audio import (optional feature)
 
@@ -102,9 +100,6 @@ Run from a machine on the same network as the user. A successful response
 (any HTTP status, including `401`) confirms the network path works.
 
 ```sh
-# OpenWhispr Cloud reachability
-curl -v https://api.openwhispr.com/api/health
-
 # Streaming providers
 curl -v https://api.deepgram.com/v1/projects
 curl -v https://api.openai.com/v1/models

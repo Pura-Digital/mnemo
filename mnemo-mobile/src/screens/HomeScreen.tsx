@@ -59,6 +59,7 @@ import { Transcript } from '@/types';
 import { useSuperwallGate } from '@/hooks/useSuperwallGate';
 import { buildUsageGateParams, SUPERWALL_PLACEMENTS } from '@/lib/superwall';
 import { ProAccessConfirmation } from '@/components/billing/ProAccessConfirmation';
+import { isMnemoStandaloneProduct } from '@/config/mnemoProduct';
 
 function HandoffPhoneIllustration({ transcribing }: { transcribing: boolean }) {
   const pulse = useSharedValue(0);
@@ -105,6 +106,7 @@ type ModeToast = {
 };
 
 export default function HomeScreen() {
+  const standaloneProduct = isMnemoStandaloneProduct();
   useAppInit();
   const params = useLocalSearchParams<{ proCompletion?: string }>();
   const proCompletion =
@@ -345,6 +347,7 @@ export default function HomeScreen() {
   };
 
   const handleTogglePrivateMode = () => {
+    if (standaloneProduct) return;
     safeHaptics('light');
 
     if (isPrivateMode) {
@@ -522,7 +525,9 @@ export default function HomeScreen() {
     <View className="flex-1 bg-systemBackground">
       <StatusBar style="auto" animated />
 
-      <ProAccessConfirmation completion={proCompletion} onConsumed={consumeProCompletion} />
+      {!standaloneProduct ? (
+        <ProAccessConfirmation completion={proCompletion} onConsumed={consumeProCompletion} />
+      ) : null}
 
       <TranscriptModal
         transcript={selectedTranscript}
@@ -532,29 +537,37 @@ export default function HomeScreen() {
 
       <View className="px-4" style={{ paddingTop: insets.top + 8 }}>
         <View className="min-h-[44px] flex-row items-center justify-between">
-          <Pressable
-            onPress={handleTogglePrivateMode}
-            accessibilityRole="switch"
-            accessibilityState={{ checked: !isPrivateMode }}
-            accessibilityLabel="Cloud transcription"
-            className="h-9 flex-row items-center rounded-full px-1 active:opacity-80"
-            style={{
-              backgroundColor: isPrivateMode ? '#E3E0DE' : BRAND,
-              boxShadow: '0px 1px 3px rgba(0,0,0,0.18)',
-            }}
-          >
-            {!isPrivateMode && <Text className="ml-2 mr-1 text-xs font-bold text-white">On</Text>}
-            <View className="h-7 w-7 items-center justify-center rounded-full bg-white">
-              <CloudIcon size={16} color={isPrivateMode ? '#8E8E93' : BRAND} off={isPrivateMode} />
-            </View>
-            {isPrivateMode && (
-              <Text className="ml-1 mr-2 text-xs font-bold text-secondaryLabel">Off</Text>
-            )}
-          </Pressable>
+          {!standaloneProduct ? (
+            <Pressable
+              onPress={handleTogglePrivateMode}
+              accessibilityRole="switch"
+              accessibilityState={{ checked: !isPrivateMode }}
+              accessibilityLabel="Cloud transcription"
+              className="h-9 flex-row items-center rounded-full px-1 active:opacity-80"
+              style={{
+                backgroundColor: isPrivateMode ? '#E3E0DE' : BRAND,
+                boxShadow: '0px 1px 3px rgba(0,0,0,0.18)',
+              }}
+            >
+              {!isPrivateMode && <Text className="ml-2 mr-1 text-xs font-bold text-white">On</Text>}
+              <View className="h-7 w-7 items-center justify-center rounded-full bg-white">
+                <CloudIcon
+                  size={16}
+                  color={isPrivateMode ? '#8E8E93' : BRAND}
+                  off={isPrivateMode}
+                />
+              </View>
+              {isPrivateMode && (
+                <Text className="ml-1 mr-2 text-xs font-bold text-secondaryLabel">Off</Text>
+              )}
+            </Pressable>
+          ) : (
+            <View />
+          )}
           <DictationModeControl onModeChange={handleDictationModeChange} />
         </View>
         <KeyboardFullAccessBanner />
-        {!isPrivateMode ? (
+        {!standaloneProduct && !isPrivateMode ? (
           <UsageLimitBanner usage={usage} onPress={handleUsageWarningPress} />
         ) : null}
         {isPrivateMode ? (

@@ -1,3 +1,5 @@
+import { isMnemoStandaloneProduct } from "../config/mnemoProduct";
+
 export type UpsellDecision = "show" | "hide" | "unknown";
 
 export interface UpsellInput {
@@ -14,6 +16,7 @@ export function decideUpsell({
   hasPaidAccess,
   isPastDue,
 }: UpsellInput): UpsellDecision {
+  if (isMnemoStandaloneProduct()) return "hide";
   if (!authLoaded) return "unknown";
   // Signed out there is no usage response to await; the upsell is the point.
   if (!isSignedIn) return "show";

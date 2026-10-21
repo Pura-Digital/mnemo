@@ -558,7 +558,7 @@ test("BYOK session.update is byte-for-byte today's payload when no VAD/language/
     model: "gpt-4o-mini-transcribe",
     // Phase 1 will add these; today connect() must ignore them entirely.
     language: "en",
-    keyterms: ["OpenWhispr"],
+    keyterms: ["Mnemo"],
     sampleRate: 24000,
     createSocket: async () => socket,
   });

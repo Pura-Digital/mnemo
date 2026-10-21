@@ -26,7 +26,7 @@ import { KeyboardSwitchHelpSheet } from './KeyboardSwitchHelpSheet';
 // the light-mode `label` token; in dark mode the highlight still resolves to
 // brand blue + white text (the unselected row color comes from the un-animated
 // child <Text> below via Tailwind).
-const HIGHLIGHT_BG = '#007AFF';
+const HIGHLIGHT_BG = '#C81038';
 const HIGHLIGHT_TEXT = '#FFFFFF';
 const UNHIGHLIGHTED_TEXT = '#000000';
 const TRANSPARENT = 'rgba(0,0,0,0)';
@@ -68,7 +68,7 @@ export function KeyboardSwitchStep() {
       <OnboardingShell
         progress={progress}
         onHelp={openHelp}
-        title="Press and hold the globe icon in the bottom-left corner of your keyboard, then select OpenWhispr."
+        title="Press and hold the globe icon in the bottom-left corner of your keyboard, then select mnemo."
         titleNode={titleNode}
         ctaLabel={advanceError ? 'Retry' : 'I switched'}
         onCta={goNext}
@@ -101,7 +101,7 @@ export function KeyboardSwitchStep() {
         onClose={closeHelp}
         onDismissed={() => inputRef.current?.focus()}
       />
-      {detected ? <KeyboardDetectedToast message="OpenWhispr keyboard is active" /> : null}
+      {detected ? <KeyboardDetectedToast message="mnemo keyboard is active" /> : null}
     </>
   );
 }
@@ -109,9 +109,7 @@ export function KeyboardSwitchStep() {
 function KeyboardSwitchTitle() {
   return (
     <View>
-      <Text className="text-[28px] font-medium leading-[34px] text-label">
-        Switch to OpenWhispr.
-      </Text>
+      <Text className="text-[28px] font-medium leading-[34px] text-label">Switch to mnemo.</Text>
       <View className="flex-row flex-wrap items-center">
         <Text className="text-[28px] font-medium leading-[34px] text-label">
           Press and hold the{' '}
@@ -122,7 +120,7 @@ function KeyboardSwitchTitle() {
         <Text className="text-[28px] font-medium leading-[34px] text-label">
           {' '}
           icon in the bottom-left corner of your keyboard, then select{' '}
-          <Text className="text-primary">OpenWhispr</Text>
+          <Text className="text-primary">mnemo</Text>
         </Text>
       </View>
     </View>
@@ -130,8 +128,8 @@ function KeyboardSwitchTitle() {
 }
 
 function AnimatedKeyboardSwitchPreview() {
-  // 0 → hand sits on the "English (US)" row, OpenWhispr row is neutral.
-  // 1 → hand has moved down to "OpenWhispr", which becomes brand-highlighted.
+  // 0 → hand sits on the "English (US)" row, mnemo row is neutral.
+  // 1 → hand has moved down to "mnemo", which becomes brand-highlighted.
   const progress = useSharedValue(0);
 
   useEffect(() => {
@@ -155,7 +153,7 @@ function AnimatedKeyboardSwitchPreview() {
       <Divider />
       <PopoverRow label="English (US)" />
       <Divider />
-      <HighlightedRow label="OpenWhispr" progress={progress} />
+      <HighlightedRow label="mnemo" progress={progress} />
       <Hand progress={progress} />
     </View>
   );
@@ -188,8 +186,8 @@ function HighlightedRow({ label, progress }: { label: string; progress: SharedVa
 }
 
 function Hand({ progress }: { progress: SharedValue<number> }) {
-  // Float between the English row (top of the hand) and the OpenWhispr row.
-  // English row top = ROW_HEIGHT * 1 + 1 divider, OpenWhispr row top = ROW_HEIGHT * 2 + 2 dividers.
+  // Float between the English row (top of the hand) and the mnemo row.
+  // English row top = ROW_HEIGHT * 1 + 1 divider, mnemo row top = ROW_HEIGHT * 2 + 2 dividers.
   const handStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: ROW_HEIGHT * (1 + progress.value) + progress.value * 2 }],
   }));

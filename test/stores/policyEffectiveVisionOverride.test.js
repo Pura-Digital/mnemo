@@ -13,11 +13,11 @@ const managedByokPolicy = (allowedByokProviders) => ({
   policy: {
     version: 1,
     transcription: {
-      allowedModes: ["openwhispr", "providers", "local", "self-hosted"],
+      allowedModes: ["mnemo", "providers", "local", "self-hosted"],
       allowedByokProviders: ["openai"],
     },
     llm: {
-      allowedModes: ["openwhispr", "providers", "local", "self-hosted", "enterprise"],
+      allowedModes: ["mnemo", "providers", "local", "self-hosted", "enterprise"],
       allowedByokProviders,
       allowedEnterpriseProviders: [],
     },
@@ -32,13 +32,13 @@ const managedByokPolicy = (allowedByokProviders) => ({
   },
 });
 
-// Assistant on OpenWhispr Cloud, screen context on, "Separate vision model"
+// Assistant on Mnemo Cloud, screen context on, "Separate vision model"
 // switched on but never given a provider or model.
 const unconfiguredOverride = {
   _llmScopeKeysMigrated: "1",
   _dictationAgentSeeded: "1",
-  dictationAgentMode: "openwhispr",
-  dictationAgentCloudMode: "openwhispr",
+  dictationAgentMode: "mnemo",
+  dictationAgentCloudMode: "mnemo",
   voiceAgentScreenContext: "true",
   useDictationAgentVisionModel: "true",
 };
@@ -57,7 +57,7 @@ async function loadStore(t, initialStorage, cachePrefix) {
 
 test("a managed policy never invents a target for an unconfigured vision override", async (t) => {
   const { useSettingsStore, selectPolicyEffectiveSettings, resolveChatStreamingInference } =
-    await loadStore(t, unconfiguredOverride, "openwhispr-policy-vision-unconfigured-test-");
+    await loadStore(t, unconfiguredOverride, "mnemo-policy-vision-unconfigured-test-");
   const raw = useSettingsStore.getState();
   assert.equal(raw.dictationAgentVisionModel, "", "precondition: nothing chosen");
 
@@ -79,7 +79,7 @@ test("a managed policy never invents a target for an unconfigured vision overrid
     });
 
     assert.equal(config.scope, "dictationAgent");
-    assert.equal(config.mode, "openwhispr");
+    assert.equal(config.mode, "mnemo");
     assert.equal(attachScreenContext, true);
   });
 });
@@ -96,16 +96,16 @@ test("a forbidden vision mode cannot redirect a local assistant to Cloud", async
         dictationAgentVisionProvider: "gemini",
         dictationAgentVisionModel: "gemini-2.5-flash",
       },
-      "openwhispr-policy-vision-mode-test-"
+      "mnemo-policy-vision-mode-test-"
     );
   const raw = { ...useSettingsStore.getState(), isSignedIn: true };
   const policy = managedByokPolicy([]);
-  policy.policy.llm.allowedModes = ["openwhispr", "local"];
+  policy.policy.llm.allowedModes = ["mnemo", "local"];
   const effective = selectPolicyEffectiveSettings(raw, policy);
   const result = resolveChatStreamingInference(effective, {
     inferenceScope: "dictationAgent",
     hasScreenContext: true,
-    isProviderImageWired: (provider) => ["openwhispr", "gemini"].includes(provider),
+    isProviderImageWired: (provider) => ["mnemo", "gemini"].includes(provider),
   });
 
   assert.equal(result.config.scope, "dictationAgent");
@@ -139,7 +139,7 @@ test("the vision picker shows no Active model after policy clears its selection"
       dictationAgentVisionProvider: "gemini",
       dictationAgentVisionModel: "gemini-2.5-flash",
     },
-    "openwhispr-policy-vision-picker-test-"
+    "mnemo-policy-vision-picker-test-"
   );
   const { usePolicyStore } = await vite.ssrLoadModule("/stores/policyStore.ts");
   // Server rendering reads Zustand's initial snapshot rather than getState().
@@ -171,7 +171,7 @@ test("a policy that moves a configured override's provider clears its model", as
         dictationAgentVisionProvider: "gemini",
         dictationAgentVisionModel: "gemini-2.5-flash",
       },
-      "openwhispr-policy-vision-clamped-test-"
+      "mnemo-policy-vision-clamped-test-"
     );
 
   // Anthropic stays allowed, so the assistant itself is untouched; only the

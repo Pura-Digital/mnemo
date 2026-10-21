@@ -21,7 +21,7 @@ import { SystemIcon } from '@/components/ui/SystemIcon';
 import { SpaceGrotesk } from '@/lib/fonts';
 import { BRAND_GRADIENT } from '@/config/colors';
 import { LinearGradient } from 'expo-linear-gradient';
-import { OpenWhisprMark } from '@/components/ui/OpenWhisprMark';
+import { MnemoMark } from '@/components/ui/MnemoMark';
 
 type AuthMode = null | 'signin' | 'signup';
 type AuthScreenProps = {
@@ -242,8 +242,8 @@ export default function AuthScreen({
         >
           {/* Brand lockup, top-left */}
           <View style={styles.brandRow}>
-            <OpenWhisprMark size={32} color="#FFFFFF" />
-            <Text style={styles.brandWord}>OpenWhispr</Text>
+            <MnemoMark size={32} color="#FFFFFF" />
+            <Text style={styles.brandWord}>mnemo</Text>
           </View>
           {onClose ? (
             <Pressable

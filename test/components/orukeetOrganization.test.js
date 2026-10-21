@@ -16,7 +16,7 @@ async function renderer(t) {
     window: { location: { search: "" }, electronAPI: { getPlatform: () => "darwin" } },
   });
   return createRendererServer(t, {
-    cachePrefix: "openwhispr-oruk-organization-",
+    cachePrefix: "mnemo-oruk-organization-",
     resolveAlias: { "@": path.resolve(__dirname, "../../src") },
     mockModules: {
       "react-i18next": `export function useTranslation() { return {t(key) {return key;}}; }`,

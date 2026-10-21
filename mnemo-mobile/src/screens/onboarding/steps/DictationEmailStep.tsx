@@ -93,7 +93,7 @@ export function DictationEmailStep(): ReactElement {
       onSkip={busy ? undefined : goNext}
       title="Try dictating an email"
       titleAccent="email"
-      subtitle="Don't type — just talk naturally. OpenWhispr formats it for you."
+      subtitle="Don't type — just talk naturally. mnemo formats it for you."
       ctaLabel="Continue"
       ctaDisabled={busy}
       onCta={goNext}

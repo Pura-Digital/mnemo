@@ -9,22 +9,22 @@ const offersWith = async (overrides) => {
     useLocalWhisper: false,
     localTranscriptionProvider: "whisper",
     useCleanupModel: false,
-    cleanupMode: "openwhispr",
+    cleanupMode: "mnemo",
     useDictationAgent: false,
-    dictationAgentMode: "openwhispr",
+    dictationAgentMode: "mnemo",
     agentAllowedByPolicy: true,
     ...overrides,
   });
 };
 
-test("cloud cleanup (openwhispr default) is not eligible for the intelligence GPU offer", async () => {
-  const offers = await offersWith({ useCleanupModel: true, cleanupMode: "openwhispr" });
+test("cloud cleanup (mnemo default) is not eligible for the intelligence GPU offer", async () => {
+  const offers = await offersWith({ useCleanupModel: true, cleanupMode: "mnemo" });
 
   assert.equal(offers.intelligence, null);
 });
 
 test("cloud cleanup modes are never eligible even with cleanup enabled", async () => {
-  for (const cleanupMode of ["openwhispr", "providers", "self-hosted", "enterprise"]) {
+  for (const cleanupMode of ["mnemo", "providers", "self-hosted", "enterprise"]) {
     const offers = await offersWith({ useCleanupModel: true, cleanupMode });
     assert.equal(offers.intelligence, null, `cleanupMode=${cleanupMode}`);
   }
@@ -45,7 +45,7 @@ test("local cleanup with the model disabled is not eligible", async () => {
 test("a local dictation agent with cloud cleanup targets the agent tab", async () => {
   const offers = await offersWith({
     useCleanupModel: true,
-    cleanupMode: "openwhispr",
+    cleanupMode: "mnemo",
     useDictationAgent: true,
     dictationAgentMode: "local",
   });
@@ -68,7 +68,7 @@ test("a disabled or cloud-mode dictation agent is not eligible", async () => {
   const disabled = await offersWith({ useDictationAgent: false, dictationAgentMode: "local" });
   assert.equal(disabled.intelligence, null);
 
-  for (const dictationAgentMode of ["openwhispr", "providers", "self-hosted", "enterprise"]) {
+  for (const dictationAgentMode of ["mnemo", "providers", "self-hosted", "enterprise"]) {
     const cloud = await offersWith({ useDictationAgent: true, dictationAgentMode });
     assert.equal(cloud.intelligence, null, `dictationAgentMode=${dictationAgentMode}`);
   }

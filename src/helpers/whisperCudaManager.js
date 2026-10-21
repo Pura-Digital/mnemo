@@ -33,7 +33,7 @@ class WhisperCudaManager extends GpuBinaryManager {
     super({
       name: "CUDA whisper",
       dirName: BIN_SUBDIR,
-      releaseUrl: `https://api.github.com/repos/OpenWhispr/whisper.cpp/releases/tags/${WHISPER_CPP_TAG}`,
+      releaseUrl: `https://api.github.com/repos/Mnemo/whisper.cpp/releases/tags/${WHISPER_CPP_TAG}`,
       expectedDigests: EXPECTED_DIGESTS[WHISPER_CPP_TAG],
       assets: {
         "win32-x64": {

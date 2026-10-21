@@ -11,6 +11,7 @@ const { ANALYTICS_HISTORY_BACKFILL_VERSION } = require("./analytics");
 const { PARAKEET_UNSUPPORTED_OS_CODE } = require("./parakeetCapability");
 const { getModelType, isSherpaLocalProvider } = require("./parakeetModelInfo");
 const { broadcastToWindows } = require("./windowBroadcast");
+const puraOAuthManager = require("./puraOAuthManager");
 const { openExternalUrl } = require("./externalUrlOpener");
 const { resolveFailedGpuBackends } = require("./whisper");
 const { BYOK_API_KEYS } = require("../config/secretKeys");
@@ -194,7 +195,7 @@ const CLOUD_CHUNK_SEGMENT_SECONDS = 240;
 const { createAbortError } = require("./abortError");
 const { testProviderConnection } = require("./providerConnectionTest");
 const { createUploadCancelRegistry } = require("./uploadCancelRegistry");
-const { applyOpenWhisprOriginHeader } = require("./sessionHeaders");
+const { applyMnemoOriginHeader } = require("./sessionHeaders");
 const {
   CLOUD_UPLOAD_TIMEOUT_MS,
   CLOUD_CHUNK_MAX_ATTEMPTS,
@@ -227,7 +228,7 @@ const cloudUploadSessions = new Map();
 function getCloudUploadSession(partition) {
   if (!cloudUploadSessions.has(partition)) {
     const uploadSession = session.fromPartition(partition);
-    applyOpenWhisprOriginHeader(uploadSession);
+    applyMnemoOriginHeader(uploadSession);
     cloudUploadSessions.set(partition, uploadSession);
   }
   return cloudUploadSessions.get(partition);
@@ -306,7 +307,7 @@ function resolveAllowedAudioPath(filePath) {
 }
 
 function buildMultipartBody(fileBuffer, fileName, contentType, fields = {}) {
-  const boundary = `----OpenWhispr${Date.now()}`;
+  const boundary = `----Mnemo${Date.now()}`;
   const parts = [];
 
   parts.push(
@@ -609,6 +610,7 @@ class IPCHandlers {
     this.whisperCudaManager = managers.whisperCudaManager;
     this.whisperVulkanManager = managers.whisperVulkanManager;
     this.googleCalendarManager = managers.googleCalendarManager;
+    this.archiveyeManager = managers.archiveyeManager;
     this.microsoftCalendarManager = managers.microsoftCalendarManager;
     this.appleCalendarManager = managers.appleCalendarManager;
     this.meetingDetectionEngine = managers.meetingDetectionEngine;
@@ -618,7 +620,7 @@ class IPCHandlers {
     this.meetingAecManager = managers.meetingAecManager;
     this.getSemanticSearch = managers.getSemanticSearch;
     this.oauthProtocolRegistered = managers.oauthProtocolRegistered === true;
-    this.oauthProtocol = managers.oauthProtocol || "openwhispr";
+    this.oauthProtocol = managers.oauthProtocol || "mnemo";
     this.sessionId = crypto.randomUUID();
     // requestId -> AbortControllers for in-flight audio-upload work (cloud
     // upload, or local transcription + diarization sharing one id), so a
@@ -1443,6 +1445,14 @@ class IPCHandlers {
       return testProviderConnection(config);
     });
 
+    ipcMain.handle("get-native-glass-capabilities", () =>
+      this.windowManager.getNativeGlassCapabilities()
+    );
+
+    ipcMain.handle("sync-native-glass-appearance", (_event, appearance) => {
+      this.windowManager.syncNativeGlassAppearance(appearance);
+    });
+
     ipcMain.handle("window-minimize", () => {
       if (this.windowManager.controlPanelWindow) {
         this.windowManager.controlPanelWindow.minimize();
@@ -2039,6 +2049,10 @@ class IPCHandlers {
     ipcMain.handle(
       "db-semantic-search-notes",
       async (event, query, limit = 5, spaceId, folderId) => {
+        const { isSemanticSearchEnabled } = require("./mnemoProductBridge");
+        if (!isSemanticSearchEnabled()) {
+          return this.databaseManager.searchNotes(query, limit, spaceId, folderId);
+        }
         try {
           // Qdrant payload updates are best-effort. Use its space filter to
           // reduce the candidate set, then validate every scoped vector hit
@@ -2877,7 +2891,7 @@ class IPCHandlers {
         const resolved = path.resolve(filePath);
         const basename = path.basename(resolved);
         if (!basename.startsWith("ow-url-") && !basename.startsWith("ow-diarize-")) {
-          return { success: false, error: "Not an OpenWhispr temp file" };
+          return { success: false, error: "Not an Mnemo temp file" };
         }
         const real = fs.realpathSync(resolved);
         let tempDir = getSafeTempDir();
@@ -2886,7 +2900,7 @@ class IPCHandlers {
         } catch {}
         const rel = path.relative(tempDir, real);
         if (rel.startsWith("..") || path.isAbsolute(rel)) {
-          return { success: false, error: "Not an OpenWhispr temp file" };
+          return { success: false, error: "Not an Mnemo temp file" };
         }
         fs.unlinkSync(real);
         return { success: true };
@@ -3963,13 +3977,19 @@ class IPCHandlers {
 
       // These caches are not owned by one account. Remove them only through
       // the explicit device-erasure path, never during normal account deletion.
-      const homeCacheRoot = path.join(os.homedir(), ".cache", "openwhispr");
+      const { getHomeCacheDir, joinLegacyHomeCache } = require("./cachePaths");
+      const homeCacheRoot = getHomeCacheDir();
       for (const cacheName of ["embedding-models", "qdrant-data", "qdrant-data-dev", "yt-dlp"]) {
         try {
           fs.rmSync(path.join(homeCacheRoot, cacheName), { recursive: true, force: true });
         } catch (e) {
           errors.push(`${cacheName} cache: ${e.message}`);
         }
+      }
+      try {
+        fs.rmSync(joinLegacyHomeCache(os.homedir()), { recursive: true, force: true });
+      } catch (e) {
+        errors.push(`legacy cache: ${e.message}`);
       }
 
       // Delete database file + WAL/SHM
@@ -5949,16 +5969,13 @@ class IPCHandlers {
     })();
 
     const getApiUrl = () =>
-      process.env.OPENWHISPR_API_URL ||
-      process.env.VITE_OPENWHISPR_API_URL ||
-      runtimeEnv.VITE_OPENWHISPR_API_URL ||
-      "";
+      process.env.CLOUD_API_URL || runtimeEnv.VITE_CLOUD_API_URL || "";
 
     const getAuthUrl = () =>
       process.env.AUTH_URL ||
       process.env.VITE_AUTH_URL ||
       runtimeEnv.VITE_AUTH_URL ||
-      "https://auth.openwhispr.com";
+      "https://auth.mnemo.com";
 
     const getSessionCookiesFromWindow = async (win) => {
       const scopedUrls = [getAuthUrl(), getApiUrl()].filter(Boolean);
@@ -6166,7 +6183,7 @@ class IPCHandlers {
       sender.once("destroyed", cancelSenderRequests);
       try {
         const apiUrl = getApiUrl();
-        if (!apiUrl) throw new Error("OpenWhispr API URL not configured");
+        if (!apiUrl) throw new Error("Cloud API URL not configured");
 
         const authHeader = await getAuthHeader(event);
         if (!Object.keys(authHeader).length) throw new Error("Not authenticated");
@@ -6325,12 +6342,12 @@ class IPCHandlers {
           request: { effectiveLanguage: language },
         });
 
-        // An error route is fatal unless OpenWhispr cloud is selected — a
+        // An error route is fatal unless Pura LLM is selected — a
         // leftover BYOK misconfiguration must not block the cloud pipeline.
         if (
           route.transport === "error" &&
           (settings?.transcriptionMode === "self-hosted" ||
-            settings?.cloudTranscriptionMode !== "openwhispr")
+            settings?.cloudTranscriptionMode !== "mnemo")
         ) {
           const err = new Error(route.message);
           if (route.code) err.code = route.code;
@@ -6391,7 +6408,7 @@ class IPCHandlers {
               ...vadOptions,
             });
           }
-        } else if (settings?.cloudTranscriptionMode === "openwhispr") {
+        } else if (settings?.cloudTranscriptionMode === "pura") {
           const win = BrowserWindow.fromWebContents(event.sender);
           if (win) {
             const authHeader = await getAuthHeaderFromWindow(win);
@@ -6411,7 +6428,7 @@ class IPCHandlers {
                     policyHeaders: withPolicyHeaders(authHeader),
                     multipartFields,
                   });
-                  result = { text, source: "openwhispr", model: "cloud" };
+                  result = { text, source: "mnemo", model: "cloud" };
                 } else {
                   const { body, boundary } = buildMultipartBody(
                     buffer,
@@ -6433,7 +6450,7 @@ class IPCHandlers {
                   const responseData = interpretTranscribeResponse(data);
                   result = {
                     text: responseData.text,
-                    source: "openwhispr",
+                    source: "mnemo",
                     model: "cloud",
                   };
                 }
@@ -7221,7 +7238,7 @@ class IPCHandlers {
       const postServerToken = async (path, body = {}) => {
         const apiUrl = getApiUrl();
         if (!apiUrl) {
-          const err = new Error("OpenWhispr API URL not configured");
+          const err = new Error("Cloud API URL not configured");
           err.code = "NO_API";
           throw err;
         }
@@ -9361,7 +9378,7 @@ class IPCHandlers {
       sender.once("destroyed", cancelSenderRequests);
       try {
         const apiUrl = getApiUrl();
-        if (!apiUrl) throw new Error("OpenWhispr API URL not configured");
+        if (!apiUrl) throw new Error("Cloud API URL not configured");
 
         const authHeader = await getAuthHeader(event);
         if (!Object.keys(authHeader).length) throw new Error("Not authenticated");
@@ -9480,7 +9497,7 @@ class IPCHandlers {
 
       try {
         const apiUrl = getApiUrl();
-        if (!apiUrl) throw new Error("OpenWhispr API URL not configured");
+        if (!apiUrl) throw new Error("Cloud API URL not configured");
 
         const authHeader = await getAuthHeader(event);
         if (!Object.keys(authHeader).length) throw new Error("Not authenticated");
@@ -9592,7 +9609,7 @@ class IPCHandlers {
     ipcMain.handle("agent-web-search", async (event, query, numResults = 5) => {
       try {
         const apiUrl = getApiUrl();
-        if (!apiUrl) throw new Error("OpenWhispr API URL not configured");
+        if (!apiUrl) throw new Error("Cloud API URL not configured");
 
         const authHeader = await getAuthHeader(event);
         if (!Object.keys(authHeader).length) throw new Error("Not authenticated");
@@ -9632,7 +9649,7 @@ class IPCHandlers {
       async (event, text, audioDurationSeconds, opts = {}) => {
         try {
           const apiUrl = getApiUrl();
-          if (!apiUrl) throw new Error("OpenWhispr API URL not configured");
+          if (!apiUrl) throw new Error("Cloud API URL not configured");
 
           const authHeader = await getAuthHeader(event);
           if (!Object.keys(authHeader).length) throw new Error("Not authenticated");
@@ -9692,7 +9709,7 @@ class IPCHandlers {
     ipcMain.handle("cloud-usage", async (event) => {
       try {
         const apiUrl = getApiUrl();
-        if (!apiUrl) throw new Error("OpenWhispr API URL not configured");
+        if (!apiUrl) throw new Error("Cloud API URL not configured");
 
         const authHeader = await getAuthHeader(event);
         if (!Object.keys(authHeader).length) throw new Error("Not authenticated");
@@ -9728,7 +9745,7 @@ class IPCHandlers {
     const fetchStripeUrl = async (event, endpoint, errorPrefix, body) => {
       try {
         const apiUrl = getApiUrl();
-        if (!apiUrl) throw new Error("OpenWhispr API URL not configured");
+        if (!apiUrl) throw new Error("Cloud API URL not configured");
 
         const authHeader = await getAuthHeader(event);
         if (!Object.keys(authHeader).length) throw new Error("Not authenticated");
@@ -9774,7 +9791,7 @@ class IPCHandlers {
     ipcMain.handle("cloud-switch-plan", async (event, opts) => {
       try {
         const apiUrl = getApiUrl();
-        if (!apiUrl) throw new Error("OpenWhispr API URL not configured");
+        if (!apiUrl) throw new Error("Cloud API URL not configured");
 
         const authHeader = await getAuthHeader(event);
         if (!Object.keys(authHeader).length) throw new Error("Not authenticated");
@@ -9806,7 +9823,7 @@ class IPCHandlers {
     ipcMain.handle("cloud-preview-switch", async (event, opts) => {
       try {
         const apiUrl = getApiUrl();
-        if (!apiUrl) throw new Error("OpenWhispr API URL not configured");
+        if (!apiUrl) throw new Error("Cloud API URL not configured");
 
         const authHeader = await getAuthHeader(event);
         if (!Object.keys(authHeader).length) throw new Error("Not authenticated");
@@ -9875,7 +9892,7 @@ class IPCHandlers {
         if (!realCloud) return { success: false, error: "File path not allowed" };
 
         const apiUrl = getApiUrl();
-        if (!apiUrl) throw new Error("OpenWhispr API URL not configured");
+        if (!apiUrl) throw new Error("Cloud API URL not configured");
 
         const authHeader = await getAuthHeader(event);
         if (!Object.keys(authHeader).length) throw new Error("Not authenticated");
@@ -10226,7 +10243,7 @@ class IPCHandlers {
       try {
         const apiUrl = getApiUrl();
         if (!apiUrl) {
-          throw new Error("OpenWhispr API URL not configured");
+          throw new Error("Cloud API URL not configured");
         }
 
         const authHeader = await getAuthHeader(event);
@@ -10262,7 +10279,7 @@ class IPCHandlers {
       try {
         const apiUrl = getApiUrl();
         if (!apiUrl) {
-          throw new Error("OpenWhispr API URL not configured");
+          throw new Error("Cloud API URL not configured");
         }
 
         const authHeader = await getAuthHeader(event);
@@ -10300,7 +10317,7 @@ class IPCHandlers {
       try {
         const apiUrl = getApiUrl();
         if (!apiUrl) {
-          throw new Error("OpenWhispr API URL not configured");
+          throw new Error("Cloud API URL not configured");
         }
 
         const authHeader = await getAuthHeader(event);
@@ -10400,25 +10417,25 @@ class IPCHandlers {
         // Parse lines
         const lines = envContent.split("\n");
         const logLevelIndex = lines.findIndex((line) =>
-          line.trim().startsWith("OPENWHISPR_LOG_LEVEL=")
+          line.trim().startsWith("MNEMO_LOG_LEVEL=")
         );
 
         if (enabled) {
           // Set to debug
           if (logLevelIndex !== -1) {
-            lines[logLevelIndex] = "OPENWHISPR_LOG_LEVEL=debug";
+            lines[logLevelIndex] = "MNEMO_LOG_LEVEL=debug";
           } else {
             // Add new line
             if (lines.length > 0 && lines[lines.length - 1] !== "") {
               lines.push("");
             }
             lines.push("# Debug logging setting");
-            lines.push("OPENWHISPR_LOG_LEVEL=debug");
+            lines.push("MNEMO_LOG_LEVEL=debug");
           }
         } else {
           // Remove or set to info
           if (logLevelIndex !== -1) {
-            lines[logLevelIndex] = "OPENWHISPR_LOG_LEVEL=info";
+            lines[logLevelIndex] = "MNEMO_LOG_LEVEL=info";
           }
         }
 
@@ -10426,7 +10443,7 @@ class IPCHandlers {
         fs.writeFileSync(envPath, lines.join("\n"), "utf8");
 
         // Update environment variable
-        process.env.OPENWHISPR_LOG_LEVEL = enabled ? "debug" : "info";
+        process.env.MNEMO_LOG_LEVEL = enabled ? "debug" : "info";
 
         // Refresh logger state
         debugLogger.refreshLogLevel();
@@ -10477,6 +10494,26 @@ class IPCHandlers {
 
     ipcMain.handle("get-oauth-protocol", () => this.oauthProtocol);
 
+    ipcMain.handle("pura-get-connection-state", () => puraOAuthManager.getConnectionState());
+
+    ipcMain.handle("pura-start-connection", async (_event, locale) =>
+      puraOAuthManager.startConnection(locale === "en" ? "en" : "it")
+    );
+
+    ipcMain.handle("pura-get-tokens", () => puraOAuthManager.getTokensForRenderer());
+
+    ipcMain.handle("pura-set-tokens", (_event, tokens) => {
+      const result = puraOAuthManager.setTokensFromRenderer(tokens);
+      broadcastToWindows("pura-connection-changed");
+      return result;
+    });
+
+    ipcMain.handle("pura-disconnect", () => {
+      const result = puraOAuthManager.disconnect();
+      broadcastToWindows("pura-connection-changed");
+      return result;
+    });
+
     ipcMain.handle("mark-bundle-migrated", () => {
       postMigrationDetector.markBundleMigrated();
     });
@@ -10501,7 +10538,7 @@ class IPCHandlers {
     const fetchStreamingToken = async (event) => {
       const apiUrl = getApiUrl();
       if (!apiUrl) {
-        throw new Error("OpenWhispr API URL not configured");
+        throw new Error("Cloud API URL not configured");
       }
 
       const authHeader = await getAuthHeader(event);
@@ -10711,7 +10748,7 @@ class IPCHandlers {
 
     const fetchDeepgramStreamingTokenFromWindow = async (windowId) => {
       const apiUrl = getApiUrl();
-      if (!apiUrl) throw new Error("OpenWhispr API URL not configured");
+      if (!apiUrl) throw new Error("Cloud API URL not configured");
 
       const win = BrowserWindow.fromId(windowId);
       if (!win || win.isDestroyed()) throw new Error("Window not available for token refresh");
@@ -10744,7 +10781,7 @@ class IPCHandlers {
     const fetchDeepgramStreamingToken = async (event) => {
       const apiUrl = getApiUrl();
       if (!apiUrl) {
-        throw new Error("OpenWhispr API URL not configured");
+        throw new Error("Cloud API URL not configured");
       }
 
       const authHeader = await getAuthHeader(event);
@@ -11359,6 +11396,51 @@ class IPCHandlers {
       }
     });
 
+    // ArchivEye
+    ipcMain.handle("archiveye-start-oauth", async () => {
+      try {
+        if (!this.archiveyeManager) {
+          return { success: false, error: "ArchivEye integration unavailable" };
+        }
+        return await this.archiveyeManager.startOAuth();
+      } catch (error) {
+        debugLogger.error("ArchivEye OAuth failed", { error: error.message }, "archiveye");
+        return { success: false, error: error.message };
+      }
+    });
+
+    ipcMain.handle("archiveye-disconnect", async () => {
+      try {
+        if (!this.archiveyeManager) return { success: false };
+        return this.archiveyeManager.disconnect();
+      } catch (error) {
+        return { success: false, error: error.message };
+      }
+    });
+
+    ipcMain.handle("archiveye-get-status", async () => {
+      try {
+        if (!this.archiveyeManager) {
+          return { connected: false, email: null, name: null, webUrl: "https://www.archiveye.ai" };
+        }
+        return this.archiveyeManager.getConnectionStatus();
+      } catch {
+        return { connected: false, email: null, name: null, webUrl: "https://www.archiveye.ai" };
+      }
+    });
+
+    ipcMain.handle("archiveye-upload-note", async (_event, noteId, options) => {
+      try {
+        if (!this.archiveyeManager) {
+          return { success: false, error: "ArchivEye integration unavailable" };
+        }
+        return await this.archiveyeManager.uploadNote(noteId, options ?? {});
+      } catch (error) {
+        debugLogger.error("ArchivEye upload failed", { error: error.message }, "archiveye");
+        return { success: false, error: error.message };
+      }
+    });
+
     // Google Calendar
     ipcMain.handle("gcal-start-oauth", async () => {
       try {
@@ -11635,6 +11717,16 @@ class IPCHandlers {
 
     ipcMain.handle("meeting-notification-respond", async (_event, detectionId, action) => {
       try {
+        // The pill owns its countdown (it pauses on hover), so its expiry
+        // arrives here and settles like the overlay's timer: no dismissal cooldown.
+        if (action === "expire") {
+          if (this.windowManager?._pendingNotificationData?.detectionId !== detectionId) {
+            return { success: true };
+          }
+          this.windowManager.dismissMeetingNotification({ notifyEngine: false });
+          this.meetingDetectionEngine.handleNotificationTimeout();
+          return { success: true };
+        }
         await this.meetingDetectionEngine.handleNotificationResponse(detectionId, action);
         return { success: true };
       } catch (error) {

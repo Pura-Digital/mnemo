@@ -5,7 +5,8 @@ import { cn } from "../lib/utils";
 import { SendIcon } from "../ui/SendIcon";
 import { LiveWaveform } from "../ui/LiveWaveform";
 import { GRADIENT_CIRCLE } from "../ui/gradientCircle";
-import { GLASS_SURFACE } from "../ui/glass";
+import { resolveGlassSurface } from "../ui/glass";
+import { useNativeGlass } from "../../hooks/useNativeGlass";
 import { useToast } from "../ui/useToast";
 import { formatMmSs } from "../../utils/formatDuration";
 import { useVoiceDraft } from "./useVoiceDraft";
@@ -62,6 +63,7 @@ export function ChatInput({
   className,
   voiceDraft = false,
 }: ChatInputProps) {
+  const nativeGlass = useNativeGlass();
   const { t } = useTranslation();
   const { toast } = useToast();
   const [inputText, setInputText] = useState("");
@@ -118,7 +120,7 @@ export function ChatInput({
       <div
         className={cn(
           "flex items-center gap-2 min-h-11 ps-4 pe-1.5 rounded-full",
-          GLASS_SURFACE,
+          resolveGlassSurface(nativeGlass),
           "border border-black/10 dark:border-white/14",
           "transition-all duration-200",
           isIdle &&

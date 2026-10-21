@@ -12,7 +12,7 @@ test("invalid completed cleanup keeps raw text across dictation routes", async (
   Object.defineProperty(navigator, "onLine", { configurable: true, value: true });
   t.after(() => delete navigator.onLine);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-audio-cleanup-output-",
+    cachePrefix: "mnemo-audio-cleanup-output-",
     mockModules: {
       "/utils/logger":
         "export default { debug() {}, info() {}, warn() {}, error() {}, logReasoning() {} };",
@@ -27,8 +27,8 @@ test("invalid completed cleanup keeps raw text across dictation routes", async (
   useSettingsStore.setState({
     isSignedIn: true,
     useCleanupModel: true,
-    cleanupMode: "openwhispr",
-    cleanupCloudMode: "openwhispr",
+    cleanupMode: "mnemo",
+    cleanupCloudMode: "mnemo",
     useDictationAgent: false,
     customPrompts: { cleanup: "" },
     preferredLanguage: "en",
@@ -66,7 +66,7 @@ test("invalid completed cleanup keeps raw text across dictation routes", async (
           const manager = createManager();
           let result;
           if (route === "batch") {
-            result = await manager.processWithOpenWhisprCloud(new Blob(["synthetic audio"]));
+            result = await manager.processWithMnemoCloud(new Blob(["synthetic audio"]));
             result = { ...result, ...manager._takePendingResultExtras() };
             assert.equal(result.rawText, RAW);
           } else if (route === "streaming") {
@@ -81,7 +81,7 @@ test("invalid completed cleanup keeps raw text across dictation routes", async (
                 awaitsFinalTranscript: true,
                 stop: async () => ({ success: true }),
               }),
-              getStreamingProviderName: () => "openwhispr",
+              getStreamingProviderName: () => "mnemo",
               shouldUseStreaming: () => false,
               onTranscriptionComplete: (value) => {
                 result = value;

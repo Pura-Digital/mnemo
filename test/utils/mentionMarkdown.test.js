@@ -4,7 +4,7 @@ const assert = require("node:assert/strict");
 const load = () => import("../../src/utils/mentionMarkdown.ts");
 
 const PEOPLE = [
-  { name: "Gabriel Stein", email: "gabe@openwhispr.com" },
+  { name: "Gabriel Stein", email: "gabe@mnemo.com" },
   { name: "Michael Chen", email: "michael@acme.com" },
   { name: "Sean", email: null },
 ];

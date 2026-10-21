@@ -16,7 +16,7 @@ import type {
   OnboardingDemoKind,
   OnboardingDemoStatus,
 } from "../../types/electron";
-import founderAvatar from "../../assets/onboarding-founder.webp";
+import founderAvatar from "../../assets/logo.svg";
 import gmailMark from "../../assets/icons/gmail.svg";
 
 /**
@@ -117,7 +117,7 @@ function ConfettiLayer() {
 }
 
 // Figma "Frame 26": 40px round avatar, bottom-aligned with the bubble beside it.
-function FounderAvatar() {
+function BrandAvatar() {
   return (
     <img
       src={founderAvatar}
@@ -129,14 +129,14 @@ function FounderAvatar() {
       height={40}
       decoding="async"
       draggable={false}
-      className="size-9 shrink-0 rounded-full object-cover"
+      className="size-9 shrink-0 rounded-full object-contain"
     />
   );
 }
 
 // Figma "Frame 25"/"Frame 27": pill on surface/brand, radius 38, 10/20 padding,
 // Inter Medium 14/140% in light/surface-primary.
-function FounderBubble({ children }: { children: ReactNode }) {
+function BrandBubble({ children }: { children: ReactNode }) {
   return (
     <p
       className="w-fit rounded-[38px] bg-[var(--onboarding-accent)] px-4 py-2 text-sm font-medium leading-[1.4] text-[var(--onboarding-accent-foreground)]"
@@ -357,7 +357,7 @@ export default function DemoStep({
           <div className="flex flex-col gap-3">
             {messageCount === 0 ? (
               <div className="flex items-end gap-2.5">
-                <FounderAvatar />
+                <BrandAvatar />
                 <TypingBubble />
               </div>
             ) : (
@@ -366,15 +366,15 @@ export default function DemoStep({
                     (40 avatar + 10 gap) so both messages share one left edge and
                     the avatar rides the newest row. */}
                 <div className="flex items-end gap-2.5 ps-11">
-                  <FounderBubble>{firstMessage}</FounderBubble>
+                  <BrandBubble>{firstMessage}</BrandBubble>
                 </div>
                 {/* Frame 33 */}
                 <div className="flex items-end gap-2.5">
-                  <FounderAvatar />
+                  <BrandAvatar />
                   {messageCount === 1 ? (
                     <TypingBubble />
                   ) : (
-                    <FounderBubble>{secondMessage}</FounderBubble>
+                    <BrandBubble>{secondMessage}</BrandBubble>
                   )}
                 </div>
               </>

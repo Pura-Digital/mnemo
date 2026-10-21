@@ -4,12 +4,12 @@ const assert = require("node:assert/strict");
 const loadPolicy = () => import("../../src/helpers/sttConfigPolicy.js");
 
 describe("needsSttConfigBeforeStart", () => {
-  test("signed-in OpenWhispr cloud mode blocks the start on the config", async () => {
+  test("signed-in Mnemo cloud mode blocks the start on the config", async () => {
     const { needsSttConfigBeforeStart } = await loadPolicy();
     assert.equal(
       needsSttConfigBeforeStart({
         useLocalWhisper: false,
-        cloudTranscriptionMode: "openwhispr",
+        cloudTranscriptionMode: "mnemo",
         isSignedIn: true,
       }),
       true
@@ -21,7 +21,7 @@ describe("needsSttConfigBeforeStart", () => {
     assert.equal(
       needsSttConfigBeforeStart({
         useLocalWhisper: true,
-        cloudTranscriptionMode: "openwhispr",
+        cloudTranscriptionMode: "mnemo",
         isSignedIn: true,
       }),
       false
@@ -33,7 +33,7 @@ describe("needsSttConfigBeforeStart", () => {
     assert.equal(
       needsSttConfigBeforeStart({
         useLocalWhisper: false,
-        cloudTranscriptionMode: "openwhispr",
+        cloudTranscriptionMode: "mnemo",
         isSignedIn: false,
       }),
       false
@@ -41,7 +41,7 @@ describe("needsSttConfigBeforeStart", () => {
     assert.equal(
       needsSttConfigBeforeStart({
         useLocalWhisper: false,
-        cloudTranscriptionMode: "openwhispr",
+        cloudTranscriptionMode: "mnemo",
       }),
       false
     );

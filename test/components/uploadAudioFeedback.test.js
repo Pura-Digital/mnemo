@@ -7,7 +7,7 @@ const { createRendererServer, installBrowserGlobals } = require("../lib/renderer
 async function loadFeedback(t) {
   installBrowserGlobals(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-upload-audio-feedback-test-",
+    cachePrefix: "mnemo-upload-audio-feedback-test-",
   });
   return vite.ssrLoadModule("/components/notes/UploadAudioFeedback.tsx");
 }
@@ -15,7 +15,7 @@ async function loadFeedback(t) {
 async function loadBatchQueueView(t) {
   installBrowserGlobals(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-batch-warning-indicator-test-",
+    cachePrefix: "mnemo-batch-warning-indicator-test-",
   });
   return vite.ssrLoadModule("/components/notes/BatchQueueView.tsx");
 }

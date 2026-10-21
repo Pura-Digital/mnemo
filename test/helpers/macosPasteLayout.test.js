@@ -19,7 +19,7 @@ test(
     const start = source.indexOf("let commandModifierState");
     const end = source.indexOf("// Do not post", start);
     assert.ok(start >= 0 && end > start);
-    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "openwhispr-paste-layout-"));
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "mnemo-paste-layout-"));
     t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
     const harness = path.join(directory, "main.swift");
     const binary = path.join(directory, "layout-test");

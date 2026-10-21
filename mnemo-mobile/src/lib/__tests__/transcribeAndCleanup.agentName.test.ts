@@ -86,10 +86,10 @@ describe('transcribeAndCleanup defensive agent path (fused cleanupApplied: true)
       defaultMode: 'cloud',
       cleanupEnabled: true,
       dictationAgentEnabled: true,
-      dictationAgentName: 'OpenWhispr',
+      dictationAgentName: 'mnemo',
     };
 
-    const rawText = 'hey OpenWhispr write a summary of this meeting';
+    const rawText = 'hey mnemo write a summary of this meeting';
     mockFused.mockResolvedValue({
       text: 'fused cleaned text',
       originalText: rawText,
@@ -107,7 +107,7 @@ describe('transcribeAndCleanup defensive agent path (fused cleanupApplied: true)
 
     expect(mockReason).toHaveBeenCalledTimes(1);
     const req = mockReason.mock.calls[0][0] as Record<string, unknown>;
-    expect(req.agentName).toBe('OpenWhispr');
+    expect(req.agentName).toBe('mnemo');
     expect(req.text).toBe(rawText);
     expect(result.text).toBe(`agent-action:${rawText}`);
   });
@@ -117,7 +117,7 @@ describe('transcribeAndCleanup defensive agent path (fused cleanupApplied: true)
       defaultMode: 'cloud',
       cleanupEnabled: true,
       dictationAgentEnabled: true,
-      dictationAgentName: 'OpenWhispr',
+      dictationAgentName: 'mnemo',
     };
 
     const rawText = 'just a regular dictation without the wake word';
@@ -147,7 +147,7 @@ describe('transcribeAndCleanup defensive agent path (fused cleanupApplied: true)
       dictationAgentEnabled: false,
     };
 
-    const rawText = 'hey OpenWhispr write a summary';
+    const rawText = 'hey mnemo write a summary';
     mockFused.mockResolvedValue({
       text: 'fused cleaned text',
       originalText: rawText,
@@ -174,7 +174,7 @@ describe('transcribeAndCleanup defensive agent path (fused cleanupApplied: true)
       dictationAgentEnabled: true,
     };
 
-    const rawText = 'hey OpenWhispr write a summary';
+    const rawText = 'hey mnemo write a summary';
     mockFused.mockResolvedValue({
       text: rawText,
       originalText: rawText,
@@ -202,7 +202,7 @@ describe('transcribeAndCleanup defensive agent path (fused cleanupApplied: true)
     };
 
     mockTranscribe.mockResolvedValue({
-      text: 'hey OpenWhispr write a summary',
+      text: 'hey mnemo write a summary',
       provider: 'cloud',
       duration: 1,
     });

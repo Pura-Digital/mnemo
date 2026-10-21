@@ -160,7 +160,7 @@ class TrayManager {
         this.tray.setIgnoreDoubleClickEvents(true);
       } else if (
         process.platform === "win32" &&
-        process.env.OPENWHISPR_CHANNEL === "production" &&
+        process.env.MNEMO_CHANNEL === "production" &&
         windowsTrayIdentity === true
       ) {
         // Other channels have their own profile and single-instance lock, so they can
@@ -280,8 +280,9 @@ class TrayManager {
   buildContextMenuTemplate() {
     const dictationVisible = this.windowManager?.isDictationPanelVisible?.() ?? false;
     const dictating = this.windowManager?.isDictating?.() ?? false;
+    const { isConversationalAgentEnabled } = require("./mnemoProductBridge");
 
-    return [
+    const items = [
       {
         label: dictating
           ? i18nMain.t("app.commandMenu.stopListening")
@@ -291,10 +292,17 @@ class TrayManager {
             ? this.windowManager?.sendStopDictation()
             : this.windowManager?.sendStartDictation(),
       },
-      {
+    ];
+
+    if (isConversationalAgentEnabled()) {
+      items.push({
         label: i18nMain.t("app.commandMenu.askAssistant"),
         click: () => this.windowManager?.sendOpenAssistantPanel(),
-      },
+      });
+    }
+
+    return [
+      ...items,
       {
         // Starts in the main process, like the meeting hotkey: the recording it
         // opens is policy-gated where it actually begins, in the control panel.

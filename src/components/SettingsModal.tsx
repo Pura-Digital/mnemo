@@ -5,6 +5,7 @@ import {
   Sliders,
   Mic,
   Brain,
+  Sparkles,
   UserCircle,
   Wrench,
   Keyboard,
@@ -15,24 +16,29 @@ import {
 } from "./icons";
 import SidebarModal, { type SidebarItem } from "./ui/SidebarModal";
 import SettingsPage, { AccountAvatar, SettingsSectionType } from "./SettingsPage";
+import {
+  isMnemoStandaloneProduct,
+  MNEMO_HIDDEN_SETTINGS_SECTIONS,
+} from "../config/mnemoProduct";
 import { useAuth } from "../hooks/useAuth";
 
 export type { SettingsSectionType };
 
-// The old AI Models sidebar had four items (transcription, meetings,
-// intelligence, agentMode) — they now collapse into two: speechToText + llms.
-// Legacy deep-links land on the matching sub-tab via LEGACY_SUB_TAB.
-// "dictationAgent" is a live deep-link (the Home GPU banner), not a legacy alias.
+// Legacy AI settings deep-links collapse into the unified AI page on mnemo.
+// Mnemo still maps to speechToText + llms when not standalone.
 const SECTION_ALIASES: Record<string, SettingsSectionType> = {
-  aiModels: "llms",
-  agentConfig: "llms",
-  agentMode: "llms",
-  dictationAgent: "llms",
-  intelligence: "llms",
-  meetings: "llms",
-  prompts: "llms",
-  transcription: "speechToText",
-  uploadTranscription: "speechToText",
+  aiModels: isMnemoStandaloneProduct() ? "ai" : "llms",
+  agentConfig: isMnemoStandaloneProduct() ? "ai" : "llms",
+  agentMode: isMnemoStandaloneProduct() ? "ai" : "llms",
+  dictationAgent: isMnemoStandaloneProduct() ? "ai" : "llms",
+  intelligence: isMnemoStandaloneProduct() ? "ai" : "llms",
+  meetings: isMnemoStandaloneProduct() ? "ai" : "llms",
+  prompts: isMnemoStandaloneProduct() ? "ai" : "llms",
+  transcription: isMnemoStandaloneProduct() ? "ai" : "speechToText",
+  uploadTranscription: isMnemoStandaloneProduct() ? "ai" : "speechToText",
+  speechToText: isMnemoStandaloneProduct() ? "ai" : "speechToText",
+  llms: isMnemoStandaloneProduct() ? "ai" : "llms",
+  puraLlm: isMnemoStandaloneProduct() ? "ai" : "puraLlm",
   softwareUpdates: "system",
   privacy: "privacyData",
   permissions: "privacyData",
@@ -91,6 +97,25 @@ export default function SettingsModal({ open, onOpenChange, initialSection }: Se
         description: t("settingsModal.sections.general.description"),
         group: t("settingsModal.groups.app"),
       },
+      ...(isMnemoStandaloneProduct()
+        ? [
+            {
+              id: "ai" as const,
+              label: t("settingsModal.sections.ai.label"),
+              icon: Brain,
+              description: t("settingsModal.sections.ai.description"),
+              group: t("settingsModal.groups.aiModels"),
+            },
+          ]
+        : [
+            {
+              id: "puraLlm" as const,
+              label: t("settingsModal.sections.puraLlm.label"),
+              icon: Sparkles,
+              description: t("settingsModal.sections.puraLlm.description"),
+              group: t("settingsModal.groups.account"),
+            },
+          ]),
       {
         id: "hotkeys",
         label: t("settingsModal.sections.hotkeys.label"),
@@ -98,20 +123,24 @@ export default function SettingsModal({ open, onOpenChange, initialSection }: Se
         description: t("settingsModal.sections.hotkeys.description"),
         group: t("settingsModal.groups.app"),
       },
-      {
-        id: "speechToText",
-        label: t("settingsModal.sections.speechToText.label"),
-        icon: Mic,
-        description: t("settingsModal.sections.speechToText.description"),
-        group: t("settingsModal.groups.aiModels"),
-      },
-      {
-        id: "llms",
-        label: t("settingsModal.sections.llms.label"),
-        icon: Brain,
-        description: t("settingsModal.sections.llms.description"),
-        group: t("settingsModal.groups.aiModels"),
-      },
+      ...(isMnemoStandaloneProduct()
+        ? []
+        : [
+            {
+              id: "speechToText" as const,
+              label: t("settingsModal.sections.speechToText.label"),
+              icon: Mic,
+              description: t("settingsModal.sections.speechToText.description"),
+              group: t("settingsModal.groups.aiModels"),
+            },
+            {
+              id: "llms" as const,
+              label: t("settingsModal.sections.llms.label"),
+              icon: Brain,
+              description: t("settingsModal.sections.llms.description"),
+              group: t("settingsModal.groups.aiModels"),
+            },
+          ]),
       {
         id: "privacyData",
         label: t("settingsModal.sections.privacyData.label"),
@@ -127,12 +156,34 @@ export default function SettingsModal({ open, onOpenChange, initialSection }: Se
         group: t("settingsModal.groups.system"),
       },
     ];
-    return isSignedIn ? items : items.filter((item) => item.id !== "workspace");
+    const visible = isMnemoStandaloneProduct()
+      ? items.filter((item) => !MNEMO_HIDDEN_SETTINGS_SECTIONS.has(item.id))
+      : items;
+    let result = isSignedIn ? visible : visible.filter((item) => item.id !== "workspace");
+    if (isMnemoStandaloneProduct()) {
+      const unifiedGroup = t("settingsModal.groups.all");
+      const mnemoOrder: SettingsSectionType[] = [
+        "general",
+        "ai",
+        "hotkeys",
+        "privacyData",
+        "system",
+      ];
+      result = mnemoOrder
+        .map((id) => result.find((item) => item.id === id))
+        .filter((item): item is SidebarItem<SettingsSectionType> => item != null)
+        .map((item) => ({ ...item, group: unifiedGroup }));
+    }
+    return result;
   }, [t, isSignedIn]);
 
   const resolveSection = (section: string | undefined): SettingsSectionType => {
-    if (!section) return "account";
-    return (SECTION_ALIASES[section] ?? section) as SettingsSectionType;
+    if (!section) return isMnemoStandaloneProduct() ? "ai" : "account";
+    const resolved = (SECTION_ALIASES[section] ?? section) as SettingsSectionType;
+    if (isMnemoStandaloneProduct() && MNEMO_HIDDEN_SETTINGS_SECTIONS.has(resolved)) {
+      return "general";
+    }
+    return resolved;
   };
 
   const [activeSection, setActiveSection] = React.useState<SettingsSectionType>(() =>
@@ -166,7 +217,7 @@ export default function SettingsModal({ open, onOpenChange, initialSection }: Se
       activeSection={activeSection}
       onSectionChange={handleSectionChange}
       header={
-        isSignedIn && user ? (
+        !isMnemoStandaloneProduct() && isSignedIn && user ? (
           <div className="flex flex-col items-center gap-2 pb-2 text-center">
             <AccountAvatar image={user.image} name={user.name || t("settingsPage.account.user")} />
             <div className="min-w-0 w-full">

@@ -32,7 +32,7 @@ test("a signed-in user on their own dictation setup is nudged towards Cloud", as
 });
 
 test("dictation already on Cloud needs no nudge", async () => {
-  assert.equal(await decide({ transcriptionMode: "openwhispr" }), "skip");
+  assert.equal(await decide({ transcriptionMode: "mnemo" }), "skip");
 });
 
 test("it waits for the sign-in and for the account's policy to settle", async () => {
@@ -46,7 +46,7 @@ test("it waits for the sign-in and for the account's policy to settle", async ()
 
 test("a policy that forbids Cloud gets no nudge", async () => {
   assert.equal(await decide({ policy: managedSnapshot(["local", "providers"]) }), "skip");
-  assert.equal(await decide({ policy: managedSnapshot(["openwhispr", "providers"]) }), "nudge");
+  assert.equal(await decide({ policy: managedSnapshot(["mnemo", "providers"]) }), "nudge");
 });
 
 test("a prompt that is too old or unreadable is dropped", async () => {

@@ -24,9 +24,13 @@ import {
 import type { OnboardingSetupMode } from "./flow";
 import { getOnboardingSetupAvailability, hasAvailableOnboardingSetup } from "./setupEligibility";
 import { BrandMark } from "./OnboardingShell";
+import puraLogo from "../../assets/pura_logo.svg";
+import { isMnemoStandaloneProduct } from "../../config/mnemoProduct";
+import { isPuraClientConfigured } from "../../config/pura";
 import { LOCAL_ASR_ORGANIZATIONS } from "../../helpers/localASROrganization";
 import { getProviderIcon, isMonochromeProvider } from "@/utils/providerIcons";
 import { cn } from "../lib/utils";
+import { useNativeGlass } from "../../hooks/useNativeGlass";
 // Only the Local card opens the warning dialog now — BYOK goes
 // straight through from the "Choose your API setup" modal.
 import warningBackdrop from "../../assets/onboarding-setup-warning-hero.webp";
@@ -123,7 +127,11 @@ export default function SetupChoiceStep({
   onSelect,
   onRequestAuthentication,
 }: SetupChoiceStepProps) {
-  const { t } = useTranslation();
+  const nativeGlass = useNativeGlass();
+  const onboardingDialogOverlay = nativeGlass
+    ? "bg-[var(--onboarding-scrim)]!"
+    : "bg-[var(--onboarding-scrim)]! backdrop-blur-[11px]";
+  const { t, i18n } = useTranslation();
   const policy = usePolicySnapshot();
   const [pending, setPending] = useState<WarningSetupMode | null>(null);
   const confirmRef = useRef<HTMLButtonElement>(null);
@@ -156,6 +164,18 @@ export default function SetupChoiceStep({
   const moreOptionsAllowed = byokAllowed || selfHostedAllowed;
 
   const chooseCloud = () => {
+    if (isMnemoStandaloneProduct() && isPuraClientConfigured()) {
+      void (async () => {
+        const state = await window.electronAPI?.puraGetConnectionState?.();
+        if (state?.connected) {
+          onSelect("cloud");
+          return;
+        }
+        const locale = i18n.language?.startsWith("en") ? "en" : "it";
+        await window.electronAPI?.puraStartConnection?.(locale);
+      })();
+      return;
+    }
     if (isSignedIn) onSelect("cloud");
     else onRequestAuthentication();
   };
@@ -222,7 +242,27 @@ export default function SetupChoiceStep({
     // Show More Options pill.
     <div className="mx-auto mt-5 flex w-full flex-col items-center gap-4">
       {/* Frame 60: row, gap 16. */}
-      <div className="onboarding-stagger flex items-start justify-center gap-3">
+      <div className="onboarding-stagger flex flex-wrap items-start justify-center gap-3">
+        {byokAllowed && (
+          <SetupCard>
+            <div className="flex flex-col gap-4">
+              <span className="inline-flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <KeyRound className="size-6" />
+              </span>
+              <div className="flex flex-col gap-1.5">
+                <h2 className="onboarding-card-title text-[var(--onboarding-text-primary)]">
+                  {t("onboarding.rehaul.setupChoice.byok.title")}
+                </h2>
+                <p className="text-sm leading-[1.4] text-[var(--onboarding-text-secondary)]">
+                  {t("onboarding.rehaul.setupChoice.byok.description")}
+                </p>
+              </div>
+            </div>
+            <CardAction brand onClick={() => onSelect("byok")}>
+              {t("onboarding.rehaul.provider.proceed")}
+            </CardAction>
+          </SetupCard>
+        )}
         {localAllowed && (
           <SetupCard>
             <div className="flex flex-col gap-4">
@@ -304,8 +344,17 @@ export default function SetupChoiceStep({
             <div className="relative z-10 flex flex-col gap-4">
               <div className="flex items-center justify-between">
                 {/* Frame 48: 40px mark on the brand gradient. */}
-                <span className="flex size-9 items-center justify-center rounded-full bg-gradient-to-b from-[#4079ed] to-[#244587] text-white">
-                  <BrandMark className="size-6" />
+                <span className="flex size-9 items-center justify-center rounded-full bg-white ring-1 ring-border">
+                  <img
+                    src={puraLogo}
+                    alt=""
+                    aria-hidden="true"
+                    width={28}
+                    height={28}
+                    decoding="async"
+                    draggable={false}
+                    className="size-7"
+                  />
                 </span>
                 {/* Frame 49: the "Recommended" chip. Figma has white text on a
                     glass fill over the card's background artwork ("Vector 1",
@@ -325,20 +374,6 @@ export default function SetupChoiceStep({
                     {t("onboarding.rehaul.setupChoice.cloud.description")}
                   </p>
                 </div>
-                <ul className="flex flex-col gap-2">
-                  <Feature icon={Zap} accent>
-                    {t("onboarding.rehaul.setupChoice.cloud.features.fast")}
-                  </Feature>
-                  <Feature icon={ShieldCheck} accent>
-                    {t("onboarding.rehaul.setupChoice.cloud.features.privacy")}
-                  </Feature>
-                  <Feature icon={MonitorSmartphone} accent>
-                    {t("onboarding.rehaul.setupChoice.cloud.features.sync")}
-                  </Feature>
-                  <Feature icon={WandSparkles} accent>
-                    {t("onboarding.rehaul.setupChoice.cloud.features.features")}
-                  </Feature>
-                </ul>
               </div>
             </div>
             <CardAction brand onClick={chooseCloud}>
@@ -369,7 +404,7 @@ export default function SetupChoiceStep({
           the cards use, since the user has already made an explicit choice here. */}
       <Dialog open={showMore} onOpenChange={(open) => !open && setShowMore(false)}>
         <DialogContent
-          overlayClassName="bg-[var(--onboarding-scrim)]! backdrop-blur-[11px]"
+          overlayClassName={onboardingDialogOverlay}
           className="w-full max-w-sm gap-6 rounded-3xl border-0 bg-[var(--onboarding-surface)] px-4 pb-6 pt-5 text-start [&>button]:hidden"
         >
           {/* Frame 2147258979: 238 tall, radius 20, image fill. Source is 840x477,
@@ -444,7 +479,7 @@ export default function SetupChoiceStep({
 
       <Dialog open={pending !== null} onOpenChange={(open) => !open && setPending(null)}>
         <DialogContent
-          overlayClassName="bg-[var(--onboarding-scrim)]! backdrop-blur-[11px]"
+          overlayClassName={onboardingDialogOverlay}
           className="w-full max-w-sm gap-6 rounded-3xl border-0 bg-[var(--onboarding-surface)] px-4 pb-6 pt-5 text-start text-[var(--onboarding-text-primary)] [&>button]:hidden"
           onOpenAutoFocus={handleWarningAutoFocus}
         >

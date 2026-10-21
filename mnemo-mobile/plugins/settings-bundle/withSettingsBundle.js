@@ -9,7 +9,7 @@
  * settings page, which makes the deep-link reliable.
  *
  * The bundle is intentionally empty (no preferences) — we only need its
- * existence. iOS still shows the OpenWhispr keyboard/permission rows in the
+ * existence. iOS still shows the mnemo keyboard/permission rows in the
  * per-app page automatically.
  */
 
@@ -144,14 +144,14 @@ module.exports = function withSettingsBundle(config) {
   config = withDangerousMod(config, [
     'ios',
     async (cfg) => {
-      const projectName = cfg.modRequest.projectName ?? 'OpenWhispr';
+      const projectName = cfg.modRequest.projectName ?? 'Mnemo';
       writeSettingsBundleFiles(cfg.modRequest.projectRoot, projectName);
       return cfg;
     },
   ]);
 
   config = withXcodeProject(config, (cfg) => {
-    const projectName = cfg.modRequest.projectName ?? 'OpenWhispr';
+    const projectName = cfg.modRequest.projectName ?? 'Mnemo';
     addBundleToXcodeProject(cfg.modResults, projectName);
     return cfg;
   });

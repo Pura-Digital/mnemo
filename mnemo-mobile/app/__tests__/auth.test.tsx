@@ -33,16 +33,12 @@ beforeEach(() => {
 });
 
 describe('/auth route', () => {
-  // The only way an anonymous session gets a real account is through this
-  // modal, so it must not bounce them to Home the way a signed-in user is.
-  it('stays open for an anonymous session', () => {
+  it('redirects to Home in mnemo standalone builds', () => {
     mockAuthState = { user: { id: 'anon-user', isAnonymous: true }, isGuest: false };
 
     render(<AuthRoute />);
 
-    expect(mockReplace).not.toHaveBeenCalled();
-    // Guest continue would clear the session they are here to upgrade.
-    expect(mockAuthScreenProps.hideGuestContinue).toBe(true);
+    expect(mockReplace).toHaveBeenCalledWith('/(tabs)/(record)');
   });
 
   it('redirects a signed-in user to Home', () => {

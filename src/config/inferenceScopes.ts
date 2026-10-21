@@ -15,7 +15,7 @@ export interface InferenceScopeStoreKeys {
 export interface InferenceScopeDefinition {
   storeKeys: InferenceScopeStoreKeys;
   fallbackScope?: string;
-  /** Server-side fallback chain OpenWhispr Cloud answers this scope on. */
+  /** Server-side fallback chain Pura LLM answers this scope on. */
   cloudPurpose: CloudReasonPurpose;
   /**
    * Inert until the user picks its own model, inheriting the fallback scope

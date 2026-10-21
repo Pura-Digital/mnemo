@@ -92,7 +92,7 @@ function resolveLlmDispatchMode(
   config: Pick<ReasoningConfig, "lanUrl">
 ): InferenceMode {
   if (config.lanUrl || provider === "lan") return "self-hosted";
-  if (provider === "openwhispr") return "openwhispr";
+  if (provider === "mnemo") return "pura";
   if (provider === "local") return "local";
   if (isEnterpriseProvider(provider)) return "enterprise";
   return "providers";
@@ -470,8 +470,8 @@ class ReasoningService extends BaseReasoningService {
     const isImplicitCleanup =
       config.provider === undefined && config.baseUrl === undefined && config.lanUrl === undefined;
     const implicitProvider =
-      settings.cleanupMode === "openwhispr"
-        ? "openwhispr"
+      settings.cleanupMode === "mnemo"
+        ? "mnemo"
         : settings.cleanupMode === "self-hosted"
           ? "lan"
           : settings.cleanupProvider || undefined;
@@ -497,7 +497,7 @@ class ReasoningService extends BaseReasoningService {
     if (dispatchConfig.requiresAgent) assertAgentAllowedByPolicy();
     assertReasoningAllowedByPolicy(providerId, resolveLlmDispatchMode(providerId, dispatchConfig));
 
-    if (!trimmedModel && providerId !== "openwhispr" && providerId !== "lan") {
+    if (!trimmedModel && providerId !== "mnemo" && providerId !== "lan") {
       throw new Error("No reasoning model selected");
     }
 
@@ -1123,7 +1123,7 @@ class ReasoningService extends BaseReasoningService {
     },
     operationGeneration: number
   ): AsyncGenerator<AgentStreamChunk, void, unknown> {
-    assertAgentSessionAllowedByPolicy("openwhispr", "openwhispr");
+    assertAgentSessionAllowedByPolicy("mnemo", "mnemo");
     const operationWasCancelled = (): boolean =>
       operationGeneration !== this.cloudOperationGeneration;
     const maxSteps = config.tools?.length ? ReasoningService.MAX_TOOL_STEPS : 1;

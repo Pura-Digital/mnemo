@@ -148,7 +148,7 @@ function extractThirdPartyRows(adocText) {
 async function fetchJson(url) {
   const response = await fetch(url, {
     headers: {
-      'User-Agent': 'openwhispr-ios-return-map-builder',
+      'User-Agent': 'mnemo-ios-return-map-builder',
       Accept: 'application/json',
     },
   });
@@ -161,7 +161,7 @@ async function fetchJson(url) {
 async function fetchText(url) {
   const response = await fetch(url, {
     headers: {
-      'User-Agent': 'openwhispr-ios-return-map-builder',
+      'User-Agent': 'mnemo-ios-return-map-builder',
       Accept: 'text/plain',
     },
   });

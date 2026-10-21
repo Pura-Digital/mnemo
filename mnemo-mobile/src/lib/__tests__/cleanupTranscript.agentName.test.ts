@@ -79,10 +79,10 @@ describe('cleanupTranscript agentName — dictation/keyboard context (applicable
       dictationAgentEnabled: true,
     };
 
-    await cleanupTranscript('hey OpenWhispr draft a reply', { context: 'recording' });
+    await cleanupTranscript('hey mnemo draft a reply', { context: 'recording' });
 
     const req = mockProcessText.mock.calls[0][0] as Record<string, unknown>;
-    expect(req.agentName).toBe('OpenWhispr');
+    expect(req.agentName).toBe('mnemo');
   });
 
   it('passes agentName for a recording context when agent is enabled (cloud)', async () => {
@@ -92,10 +92,10 @@ describe('cleanupTranscript agentName — dictation/keyboard context (applicable
       dictationAgentEnabled: true,
     };
 
-    await cleanupTranscript('hey OpenWhispr draft a reply', { context: 'recording' });
+    await cleanupTranscript('hey mnemo draft a reply', { context: 'recording' });
 
     const req = mockProcessText.mock.calls[0][0] as Record<string, unknown>;
-    expect(req.agentName).toBe('OpenWhispr');
+    expect(req.agentName).toBe('mnemo');
   });
 });
 
@@ -138,7 +138,7 @@ describe('cleanupTranscript agentName — feature disabled (regression guard)', 
       dictationAgentEnabled: false,
     };
 
-    await cleanupTranscript('hey OpenWhispr do something', { context: 'keyboard' });
+    await cleanupTranscript('hey mnemo do something', { context: 'keyboard' });
 
     const req = mockProcessText.mock.calls[0][0] as Record<string, unknown>;
     expect(req.agentName).toBeUndefined();
@@ -152,7 +152,7 @@ describe('cleanupTranscript agentName — feature disabled (regression guard)', 
       dictationAgentEnabled: true,
     };
 
-    await cleanupTranscript('hey OpenWhispr do something', { context: 'keyboard' });
+    await cleanupTranscript('hey mnemo do something', { context: 'keyboard' });
 
     const req = mockProcessText.mock.calls[0][0] as Record<string, unknown>;
     expect(req.agentName).toBeUndefined();
@@ -171,7 +171,7 @@ describe('cleanupTranscript timeout bump', () => {
       dictationAgentEnabled: true,
     };
 
-    await cleanupTranscript('hey OpenWhispr write a summary', { context: 'keyboard' });
+    await cleanupTranscript('hey mnemo write a summary', { context: 'keyboard' });
 
     const req = mockProcessText.mock.calls[0][0] as Record<string, unknown>;
     expect(req.timeoutMs).toBe(AGENT_TIMEOUT_MS);
@@ -197,7 +197,7 @@ describe('cleanupTranscript timeout bump', () => {
       dictationAgentEnabled: false,
     };
 
-    await cleanupTranscript('hey OpenWhispr write a summary', { context: 'keyboard' });
+    await cleanupTranscript('hey mnemo write a summary', { context: 'keyboard' });
 
     const req = mockProcessText.mock.calls[0][0] as Record<string, unknown>;
     expect(req.timeoutMs).toBe(CLEANUP_TIMEOUT_MS);

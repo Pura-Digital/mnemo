@@ -19,7 +19,7 @@ function classifyPaths(paths) {
       mobile = true;
       build = true;
     } else if (
-      path.startsWith("openwhispr-mobile/") ||
+      path.startsWith("mnemo-mobile/") ||
       path === ".github/workflows/mobile-ci.yml"
     ) {
       mobile = true;

@@ -1,5 +1,5 @@
-const PRODUCTION_BUNDLE_ID = 'com.gizmolabs.openwhispr';
-const DEVELOPMENT_BUNDLE_ID = 'com.gizmolabs.openwhispr.dev';
+const PRODUCTION_BUNDLE_ID = 'com.pura.mnemo';
+const DEVELOPMENT_BUNDLE_ID = 'com.pura.mnemo.dev';
 
 function firstNonEmpty(...values) {
   return values.find((value) => typeof value === 'string' && value.trim().length > 0)?.trim();
@@ -18,10 +18,10 @@ function deriveAppGroupId(bundleIdentifier) {
   return `group.${bundleIdentifier}`;
 }
 
-function resolveOpenWhisprEnvironment() {
+function resolveMnemoEnvironment() {
   const appEnvironment = normalizeEnvironment(
     firstNonEmpty(
-      process.env.OPENWHISPR_APP_ENV,
+      process.env.MNEMO_APP_ENV,
       process.env.APP_ENV,
       process.env.EAS_BUILD_PROFILE,
     ),
@@ -29,33 +29,33 @@ function resolveOpenWhisprEnvironment() {
   const isDevelopment = appEnvironment === 'development';
   const defaultBundleId = isDevelopment ? DEVELOPMENT_BUNDLE_ID : PRODUCTION_BUNDLE_ID;
   const bundleIdentifier = firstNonEmpty(
-    process.env.OPENWHISPR_IOS_BUNDLE_IDENTIFIER,
-    process.env.OPENWHISPR_BUNDLE_IDENTIFIER,
+    process.env.MNEMO_IOS_BUNDLE_IDENTIFIER,
+    process.env.MNEMO_BUNDLE_IDENTIFIER,
     defaultBundleId,
   );
   const androidPackage = firstNonEmpty(
-    process.env.OPENWHISPR_ANDROID_PACKAGE,
-    process.env.OPENWHISPR_PACKAGE,
+    process.env.MNEMO_ANDROID_PACKAGE,
+    process.env.MNEMO_PACKAGE,
     bundleIdentifier,
   );
   const scheme = firstNonEmpty(
-    process.env.OPENWHISPR_SCHEME,
-    isDevelopment ? 'openwhispr-dev' : 'openwhispr',
+    process.env.MNEMO_SCHEME,
+    isDevelopment ? 'mnemo-dev' : 'mnemo',
   );
   const displayName = firstNonEmpty(
-    process.env.OPENWHISPR_DISPLAY_NAME,
-    isDevelopment ? 'OpenWhispr Dev' : 'OpenWhispr',
+    process.env.MNEMO_DISPLAY_NAME,
+    isDevelopment ? 'mnemo Dev' : 'mnemo',
   );
   const keyboardDisplayName = firstNonEmpty(
-    process.env.OPENWHISPR_KEYBOARD_DISPLAY_NAME,
+    process.env.MNEMO_KEYBOARD_DISPLAY_NAME,
     displayName,
   );
   const appGroupId = firstNonEmpty(
-    process.env.OPENWHISPR_APP_GROUP_ID,
+    process.env.MNEMO_APP_GROUP_ID,
     deriveAppGroupId(bundleIdentifier),
   );
   const keyboardBundleIdentifier = firstNonEmpty(
-    process.env.OPENWHISPR_KEYBOARD_BUNDLE_IDENTIFIER,
+    process.env.MNEMO_KEYBOARD_BUNDLE_IDENTIFIER,
     `${bundleIdentifier}.keyboard`,
   );
 
@@ -76,5 +76,5 @@ function resolveOpenWhisprEnvironment() {
 module.exports = {
   deriveAppGroupId,
   normalizeEnvironment,
-  resolveOpenWhisprEnvironment,
+  resolveMnemoEnvironment,
 };

@@ -18,7 +18,7 @@ test("suspendPolicy fails closed while account reconciliation runs", async (t) =
   });
 
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-policy-suspend-test-",
+    cachePrefix: "mnemo-policy-suspend-test-",
     mockModules: { "/utils/logger": "export default { error() {} };" },
   });
 

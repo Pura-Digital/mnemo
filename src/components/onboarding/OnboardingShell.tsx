@@ -1,8 +1,8 @@
+import mnemoLogo from "../../assets/logo.svg";
 import type { CSSProperties, ReactNode } from "react";
 import type { OnboardingProgressState } from "./flow";
 import { Copy, Minus, Square, Undo2, X } from "../icons";
 import { Button } from "../ui/button";
-import { BRAND_GLASS_SURFACE } from "../ui/gradientCircle";
 import { cn } from "../lib/utils";
 import { useTranslation } from "react-i18next";
 import { getPlatform } from "../../utils/platform";
@@ -359,11 +359,11 @@ export function CompactOnboardingFrame({
         <div
           className={cn(
             "pointer-events-none absolute left-1/2 top-23 z-10 flex size-19 -translate-x-1/2 items-center justify-center rounded-[20px]",
-            BRAND_GLASS_SURFACE,
+            "bg-white",
             "shadow-(--shadow-brand-tile)"
           )}
         >
-          <BrandMark className="size-13" />
+          <BrandMark className="size-17" />
         </div>
       )}
 
@@ -379,7 +379,7 @@ export function CompactOnboardingFrame({
         <p className="relative z-10 mx-auto mt-auto w-full max-w-sm shrink-0 px-2 pb-4 pt-5 text-center text-xs leading-[18px] text-[var(--onboarding-text-secondary)]">
           {t("auth.legal.prefix")}{" "}
           <a
-            href="https://openwhispr.com/terms"
+            href="https://mnemo.com/terms"
             target="_blank"
             rel="noopener noreferrer"
             className="text-[var(--onboarding-link)] transition-colors hover:opacity-80"
@@ -388,7 +388,7 @@ export function CompactOnboardingFrame({
           </a>{" "}
           {t("auth.legal.and")}{" "}
           <a
-            href="https://openwhispr.com/privacy"
+            href="https://mnemo.com/privacy"
             target="_blank"
             rel="noopener noreferrer"
             className="text-[var(--onboarding-link)] transition-colors hover:opacity-80"
@@ -403,18 +403,5 @@ export function CompactOnboardingFrame({
 }
 
 export function BrandMark({ className = "" }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 1024 1024"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-hidden="true"
-    >
-      <circle cx="512" cy="512" r="314" stroke="currentColor" strokeWidth="74" />
-      <path d="M512 383V641" stroke="currentColor" strokeWidth="74" strokeLinecap="round" />
-      <path d="M627 457V568" stroke="currentColor" strokeWidth="74" strokeLinecap="round" />
-      <path d="M397 457V568" stroke="currentColor" strokeWidth="74" strokeLinecap="round" />
-    </svg>
-  );
+  return <img src={mnemoLogo} className={className} alt="" aria-hidden="true" />;
 }

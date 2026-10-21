@@ -12,11 +12,11 @@ const COPY: Record<
   { readonly title: string; readonly message: string }
 > = {
   purchased: {
-    title: 'Welcome to OpenWhispr Pro',
+    title: 'Welcome to mnemo Pro',
     message: 'Your purchase was successful. Pro features are ready to use.',
   },
   restored: {
-    title: 'OpenWhispr Pro Restored',
+    title: 'mnemo Pro Restored',
     message: 'Your subscription was restored. Pro features are ready to use.',
   },
 };

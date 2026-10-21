@@ -1,5 +1,7 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
+import { cn } from "../lib/utils";
+import { useNativeGlass } from "../../hooks/useNativeGlass";
 import { useSettingsLayout } from "./useSettingsLayout";
 import type { InferenceMode } from "../../types/electron";
 
@@ -95,9 +97,17 @@ export function SettingsPanel({
   children: React.ReactNode;
   className?: string;
 }) {
+  const nativeGlass = useNativeGlass();
+
   return (
     <div
-      className={`rounded-lg border border-border/70 dark:border-border-subtle/70 bg-card/50 dark:bg-surface-2/50 backdrop-blur-sm divide-y divide-border/60 dark:divide-border-subtle/50 ${className}`}
+      className={cn(
+        "rounded-lg border border-border/70 dark:border-border-subtle/70 divide-y divide-border/60 dark:divide-border-subtle/50",
+        nativeGlass
+          ? "glass-panel-surface"
+          : "bg-card/50 dark:bg-surface-2/50 backdrop-blur-sm",
+        className
+      )}
     >
       {children}
     </div>

@@ -169,7 +169,7 @@ import AccountScreen from '../AccountScreen';
 const anonymousUser = {
   ...mockUser,
   id: 'anon-user',
-  email: 'temp-1@anon.openwhispr.invalid',
+  email: 'temp-1@anon.mnemo.invalid',
   name: undefined,
   isAnonymous: true,
 };

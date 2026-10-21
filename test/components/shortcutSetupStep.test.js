@@ -35,7 +35,7 @@ async function createShortcutHarness(t, overrides = {}) {
   });
 
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-shortcut-setup-step-",
+    cachePrefix: "mnemo-shortcut-setup-step-",
     noExternal: ["react", "react-i18next"],
     mockModules: {
       react: `

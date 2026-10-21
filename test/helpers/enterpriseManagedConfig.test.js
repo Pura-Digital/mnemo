@@ -21,7 +21,7 @@ function provider(overrides = {}) {
     mode: "managed_default",
     allowManualSetup: true,
     config: {
-      roleArn: "arn:aws:iam::123456789012:role/OpenWhispr",
+      roleArn: "arn:aws:iam::123456789012:role/Mnemo",
       region: "us-east-1",
       allowedModels: ["model-a"],
       scopeDefaults: scopes,

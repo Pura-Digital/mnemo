@@ -31,7 +31,7 @@ async function connectManagedOrukeet({
   withPolicyHeaders,
 }) {
   const apiUrl = getApiUrl();
-  if (!apiUrl) throw new Error("OpenWhispr API URL not configured");
+  if (!apiUrl) throw new Error("Cloud API URL not configured");
   const fence = captureAuthFence(tokenStore, tokenStore.getState().generation);
   const controller = new AbortController();
   const unsubscribe = tokenStore.subscribe(() => {

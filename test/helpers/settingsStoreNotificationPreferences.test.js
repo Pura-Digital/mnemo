@@ -10,7 +10,7 @@ test("startup syncs the full saved notification snapshot once", async (t) => {
       notifyMeetingDetection: "true",
       notifyCalendarReminders: "false",
       meetingProcessDetection: "false",
-      customDictionary: '["OpenWhispr"]',
+      customDictionary: '["Mnemo"]',
     },
     window: {
       electronAPI: {
@@ -23,7 +23,7 @@ test("startup syncs the full saved notification snapshot once", async (t) => {
     },
   });
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-notification-preferences-test-",
+    cachePrefix: "mnemo-notification-preferences-test-",
   });
   const { initializeSettings } = await vite.ssrLoadModule("/stores/settingsStore.ts");
   try {

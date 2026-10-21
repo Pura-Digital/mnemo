@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { isMnemoStandaloneProduct } from "../config/mnemoProduct";
 import { useTranslation } from "react-i18next";
 import { ToastActionButton } from "../components/ui/Toast";
 import { useToast } from "../components/ui/useToast";
@@ -8,7 +9,7 @@ import { decideSignInCloudNudge } from "../utils/signInCloudNudge";
 import { usePolicySnapshot } from "./usePolicy";
 
 /**
- * Tells a user who just signed in that OpenWhispr Cloud is available, once, without
+ * Tells a user who just signed in that Pura LLM is available, once, without
  * switching anything: a post-sign-in cloud switch is what overrode Local for #2086.
  * The marker requestSignIn left behind survives the reload that sign-in goes through.
  */
@@ -26,6 +27,7 @@ export function useSignInCloudNudge(
   );
 
   useEffect(() => {
+    if (isMnemoStandaloneProduct()) return;
     const promptedAt = localStorage.getItem(SIGN_IN_PROMPTED_AT_KEY);
     if (promptedAt === null) return;
     const decision = decideSignInCloudNudge({

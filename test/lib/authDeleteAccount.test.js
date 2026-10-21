@@ -6,8 +6,8 @@ function installWindow(state) {
   const values = new Map();
   global.window = {
     location: {
-      origin: "https://desktop.openwhispr.test",
-      href: "https://desktop.openwhispr.test",
+      origin: "https://desktop.mnemo.test",
+      href: "https://desktop.mnemo.test",
     },
     localStorage: {
       getItem: (key) => values.get(key) ?? null,
@@ -44,7 +44,7 @@ test("account deletion uses the validated bearer-generation cloud boundary", asy
     data: { user: { id: "user-a" } },
     response: new Response("{}", { status: 200 }),
     request: {
-      url: "https://auth.openwhispr.test/api/auth/get-session",
+      url: "https://auth.mnemo.test/api/auth/get-session",
       headers: new Headers({ Authorization: "Bearer token-a" }),
       openWhisprAuthGeneration: 7,
     },

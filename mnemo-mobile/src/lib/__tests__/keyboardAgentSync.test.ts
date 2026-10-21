@@ -132,7 +132,7 @@ describe('startKeyboardAgentSync mirror keys', () => {
     useProcessingModeStore.setState({ activeMode: 'cloud' });
 
     const stop = startKeyboardAgentSync();
-    expect(store.keyboard_agent_name).toBe('OpenWhispr');
+    expect(store.keyboard_agent_name).toBe('mnemo');
     stop();
   });
 

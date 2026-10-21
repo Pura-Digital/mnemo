@@ -9,16 +9,16 @@ const xcode = require('xcode');
 const plist = require('@expo/plist').default;
 const {
   deriveAppGroupId,
-  resolveOpenWhisprEnvironment,
-} = require('../../config/openwhispr-environments');
+  resolveMnemoEnvironment,
+} = require('../../config/mnemo-environments');
 
-const EXTENSION_NAME = 'OpenWhisprActivity';
+const EXTENSION_NAME = 'MnemoActivity';
 const EXTENSION_BUNDLE_ID_SUFFIX = 'activity';
 const DEPLOYMENT_TARGET = '16.2';
 // Swift sources compiled into the widget target. RecordingActivityAttributes.swift
 // is copied from the live-activity module so there is a single source of truth.
 const TARGET_SOURCES = [
-  'OpenWhisprActivity.swift',
+  'MnemoActivity.swift',
   'RecordingActivityAttributes.swift',
   'ToggleDictationModeIntent.swift',
 ];
@@ -42,9 +42,9 @@ const INTENT_SOURCE = path.join(
 );
 
 function resolveActivityEnvironment(cfg) {
-  const configured = cfg.extra?.openWhispr ?? resolveOpenWhisprEnvironment();
+  const configured = cfg.extra?.mnemo ?? resolveMnemoEnvironment();
   const bundleIdentifier =
-    configured.iosBundleIdentifier || cfg.ios?.bundleIdentifier || 'com.gizmolabs.openwhispr';
+    configured.iosBundleIdentifier || cfg.ios?.bundleIdentifier || 'com.pura.mnemo';
   return {
     ...configured,
     iosBundleIdentifier: bundleIdentifier,
@@ -75,8 +75,8 @@ function writeExtensionSupportFiles(platformProjectRoot, environment) {
   }
 
   fs.copyFileSync(
-    path.join(pluginSourceDir, 'OpenWhisprActivity.swift'),
-    path.join(extensionDir, 'OpenWhisprActivity.swift'),
+    path.join(pluginSourceDir, 'MnemoActivity.swift'),
+    path.join(extensionDir, 'MnemoActivity.swift'),
   );
   // Single source of truth: copy the attributes file from the module.
   fs.copyFileSync(ATTRIBUTES_SOURCE, path.join(extensionDir, 'RecordingActivityAttributes.swift'));
@@ -265,7 +265,7 @@ function ensureSourceMembershipForTarget(xcodeProject, targetUuid, sourceBuildFi
   // Remove this build file from every OTHER Sources phase so the source is only
   // compiled into the intended extension target. Defends against the xcode
   // addSourceFile quirk of registering the file into the first/main target's
-  // phase — critical here because OpenWhisprActivity.swift carries @main and
+  // phase — critical here because MnemoActivity.swift carries @main and
   // RecordingActivityAttributes.swift is already compiled into the app via the
   // LiveActivity pod (leaking either into the app target = duplicate @main /
   // duplicate-symbol build failures).

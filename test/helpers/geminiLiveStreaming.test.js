@@ -48,7 +48,7 @@ test("url: the two Live methods are auth-disjoint and pinned per mode", () => {
     "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=AI-KEY"
   );
   assert.equal(
-    buildGeminiLiveUrl({ mode: "openwhispr", token: "auth_tokens/abc" }),
+    buildGeminiLiveUrl({ mode: "mnemo", token: "auth_tokens/abc" }),
     "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContentConstrained?access_token=auth_tokens/abc"
   );
 });
@@ -56,11 +56,11 @@ test("url: the two Live methods are auth-disjoint and pinned per mode", () => {
 test("setup: the custom dictionary always ships; a language only when chosen", () => {
   const streaming = new GeminiLiveStreaming();
 
-  assert.deepEqual(streaming.buildSetupMessage({ keyterms: ["OpenWhispr", " ", ""] }), {
+  assert.deepEqual(streaming.buildSetupMessage({ keyterms: ["Mnemo", " ", ""] }), {
     setup: {
       model: "models/gemini-3.5-transcribe-live",
       generationConfig: { responseModalities: ["TEXT"] },
-      inputAudioTranscription: { customVocabulary: ["OpenWhispr"] },
+      inputAudioTranscription: { customVocabulary: ["Mnemo"] },
     },
   });
 
@@ -88,7 +88,7 @@ test("connect resolves on setupComplete, not on socket open", async () => {
       // Frames from the token-fetch / handshake window are buffered, not sent.
       assert.equal(streaming.sendAudio(FRAME), false);
 
-      const connected = streaming.connect({ token: "t", mode: "byok", keyterms: ["OpenWhispr"] });
+      const connected = streaming.connect({ token: "t", mode: "byok", keyterms: ["Mnemo"] });
       await new Promise((resolve) => setTimeout(resolve, 30));
       assert.equal(streaming.isConnected, false, "open alone must not mark the session ready");
       assert.equal(streaming.sendAudio(FRAME), false);
@@ -96,7 +96,7 @@ test("connect resolves on setupComplete, not on socket open", async () => {
       await connected;
       assert.equal(streaming.isConnected, true);
       assert.deepEqual(received[0].setup.inputAudioTranscription, {
-        customVocabulary: ["OpenWhispr"],
+        customVocabulary: ["Mnemo"],
       });
     },
     (socket, message) => {
@@ -219,11 +219,11 @@ test("transcripts: partials replace, finals accumulate", async () => {
       assert.deepEqual(partials, ["The quick brown", "the quick brown fox"]);
       assert.deepEqual(finals, [
         "The quick brown fox.",
-        "The quick brown fox. OpenWhispr transcription test.",
+        "The quick brown fox. Mnemo transcription test.",
       ]);
       assert.equal(
         streaming.getFullTranscript(),
-        "The quick brown fox. OpenWhispr transcription test."
+        "The quick brown fox. Mnemo transcription test."
       );
     },
     (socket, message) => {
@@ -240,7 +240,7 @@ test("transcripts: partials replace, finals accumulate", async () => {
       );
       socket.send(
         JSON.stringify({
-          serverContent: { inputTranscription: { text: "OpenWhispr transcription test." } },
+          serverContent: { inputTranscription: { text: "Mnemo transcription test." } },
         })
       );
     }
@@ -465,7 +465,7 @@ test("errors: a spent managed token is re-minted once and the session survives",
     async ({ streaming, urls }) => {
       await streaming.connect({
         token: "auth_tokens/spent",
-        mode: "openwhispr",
+        mode: "mnemo",
         refreshToken: async () => "auth_tokens/fresh",
       });
       assert.equal(streaming.isConnected, true);

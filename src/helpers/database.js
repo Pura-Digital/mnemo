@@ -23,7 +23,7 @@ const {
 } = require("./analytics");
 const { app } = require("electron");
 
-// Server-enforced trigger cap (openwhispr-api); enforced here so one oversized
+// Server-enforced trigger cap (mnemo-api); enforced here so one oversized
 // trigger can't 400 the whole sync batch.
 const MAX_SNIPPET_TRIGGER_LENGTH = 100;
 
@@ -571,6 +571,27 @@ class DatabaseManager {
           updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
       `);
+
+      this.db.exec(`
+        CREATE TABLE IF NOT EXISTS archiveye_tokens (
+          id INTEGER PRIMARY KEY CHECK (id = 1),
+          account_email TEXT NOT NULL,
+          account_name TEXT,
+          subject TEXT NOT NULL,
+          access_token TEXT NOT NULL,
+          refresh_token TEXT NOT NULL DEFAULT '',
+          expires_at INTEGER NOT NULL,
+          scope TEXT NOT NULL,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+
+      try {
+        this.db.exec("ALTER TABLE notes ADD COLUMN archiveye_document_id TEXT");
+      } catch (err) {
+        if (!err.message.includes("duplicate column")) throw err;
+      }
 
       // Migration: add UNIQUE constraint to google_email if table already existed without it
       try {
@@ -4351,6 +4372,79 @@ class DatabaseManager {
       return { success: true };
     } catch (error) {
       debugLogger.error("Error saving Google tokens", { error: error.message }, "gcal");
+      throw error;
+    }
+  }
+
+  saveArchivEyeTokens(tokens) {
+    try {
+      if (!this.db) throw new Error("Database not initialized");
+      this.db
+        .prepare(
+          `INSERT INTO archiveye_tokens (id, account_email, account_name, subject, access_token, refresh_token, expires_at, scope)
+           VALUES (1, ?, ?, ?, ?, ?, ?, ?)
+           ON CONFLICT(id) DO UPDATE SET
+             account_email = excluded.account_email,
+             account_name = excluded.account_name,
+             subject = excluded.subject,
+             access_token = excluded.access_token,
+             refresh_token = excluded.refresh_token,
+             expires_at = excluded.expires_at,
+             scope = excluded.scope,
+             updated_at = CURRENT_TIMESTAMP`
+        )
+        .run(
+          tokens.account_email,
+          tokens.account_name ?? null,
+          tokens.subject,
+          tokens.access_token,
+          tokens.refresh_token ?? "",
+          tokens.expires_at,
+          tokens.scope
+        );
+      return { success: true };
+    } catch (error) {
+      debugLogger.error("Error saving ArchivEye tokens", { error: error.message }, "archiveye");
+      throw error;
+    }
+  }
+
+  getArchivEyeTokens() {
+    try {
+      if (!this.db) throw new Error("Database not initialized");
+      return this.db.prepare("SELECT * FROM archiveye_tokens WHERE id = 1").get() || null;
+    } catch (error) {
+      debugLogger.error("Error getting ArchivEye tokens", { error: error.message }, "archiveye");
+      throw error;
+    }
+  }
+
+  deleteArchivEyeTokens() {
+    try {
+      if (!this.db) throw new Error("Database not initialized");
+      this.db.prepare("DELETE FROM archiveye_tokens").run();
+      return { success: true };
+    } catch (error) {
+      debugLogger.error("Error deleting ArchivEye tokens", { error: error.message }, "archiveye");
+      throw error;
+    }
+  }
+
+  updateNoteArchivEyeDocumentId(noteId, documentId) {
+    try {
+      if (!this.db) throw new Error("Database not initialized");
+      const result = this.db
+        .prepare(
+          "UPDATE notes SET archiveye_document_id = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?"
+        )
+        .run(documentId, noteId);
+      return { success: result.changes > 0 };
+    } catch (error) {
+      debugLogger.error(
+        "Error updating ArchivEye document id",
+        { error: error.message },
+        "archiveye"
+      );
       throw error;
     }
   }

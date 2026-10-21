@@ -12,7 +12,7 @@ async function createOnboardingRenderer(t, platform = "linux") {
     window: { electronAPI: { getPlatform: () => platform } },
   });
   return createRendererServer(t, {
-    cachePrefix: "openwhispr-onboarding-compatibility-",
+    cachePrefix: "mnemo-onboarding-compatibility-",
     noExternal: ["react-i18next"],
     mockModules: {
       "react-i18next": `

@@ -18,7 +18,7 @@ async function renderRecordControl(t, { elapsedMs, isRecording = true }) {
     delete globalThis.__recordingElapsedMs;
   });
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-note-record-control-timer-test-",
+    cachePrefix: "mnemo-note-record-control-timer-test-",
     mockModules: {
       "/stores/meetingRecordingStore": `
         const state = {

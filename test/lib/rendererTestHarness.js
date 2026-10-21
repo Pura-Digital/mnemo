@@ -212,7 +212,7 @@ function installHostDom(t) {
 async function createRendererServer(
   t,
   {
-    cachePrefix = "openwhispr-renderer-test-",
+    cachePrefix = "mnemo-renderer-test-",
     mockModules = {},
     noExternal = false,
     resolveAlias = {},

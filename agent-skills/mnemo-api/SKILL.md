@@ -1,11 +1,11 @@
 ---
-name: openwhispr-api
-description: Use this skill when building integrations with the OpenWhispr REST API, calling OpenWhispr endpoints, managing notes/folders/transcriptions programmatically, accessing team-space content with workspace keys, or connecting to the OpenWhispr MCP server. Covers authentication, all V1 endpoints, spaces, pagination, rate limits, error handling, and the remote MCP server.
+name: mnemo-api
+description: Use this skill when building integrations with the Mnemo REST API, calling Mnemo endpoints, managing notes/folders/transcriptions programmatically, accessing team-space content with workspace keys, or connecting to the Mnemo MCP server. Covers authentication, all V1 endpoints, spaces, pagination, rate limits, error handling, and the remote MCP server.
 ---
 
-# OpenWhispr API v1
+# mnemo API v1
 
-Use this reference when making requests to the OpenWhispr REST API. All endpoints are under the V1 path and require API key authentication.
+Use this reference when making requests to the Mnemo REST API. All endpoints are under the V1 path and require API key authentication.
 
 ## Authentication
 
@@ -60,7 +60,7 @@ A **space** is a shared container of notes and folders inside a workspace. Perso
 ## Base URL
 
 ```
-https://api.openwhispr.com/api/v1
+https://api.mnemo.com/api/v1
 ```
 
 ## Response Envelope
@@ -227,7 +227,7 @@ Scope: `usage:read`. Returns:
 For AI assistant integration (Claude, Cursor, VS Code), connect to the remote MCP server at:
 
 ```
-https://mcp.openwhispr.com/mcp
+https://mcp.mnemo.com/mcp
 ```
 
 Pass the API key via `Authorization: Bearer` header. All V1 endpoints are available as MCP tools. The server uses Streamable HTTP transport (stateless, no sessions).
@@ -235,7 +235,7 @@ Pass the API key via `Authorization: Bearer` header. All V1 endpoints are availa
 ### Claude Code
 
 ```bash
-claude mcp add openwhispr --transport http https://mcp.openwhispr.com/mcp \
+claude mcp add mnemo --transport http https://mcp.mnemo.com/mcp \
   --header "Authorization: Bearer owk_live_YOUR_KEY"
 ```
 
@@ -244,8 +244,8 @@ claude mcp add openwhispr --transport http https://mcp.openwhispr.com/mcp \
 ```json
 {
   "mcpServers": {
-    "openwhispr": {
-      "url": "https://mcp.openwhispr.com/mcp",
+    "mnemo": {
+      "url": "https://mcp.mnemo.com/mcp",
       "headers": { "Authorization": "Bearer owk_live_YOUR_KEY" }
     }
   }
@@ -258,7 +258,7 @@ claude mcp add openwhispr --transport http https://mcp.openwhispr.com/mcp \
 
 ```bash
 curl -H "Authorization: Bearer owk_live_YOUR_KEY" \
-  "https://api.openwhispr.com/api/v1/notes/list?limit=10"
+  "https://api.mnemo.com/api/v1/notes/list?limit=10"
 ```
 
 ### Create a note in a folder
@@ -268,7 +268,7 @@ curl -X POST \
   -H "Authorization: Bearer owk_live_YOUR_KEY" \
   -H "Content-Type: application/json" \
   -d '{"content": "Remember to review PR #42", "title": "TODO", "folder_id": "UUID"}' \
-  https://api.openwhispr.com/api/v1/notes/create
+  https://api.mnemo.com/api/v1/notes/create
 ```
 
 ### Search notes
@@ -278,7 +278,7 @@ curl -X POST \
   -H "Authorization: Bearer owk_live_YOUR_KEY" \
   -H "Content-Type: application/json" \
   -d '{"query": "quarterly budget discussion"}' \
-  https://api.openwhispr.com/api/v1/notes/search
+  https://api.mnemo.com/api/v1/notes/search
 ```
 
 ### Paginate through all notes
@@ -287,7 +287,7 @@ curl -X POST \
 cursor=""
 while true; do
   response=$(curl -s -H "Authorization: Bearer owk_live_YOUR_KEY" \
-    "https://api.openwhispr.com/api/v1/notes/list?limit=100&cursor=${cursor}")
+    "https://api.mnemo.com/api/v1/notes/list?limit=100&cursor=${cursor}")
   echo "$response" | jq '.data[]'
   has_more=$(echo "$response" | jq -r '.has_more')
   [ "$has_more" != "true" ] && break
@@ -299,7 +299,7 @@ done
 
 ```bash
 curl -H "Authorization: Bearer owk_live_YOUR_KEY" \
-  https://api.openwhispr.com/api/v1/usage
+  https://api.mnemo.com/api/v1/usage
 ```
 
 ### Work with team spaces (workspace key)
@@ -307,16 +307,16 @@ curl -H "Authorization: Bearer owk_live_YOUR_KEY" \
 ```bash
 # 1. Discover the spaces this workspace key can reach
 curl -H "Authorization: Bearer ow_wks_live_YOUR_KEY" \
-  https://api.openwhispr.com/api/v1/spaces/list
+  https://api.mnemo.com/api/v1/spaces/list
 
 # 2. List notes in a space (space_id is required for workspace keys)
 curl -H "Authorization: Bearer ow_wks_live_YOUR_KEY" \
-  "https://api.openwhispr.com/api/v1/notes/list?space_id=SPACE_UUID&limit=50"
+  "https://api.mnemo.com/api/v1/notes/list?space_id=SPACE_UUID&limit=50"
 
 # 3. Create a note in that space
 curl -X POST \
   -H "Authorization: Bearer ow_wks_live_YOUR_KEY" \
   -H "Content-Type: application/json" \
   -d '{"content": "Kickoff notes", "title": "Kickoff", "space_id": "SPACE_UUID"}' \
-  https://api.openwhispr.com/api/v1/notes/create
+  https://api.mnemo.com/api/v1/notes/create
 ```

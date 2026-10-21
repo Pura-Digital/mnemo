@@ -5,7 +5,7 @@ const { createCloudApiRequestHandler } = require("../../src/helpers/cloudApiRequ
 
 function createHandler(state, proxyFetch) {
   return createCloudApiRequestHandler({
-    getApiUrl: () => "https://api.openwhispr.test",
+    getApiUrl: () => "https://api.mnemo.test",
     getAppVersion: () => "1.2.3",
     proxyFetch,
     tokenStore: {
@@ -81,12 +81,12 @@ test("an auth-context change dominates a simultaneous network failure", async ()
 test("a stable authenticated request is bearer-only and returns parsed data", async () => {
   const state = { current: { token: "token-a", generation: 13 } };
   const handler = createHandler(state, async (url, options) => {
-    assert.equal(url, "https://api.openwhispr.test/api/me/spaces");
+    assert.equal(url, "https://api.mnemo.test/api/me/spaces");
     assert.equal(options.useSessionCookies, false);
     assert.equal(options.headers.Authorization, "Bearer token-a");
-    assert.equal(options.headers["x-openwhispr-policy-version"], "1");
-    assert.equal(options.headers["x-openwhispr-version"], "1.2.3");
-    assert.equal(options.headers["x-openwhispr-source"], "desktop");
+    assert.equal(options.headers["x-mnemo-policy-version"], "1");
+    assert.equal(options.headers["x-mnemo-version"], "1.2.3");
+    assert.equal(options.headers["x-mnemo-source"], "desktop");
     return new Response(JSON.stringify({ data: [{ id: "space-a" }] }));
   });
 
@@ -106,9 +106,9 @@ test("public requests carry neither bearer nor cookies", async () => {
   const handler = createHandler(state, async (_url, options) => {
     assert.equal(options.useSessionCookies, false);
     assert.equal(options.headers.Authorization, undefined);
-    assert.equal(options.headers["x-openwhispr-policy-version"], undefined);
-    assert.equal(options.headers["x-openwhispr-version"], "1.2.3");
-    assert.equal(options.headers["x-openwhispr-source"], "desktop");
+    assert.equal(options.headers["x-mnemo-policy-version"], undefined);
+    assert.equal(options.headers["x-mnemo-version"], "1.2.3");
+    assert.equal(options.headers["x-mnemo-source"], "desktop");
     return new Response(JSON.stringify({ data: { invite: "preview" } }));
   });
 

@@ -76,7 +76,7 @@ export function defaultStreamingProviderName(context) {
 // streaming provider does.
 export function resolveManagedOrukeetRoute({ settings, sttConfig, language }) {
   if (
-    settings.cloudTranscriptionMode !== "openwhispr" ||
+    settings.cloudTranscriptionMode !== "mnemo" ||
     sttConfig?.dictation?.mode !== "streaming" ||
     sttConfig?.streamingProvider !== "orukeet"
   ) {
@@ -139,7 +139,7 @@ export function buildStreamingSessionOptions({
     language: language && language !== "auto" ? language : undefined,
     keyterms,
     model: settings.cloudTranscriptionModel,
-    mode: settings.cloudTranscriptionMode === "byok" ? "byok" : "openwhispr",
+    mode: settings.cloudTranscriptionMode === "byok" ? "byok" : "mnemo",
     environment: settings.cortiEnvironment,
     tenant: settings.cortiTenant,
   };

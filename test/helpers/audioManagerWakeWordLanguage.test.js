@@ -25,7 +25,7 @@ async function loadAudioManager(t) {
   });
 
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-wake-language-test-",
+    cachePrefix: "mnemo-wake-language-test-",
     mockModules: {
       "/utils/logger":
         "export default { debug() {}, info() {}, warn() {}, error() {}, logReasoning() {} };",
@@ -185,7 +185,7 @@ test("cloud auto-language routing uses detected speech before the UI language", 
     text: "and then ehi Jarvis said something",
     sttLanguage: "en",
   });
-  const englishResult = await createManager().processWithOpenWhisprCloud(audioBlob);
+  const englishResult = await createManager().processWithMnemoCloud(audioBlob);
   assert.equal(englishResult.text, "cleanup output");
 
   setSettings({ ...settings, uiLanguage: "en" });
@@ -194,7 +194,7 @@ test("cloud auto-language routing uses detected speech before the UI language", 
     text: "stavo pensando ehi Jarvis scrivi una mail",
     sttLanguage: "it",
   });
-  const italianResult = await createManager().processWithOpenWhisprCloud(audioBlob);
+  const italianResult = await createManager().processWithMnemoCloud(audioBlob);
   assert.equal(italianResult.text, "agent output");
 });
 
@@ -226,7 +226,7 @@ test("cloud transcription returns the occurrence time sent with analytics", asyn
     };
   };
 
-  const result = await createManager().processWithOpenWhisprCloud(audioBlob, {
+  const result = await createManager().processWithMnemoCloud(audioBlob, {
     analyticsOccurredAt,
   });
 
@@ -282,7 +282,7 @@ test("cloud auto-language stripping uses the same detected Arabic as routing", a
   });
 
   const manager = createBankingManager();
-  await manager.processWithOpenWhisprCloud(audioBlob);
+  await manager.processWithMnemoCloud(audioBlob);
 
   assert.equal(manager.pendingAssistantConversation?.transcript, "لخّص هذه الملاحظة");
 });
@@ -325,7 +325,7 @@ test("streaming auto-language routing detects and strips Arabic with an English 
 
   const manager = createStreamingManager(
     (result) => completions.push(result),
-    "يا OpenWhispr، لخّص هذه الملاحظة"
+    "يا Mnemo، لخّص هذه الملاحظة"
   );
   await manager.stopStreamingRecording();
 
@@ -362,7 +362,7 @@ test("a name inside a snippet trigger does not route to the agent", async (t) =>
     sttLanguage: "en",
   });
 
-  const result = await createManager().processWithOpenWhisprCloud(snippetAudioBlob);
+  const result = await createManager().processWithMnemoCloud(snippetAudioBlob);
 
   assert.equal(result.text, "cleanup output");
 });
@@ -377,7 +377,7 @@ test("a real address still routes to the agent when a trigger is also spoken", a
     sttLanguage: "en",
   });
 
-  const result = await createManager().processWithOpenWhisprCloud(snippetAudioBlob);
+  const result = await createManager().processWithMnemoCloud(snippetAudioBlob);
 
   assert.equal(result.text, "agent output");
 });
@@ -393,7 +393,7 @@ test("the banked agent command drops the address, not the snippet trigger", asyn
   });
 
   const manager = createBankingManager();
-  await manager.processWithOpenWhisprCloud(snippetAudioBlob);
+  await manager.processWithMnemoCloud(snippetAudioBlob);
 
   assert.equal(manager.pendingAssistantConversation?.transcript, "jarvis review. summarize it");
 });
@@ -418,7 +418,7 @@ test("a snippets edit between routing and stripping cannot desync them", async (
     setSettings({ ...snippetSettings, snippets: [] });
     return null;
   };
-  await manager.processWithOpenWhisprCloud(snippetAudioBlob);
+  await manager.processWithMnemoCloud(snippetAudioBlob);
 
   assert.equal(manager.pendingAssistantConversation?.transcript, "jarvis review. summarize it");
 });

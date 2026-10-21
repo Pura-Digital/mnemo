@@ -81,7 +81,7 @@ const windowStub = {
   navigator: navigatorStub,
   document: documentStub,
   // authRequestContext resolves get-session URLs against the window origin.
-  location: { origin: "https://harness.openwhispr.test" },
+  location: { origin: "https://harness.mnemo.test" },
 };
 
 function define(name, value) {

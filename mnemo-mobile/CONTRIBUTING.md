@@ -1,8 +1,8 @@
-# Contributing to OpenWhispr Mobile
+# Contributing to mnemo Mobile
 
 Thanks for your interest in contributing. This guide covers everything you need to fork, build, and submit a PR.
 
-The mobile app is maintained in `openwhispr-mobile/` inside the main OpenWhispr repository, but it has its own dependencies, lockfile, commands, CI checks, and release process. Run the commands below from `openwhispr-mobile/`.
+The mobile app is maintained in `mnemo-mobile/` inside the main mnemo repository, but it has its own dependencies, lockfile, commands, CI checks, and release process. Run the commands below from `mnemo-mobile/`.
 
 ## Prerequisites
 
@@ -29,13 +29,13 @@ Android development does not require Xcode or an Apple Developer account. The EA
 ## First-Time Setup
 
 ```bash
-git clone https://github.com/<your-fork>/openwhispr.git
-cd openwhispr/openwhispr-mobile
+git clone https://github.com/<your-fork>/mnemo.git
+cd mnemo/mnemo-mobile
 npm install
 cp .env.example .env.local
 ```
 
-The example uses the hosted OpenWhispr API and leaves optional integrations disabled. Edit `.env.local` only for the features or local identity values you need. Local environment files are ignored by Git.
+The example uses the hosted mnemo API and leaves optional integrations disabled. Edit `.env.local` only for the features or local identity values you need. Local environment files are ignored by Git.
 
 Install the locked Ruby dependencies before the first iOS build:
 
@@ -61,9 +61,9 @@ npm run clean          # format + lint + typecheck
 
 `npm run ios` runs `expo run:ios`, which executes `expo prebuild` and compiles the native project. The keyboard extension is wired in by the config plugin at `plugins/keyboard-extension/withKeyboardExtension.js` during prebuild.
 
-OpenWhispr uses custom native modules, so Expo Go is not a supported development environment. Use `npm run ios` or `npm run android` to create a development build.
+mnemo uses custom native modules, so Expo Go is not a supported development environment. Use `npm run ios` or `npm run android` to create a development build.
 
-The `android`, `ios`, and `prebuild` npm scripts use POSIX environment-variable syntax. On Windows, put `OPENWHISPR_APP_ENV=development` in `.env.local` and run `npx expo run:android` or `npx expo prebuild` directly. iOS builds still require macOS.
+The `android`, `ios`, and `prebuild` npm scripts use POSIX environment-variable syntax. On Windows, put `MNEMO_APP_ENV=development` in `.env.local` and run `npx expo run:android` or `npx expo prebuild` directly. iOS builds still require macOS.
 
 ## Environment Variables
 
@@ -78,25 +78,25 @@ Variables prefixed with `EXPO_PUBLIC_` are embedded in the application bundle an
 
 ## Physical iOS Devices and Forks
 
-The committed configuration contains OpenWhispr's production identifiers. Do not manually replace identifiers throughout the source. For a local physical-device build, set a unique identity in `.env.local`:
+The committed configuration contains mnemo's production identifiers (legacy Mnemo bundle IDs and URL schemes). Do not manually replace identifiers throughout the source. For a local physical-device build, set a unique identity in `.env.local`:
 
 ```dotenv
-OPENWHISPR_IOS_BUNDLE_IDENTIFIER=com.example.openwhispr.dev
-OPENWHISPR_SCHEME=example-openwhispr-dev
-OPENWHISPR_DISPLAY_NAME=OpenWhispr Dev
-OPENWHISPR_KEYBOARD_DISPLAY_NAME=OpenWhispr Dev
+MNEMO_IOS_BUNDLE_IDENTIFIER=com.example.mnemo.dev
+MNEMO_SCHEME=example-mnemo-dev
+MNEMO_DISPLAY_NAME=Mnemo Dev
+MNEMO_KEYBOARD_DISPLAY_NAME=Mnemo Dev
 ```
 
-`app.config.js` derives matching bundle identifiers for the keyboard and activity extensions and an App Group named `group.<bundle identifier>`. Override `OPENWHISPR_APP_GROUP_ID` or `OPENWHISPR_KEYBOARD_BUNDLE_IDENTIFIER` only when your Apple configuration requires different values.
+`app.config.js` derives matching bundle identifiers for the keyboard and activity extensions and an App Group named `group.<bundle identifier>`. Override `MNEMO_APP_GROUP_ID` or `MNEMO_KEYBOARD_BUNDLE_IDENTIFIER` only when your Apple configuration requires different values.
 
 Verify the resolved configuration and generate the native project:
 
 ```bash
-OPENWHISPR_APP_ENV=development npx expo config --type public
+MNEMO_APP_ENV=development npx expo config --type public
 npm run prebuild:dev -- --clean
 ```
 
-In the generated Xcode workspace, select your Apple development team for the main app, `OpenWhisprKeyboard`, and `OpenWhisprActivity` targets. Your team must own the bundle identifiers and App Group. The generated `ios/` directory is ignored by Git, so these local signing changes should not be committed.
+In the generated Xcode workspace, select your Apple development team for the main app, `MnemoKeyboard`, and `MnemoActivity` targets. Your team must own the bundle identifiers and App Group. The generated `ios/` directory is ignored by Git, so these local signing changes should not be committed.
 
 Maintainers shipping a separate fork must also replace the organization-specific Expo owner, Apple team, EAS project, update URL, and App Store submission values in `app.base.json` and `eas.json`. Those release settings are separate from the local identity overrides above.
 

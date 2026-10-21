@@ -9,7 +9,7 @@ const { createRendererServer, installBrowserGlobals } = require("../lib/renderer
 async function loadProvider(t) {
   installBrowserGlobals(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-tinfoil-output-test-",
+    cachePrefix: "mnemo-tinfoil-output-test-",
     mockModules: {
       "/tinfoilClient": `
         export const getTinfoilChatClient = async () => ({

@@ -13,6 +13,37 @@ test("the recording window fits the compact listening pill footprint", async () 
   assert.ok(WINDOW_SIZES.RECORDING.height >= VOICE_PILL_FOOTPRINT.recording.height);
 });
 
+test("the meeting prompt window fits the wide pill without moving it vertically", async () => {
+  const { WINDOW_SIZES } = require("../../src/helpers/windowConfig");
+  const { VOICE_PILL_FOOTPRINT } = await import("../../src/helpers/voicePillPresentation.js");
+
+  assert.equal(WINDOW_SIZES.MEETING_PROMPT.height, WINDOW_SIZES.BASE.height);
+  assert.ok(WINDOW_SIZES.MEETING_PROMPT.width >= VOICE_PILL_FOOTPRINT.meetingPrompt.width + 24);
+});
+
+test("the meeting prompt outranks the compact pill but yields to toasts, menus and panels", async () => {
+  const { resolveMainWindowSizeKey } = await load();
+  const base = { panelOpen: false, menuOpen: false, toastCount: 0, compactPill: false };
+
+  assert.equal(resolveMainWindowSizeKey({ ...base, meetingPromptActive: true }), "MEETING_PROMPT");
+  assert.equal(
+    resolveMainWindowSizeKey({ ...base, compactPill: true, meetingPromptActive: true }),
+    "MEETING_PROMPT"
+  );
+  assert.equal(
+    resolveMainWindowSizeKey({ ...base, toastCount: 1, meetingPromptActive: true }),
+    "WITH_TOAST"
+  );
+  assert.equal(
+    resolveMainWindowSizeKey({ ...base, menuOpen: true, meetingPromptActive: true }),
+    "WITH_MENU"
+  );
+  assert.equal(
+    resolveMainWindowSizeKey({ ...base, panelOpen: true, meetingPromptActive: true }),
+    "ASSISTANT"
+  );
+});
+
 test("dictation error windows share the assistant width and grow for the transcript action", () => {
   const { WINDOW_SIZES } = require("../../src/helpers/windowConfig");
   assert.equal(WINDOW_SIZES.DICTATION_ERROR.width, WINDOW_SIZES.ASSISTANT.width);

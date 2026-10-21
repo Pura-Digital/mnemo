@@ -133,7 +133,7 @@ describe('context block', () => {
 // Tone block
 // ---------------------------------------------------------------------------
 
-// These are the exact sentences from openwhispr-api/lib/prompts.ts (TONE_INSTRUCTIONS)
+// These are the exact sentences from mnemo-api/lib/prompts.ts (TONE_INSTRUCTIONS)
 // that the plan requires us to reuse verbatim.
 const EXPECTED_TONE_SENTENCES: Record<string, string> = {
   formal:

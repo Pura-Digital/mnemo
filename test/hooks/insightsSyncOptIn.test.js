@@ -66,7 +66,7 @@ test("Insights Sync opt-in changes only device analytics consent", async (t) => 
   });
   const container = installHookDom(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-insights-sync-opt-in-",
+    cachePrefix: "mnemo-insights-sync-opt-in-",
     noExternal: ["react-i18next"],
     mockModules: {
       "/components/ui/dialog": "export const ConfirmDialog = () => null;",

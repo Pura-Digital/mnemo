@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1122" height="636" viewBox="0 0 1122 636"><defs><linearGradient id="scene" x2="1" y2="1"><stop stop-color="#fff1f2"/><stop offset="1" stop-color="#ffe1dc"/></linearGradient></defs><rect width="1122" height="636" fill="url(#scene)"/><circle cx="1060" cy="80" r="280" fill="#fb7185" opacity=".12"/><circle cx="30" cy="630" r="250" fill="#c81038" opacity=".06"/>
+<rect x="340" y="52" width="730" height="245" rx="32" fill="#ffffff" fill-opacity=".72" stroke="#ffffff" stroke-width="2"/>
+<g font-family="Arial,sans-serif" font-size="31" fill="#29282e"><text x="377" y="116">“Write an email to let my client know</text><text x="377" y="158">the new project is complete.”</text></g>
+<rect x="870" y="210" width="178" height="68" rx="34" fill="#29282e"/><svg x="880" y="217" width="54" height="54" viewBox="0 0 600 600">
+  <defs>
+    <linearGradient id="hex" x1="150" y1="90" x2="430" y2="540" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ff063b"/><stop offset=".45" stop-color="#820722"/><stop offset=".72" stop-color="#65051c"/><stop offset="1" stop-color="#ff0034"/>
+    </linearGradient>
+    <linearGradient id="left" x1="126" y1="220" x2="197" y2="423" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ffb49b"/><stop offset=".45" stop-color="#ff5a62"/><stop offset="1" stop-color="#ff163c"/>
+    </linearGradient>
+    <linearGradient id="ribbon" x1="277" y1="146" x2="466" y2="440" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ffb49b"/><stop offset=".5" stop-color="#ff7a70"/><stop offset="1" stop-color="#ff0036"/>
+    </linearGradient>
+    <linearGradient id="fold" x1="234" y1="196" x2="290" y2="290" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#83041f"/><stop offset="1" stop-color="#f50838"/>
+    </linearGradient>
+  </defs>
+  <path d="M255 53 Q303 26 351 53 L479 127 Q525 154 525 207 V399 Q525 451 479 477 L351 550 Q303 578 255 550 L121 475 Q75 449 75 398 V204 Q75 152 121 125 Z" fill="url(#hex)"/>
+  <path d="M75 250 Q109 200 143 218 L217 260 Q227 266 227 247 V384 Q227 415 202 415 Q159 415 159 366 V317 Q159 307 143 316 L104 340 Q75 358 75 388 Z" fill="url(#left)"/>
+  <path d="M227 204 Q227 181 249 173 Q273 169 287 196 L287 354 L227 322 Z" fill="url(#fold)"/>
+  <path d="M239 176 L278 149 Q306 129 335 143 Q360 158 360 190 V357 Q360 382 382 382 Q392 382 392 364 V243 Q392 213 419 210 Q430 208 449 219 L495 246 Q525 264 525 294 V399 Q525 440 477 468 V349 Q477 323 455 314 Q426 302 426 331 V414 Q426 450 389 448 Q376 448 359 438 L315 413 Q288 397 288 361 V214 Q288 184 269 176 Q253 168 239 176 Z" fill="url(#ribbon)"/>
+</svg><g stroke="#fb7185" stroke-width="4" stroke-linecap="round"><path d="M945 239v12 M957 228v34 M969 236v18 M981 224v40 M993 231v27 M1005 238v13 M1017 233v24"/></g>
+<rect x="65" y="238" width="580" height="362" rx="24" fill="#ffffff" stroke="#e4d5d8"/><path d="M65 302H645" stroke="#e4d5d8"/>
+<g font-family="Arial,sans-serif" font-size="27" fill="#29282e"><text x="91" y="279" font-weight="600">New Message</text><text x="590" y="279">×</text><text x="91" y="343" fill="#7d7477">To:</text><text x="135" y="343">alex@northstarstudio.co</text><text x="91" y="395" fill="#7d7477">Subject:</text><text x="195" y="395">Project completed</text><text x="91" y="462">Hi Alex,</text><text x="91" y="509">The new project is complete and</text><text x="91" y="553">ready for your review.</text></g></svg>

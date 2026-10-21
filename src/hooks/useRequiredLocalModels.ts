@@ -49,10 +49,10 @@ export function useRequiredLocalModels(): RequiredLocalModelsState {
     // background tray) change disk truth without going through this hook.
     const handleModelsChanged = () => void refresh();
     window.addEventListener(LOCAL_MODELS_CHANGED_EVENT, handleModelsChanged);
-    window.addEventListener("openwhispr-models-cleared", handleModelsChanged);
+    window.addEventListener("mnemo-models-cleared", handleModelsChanged);
     return () => {
       window.removeEventListener(LOCAL_MODELS_CHANGED_EVENT, handleModelsChanged);
-      window.removeEventListener("openwhispr-models-cleared", handleModelsChanged);
+      window.removeEventListener("mnemo-models-cleared", handleModelsChanged);
     };
   }, [requiredKey, refresh]);
 

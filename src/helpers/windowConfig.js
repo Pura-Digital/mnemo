@@ -145,6 +145,9 @@ const WINDOW_SIZES = {
   // resize a no-op.
   BASE: PILL_WINDOW_SIZE,
   RECORDING: PILL_WINDOW_SIZE,
+  // Only wider than BASE: VOICE_PILL_FOOTPRINT.meetingPrompt (340px) plus the
+  // dock insets, so the anchored resize never moves the pill vertically.
+  MEETING_PROMPT: { width: 364, height: PILL_WINDOW_SIZE.height },
   DICTATION_ERROR: { width: DICTATION_ERROR_WINDOW_LIMITS.width, height: 112 },
   DICTATION_ERROR_WITH_TRANSCRIPT: {
     width: DICTATION_ERROR_WINDOW_LIMITS.width,

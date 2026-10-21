@@ -2,9 +2,9 @@ import 'expo-sqlite/localStorage/install';
 import * as SQLite from 'expo-sqlite';
 import { randomUUID } from '@/lib/uuid';
 
-const rawDb = SQLite.openDatabaseSync('openwhispr_notes.db');
+const rawDb = SQLite.openDatabaseSync('mnemo_notes.db');
 
-const LEGACY_DICTIONARY_KEY = 'openwhispr_dictionary';
+const LEGACY_DICTIONARY_KEY = 'mnemo_dictionary';
 
 function tryAlter(statement: string) {
   try {
@@ -24,7 +24,7 @@ function addColumnIfMissing(table: string, column: string, definition: string): 
   tryAlter(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
 }
 
-// One-shot migration: legacy `openwhispr_dictionary` localStorage payload → SQLite.
+// One-shot migration: legacy `mnemo_dictionary` localStorage payload → SQLite.
 // Wrapped in a transaction so a single bad row (e.g., lower(word) duplicate
 // against the partial unique index) doesn't abort the entire payload and leave
 // behind a half-migrated state plus a deleted legacy key.

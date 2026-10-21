@@ -78,7 +78,14 @@ function createFakeChild(spawnError) {
 // here. Both spellings feed the detector's excluded-pid provider.
 function createDetector(
   platform,
-  { excludedProcessIds, ownPids, execResponses = [], spawnError, isMeetingAppRunning } = {}
+  {
+    excludedProcessIds,
+    ownPids,
+    execResponses = [],
+    spawnError,
+    isMeetingAppRunning,
+    resolveProcessAppKey,
+  } = {}
 ) {
   const getExcludedProcessIds =
     excludedProcessIds ?? (ownPids ? () => [...ownPids] : () => [process.pid]);
@@ -110,7 +117,11 @@ function createDetector(
     logEntries
   );
 
-  const detector = new AudioActivityDetector(getExcludedProcessIds, isMeetingAppRunning);
+  const detector = new AudioActivityDetector(
+    getExcludedProcessIds,
+    isMeetingAppRunning,
+    resolveProcessAppKey
+  );
   detector._isMicActive = async () => false;
   return { detector, children, calls, execCalls, logEntries };
 }
@@ -269,7 +280,7 @@ test("unsupported platforms poll without spawning a listener", async () => {
   detector.stop();
 });
 
-test("darwin: PID events exclude current OpenWhispr processes and continue during recording", async () => {
+test("darwin: PID events exclude current Mnemo processes and continue during recording", async () => {
   let excludedProcessIds = [101, 102];
   const { detector, children } = createDetector("darwin", {
     excludedProcessIds: () => excludedProcessIds,
@@ -629,7 +640,7 @@ test("darwin: exclusion-provider failure emits reliability loss", async () => {
   detector.stop();
 });
 
-test("win32: current OpenWhispr PIDs are filtered dynamically in JavaScript", async () => {
+test("win32: current Mnemo PIDs are filtered dynamically in JavaScript", async () => {
   let excludedProcessIds = [process.pid, 404];
   const { detector, children, calls } = createDetector("win32", {
     excludedProcessIds: () => excludedProcessIds,
@@ -980,7 +991,7 @@ test("darwin: native snapshots exclude background speech while preserving meetin
     return;
   }
 
-  const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "openwhispr-mac-mic-listener-"));
+  const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "mnemo-mac-mic-listener-"));
   const executablePath = path.join(temporaryDirectory, "mic-listener-state-test");
   t.after(() => fs.rmSync(temporaryDirectory, { force: true, recursive: true }));
 
@@ -1099,7 +1110,7 @@ test("darwin: native snapshots exclude background speech while preserving meetin
 });
 
 test("win32: portable native state seam handles reference counts and failures", (t) => {
-  const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "openwhispr-mic-listener-"));
+  const temporaryDirectory = fs.mkdtempSync(path.join(os.tmpdir(), "mnemo-mic-listener-"));
   const executablePath = path.join(temporaryDirectory, "mic-listener-state-test");
   t.after(() => fs.rmSync(temporaryDirectory, { force: true, recursive: true }));
 
@@ -1262,6 +1273,84 @@ test("darwin: a warm-hold that releases cleanly does not produce a stale prompt"
   detector.stop();
 });
 
+const CHROME_AUDIO_SERVICE = 30496;
+const TEAMS = 21241;
+const TEAMS_SCREEN_SHARE_HELPER = 21999;
+const CAPTURE_APPS = {
+  [CHROME_AUDIO_SERVICE]: "/Applications/Google Chrome.app",
+  [TEAMS]: "/Applications/Microsoft Teams.app",
+  [TEAMS_SCREEN_SHARE_HELPER]: "/Applications/Microsoft Teams.app",
+};
+const resolveCaptureApp = async (pid) => CAPTURE_APPS[pid] ?? null;
+
+test("darwin: a call in another app prompts while a browser tab keeps the mic open", async (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout", "Date"], now: 10_000 });
+  const { detector, children } = createDetector("darwin", {
+    resolveProcessAppKey: resolveCaptureApp,
+  });
+  const emitted = [];
+  detector.on("sustained-audio-detected", (data) => emitted.push(data));
+
+  await detector.start();
+  children[0].stdout.emit("data", `CAPABILITY PID\nMIC_START ${CHROME_AUDIO_SERVICE}\n`);
+  await flushImmediate();
+  t.mock.timers.tick(SUSTAINED_MS);
+  assert.equal(emitted.length, 1);
+
+  children[0].stdout.emit("data", `MIC_START ${TEAMS}\n`);
+  await flushImmediate();
+  t.mock.timers.tick(SUSTAINED_MS);
+
+  assert.equal(
+    emitted.length,
+    2,
+    "joining a Teams call must prompt even though Chrome never let go"
+  );
+  detector.stop();
+});
+
+test("darwin: a new capture pid of the app already prompted for does not re-prompt", async (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout", "Date"], now: 10_000 });
+  const { detector, children } = createDetector("darwin", {
+    resolveProcessAppKey: resolveCaptureApp,
+  });
+  const emitted = [];
+  detector.on("sustained-audio-detected", (data) => emitted.push(data));
+
+  await detector.start();
+  children[0].stdout.emit("data", `CAPABILITY PID\nMIC_START ${TEAMS}\n`);
+  await flushImmediate();
+  t.mock.timers.tick(SUSTAINED_MS);
+  assert.equal(emitted.length, 1);
+
+  children[0].stdout.emit("data", `MIC_START ${TEAMS_SCREEN_SHARE_HELPER}\nMIC_STOP ${TEAMS}\n`);
+  await flushImmediate();
+  t.mock.timers.tick(SUSTAINED_MS);
+
+  assert.equal(emitted.length, 1, "a screen-share rebuild inside the same call must stay silent");
+  detector.stop();
+});
+
+test("darwin: an unidentifiable capture app never re-arms the prompt", async (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout", "Date"], now: 10_000 });
+  const { detector, children } = createDetector("darwin", {
+    resolveProcessAppKey: async (pid) => (pid === TEAMS ? null : CAPTURE_APPS[pid]),
+  });
+  const emitted = [];
+  detector.on("sustained-audio-detected", (data) => emitted.push(data));
+
+  await detector.start();
+  children[0].stdout.emit("data", `CAPABILITY PID\nMIC_START ${CHROME_AUDIO_SERVICE}\n`);
+  await flushImmediate();
+  t.mock.timers.tick(SUSTAINED_MS);
+  children[0].stdout.emit("data", `MIC_START ${TEAMS}\n`);
+  await flushImmediate();
+  t.mock.timers.tick(SUSTAINED_MS);
+
+  assert.equal(emitted.length, 1, "unknown ownership must not be read as a different app");
+  detector.stop();
+});
+
 test("win32: an unrelated app's mic session ending does not hide an ongoing dismissed call", async (t) => {
   t.mock.timers.enable({ apis: ["setTimeout", "Date"], now: 10_000 });
   const { detector, children } = createDetector("win32");
@@ -1285,7 +1374,7 @@ test("win32: an unrelated app's mic session ending does not hide an ongoing dism
 });
 
 // #1392: the helper is given a single --exclude-pid for the main process, but
-// dictation opens the mic from Chromium's audio service, so OpenWhispr's own
+// dictation opens the mic from Chromium's audio service, so Mnemo's own
 // capture is reported back to us under a child PID and read as a meeting.
 test("win32: a mic session from one of our own child processes is ignored", async () => {
   const AUDIO_SERVICE_PID = 4242;

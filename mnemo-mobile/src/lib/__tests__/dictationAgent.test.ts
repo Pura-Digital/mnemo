@@ -9,11 +9,15 @@ const baseConfig: UserConfig = { defaultMode: 'cloud' };
 
 describe('getDictationAgentName', () => {
   it('returns the default name when dictationAgentName is unset', () => {
-    expect(getDictationAgentName(baseConfig)).toBe('OpenWhispr');
+    expect(getDictationAgentName(baseConfig)).toBe('mnemo');
   });
 
   it('returns the default name when dictationAgentName is blank', () => {
-    expect(getDictationAgentName({ ...baseConfig, dictationAgentName: '   ' })).toBe('OpenWhispr');
+    expect(getDictationAgentName({ ...baseConfig, dictationAgentName: '   ' })).toBe('mnemo');
+  });
+
+  it('maps the legacy default to mnemo', () => {
+    expect(getDictationAgentName({ ...baseConfig, dictationAgentName: 'Mnemo' })).toBe('mnemo');
   });
 
   it('returns the configured name trimmed', () => {
@@ -57,35 +61,35 @@ describe('isDictationAgentApplicable', () => {
 
 describe('detectAgentMention — Layer 1: word-boundary exact match', () => {
   it('detects the name at word boundaries', () => {
-    expect(detectAgentMention('Hey OpenWhispr write a follow-up email', 'OpenWhispr')).toBe(true);
+    expect(detectAgentMention('Hey Mnemo write a follow-up email', 'Mnemo')).toBe(true);
   });
 
   it('detects the name case-insensitively', () => {
-    expect(detectAgentMention('hey openwhispr do this', 'OpenWhispr')).toBe(true);
-    expect(detectAgentMention('hey OPENWHISPR do this', 'OpenWhispr')).toBe(true);
+    expect(detectAgentMention('hey mnemo do this', 'Mnemo')).toBe(true);
+    expect(detectAgentMention('hey OPENWHISPR do this', 'Mnemo')).toBe(true);
   });
 
   it('does not match when name appears only as a substring of another word', () => {
-    expect(detectAgentMention('this is OpenWhisprPro not the agent', 'OpenWhispr')).toBe(false);
+    expect(detectAgentMention('this is MnemoPro not the agent', 'Mnemo')).toBe(false);
   });
 
   it('does not match when transcript does not contain the name', () => {
-    expect(detectAgentMention('write a follow-up email for the client', 'OpenWhispr')).toBe(false);
+    expect(detectAgentMention('write a follow-up email for the client', 'Mnemo')).toBe(false);
   });
 
   it('detects name with punctuation adjacent (word boundary)', () => {
-    expect(detectAgentMention('okay, OpenWhispr, please help', 'OpenWhispr')).toBe(true);
+    expect(detectAgentMention('okay, Mnemo, please help', 'Mnemo')).toBe(true);
   });
 });
 
 describe('detectAgentMention — Layer 2: space-normalized join', () => {
   it('detects compound name spoken with a space', () => {
-    // STT splits "OpenWhispr" into "Open Whispr"
-    expect(detectAgentMention('hey Open Whispr write this', 'OpenWhispr')).toBe(true);
+    // STT splits "Mnemo" into "Open Whispr"
+    expect(detectAgentMention('hey Open Whispr write this', 'Mnemo')).toBe(true);
   });
 
   it('is case-insensitive on space-normalized match', () => {
-    expect(detectAgentMention('hey open whispr write this', 'OpenWhispr')).toBe(true);
+    expect(detectAgentMention('hey open whispr write this', 'Mnemo')).toBe(true);
   });
 
   it('matches a two-word configured name', () => {
@@ -104,23 +108,23 @@ describe('detectAgentMention — Layer 3: Levenshtein fuzzy match', () => {
   });
 
   it('tolerates 2 edits for names longer than 6 chars', () => {
-    // "openwhizer" is 2 edits from "openwhispr" (len 10)
-    expect(detectAgentMention('hey openwhizer write this', 'OpenWhispr')).toBe(true);
+    // "openwhizer" is 2 edits from "mnemo" (len 10)
+    expect(detectAgentMention('hey openwhizer write this', 'Mnemo')).toBe(true);
   });
 
   it('does not match when edits exceed the threshold', () => {
-    expect(detectAgentMention('hey openwhizzler write this', 'OpenWhispr')).toBe(false);
+    expect(detectAgentMention('hey openwhizzler write this', 'Mnemo')).toBe(false);
   });
 
   it('tolerates 1 edit on a combined two-word mishearing', () => {
-    // "open whisper" combined → "openwhisper" is 1 edit from "openwhispr"
-    expect(detectAgentMention('okay open whisper please help', 'OpenWhispr')).toBe(true);
+    // "open whisper" combined → "openwhisper" is 1 edit from "mnemo"
+    expect(detectAgentMention('okay open whisper please help', 'Mnemo')).toBe(true);
   });
 });
 
 describe('detectAgentMention — edge cases', () => {
   it('returns false for empty transcript', () => {
-    expect(detectAgentMention('', 'OpenWhispr')).toBe(false);
+    expect(detectAgentMention('', 'Mnemo')).toBe(false);
   });
 
   it('returns false when name is too short (< 2 chars)', () => {

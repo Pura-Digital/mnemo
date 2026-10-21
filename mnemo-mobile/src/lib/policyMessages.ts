@@ -8,6 +8,6 @@
 // from having to mock that whole chain just to read a string.
 
 // The server returns this once it can identify the client's version (see
-// x-openwhispr-version) and decides it's too old to keep serving cloud
+// x-mnemo-version) and decides it's too old to keep serving cloud
 // features. Never let "HTTP 426" or a raw server string reach the user.
-export const UPGRADE_REQUIRED_MESSAGE = 'Update OpenWhispr to keep using cloud features.';
+export const UPGRADE_REQUIRED_MESSAGE = 'Update mnemo to keep using cloud features.';

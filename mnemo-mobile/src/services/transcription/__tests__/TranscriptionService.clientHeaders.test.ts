@@ -88,9 +88,9 @@ describe.each(['keyboard', 'recording'] as const)('%s upload headers', (requestC
       expect(result.text).toBe('Hello world.');
       const headers = expect.objectContaining({
         Cookie: 'test-session-cookie',
-        'x-openwhispr-version': '1.2.1',
-        'x-openwhispr-policy-version': '1',
-        'x-openwhispr-platform': 'mobile',
+        'x-mnemo-version': '1.2.1',
+        'x-mnemo-policy-version': '1',
+        'x-mnemo-platform': 'mobile',
       });
       if (requestContext === 'keyboard') {
         expect(FileSystem.uploadAsync).toHaveBeenCalledWith(

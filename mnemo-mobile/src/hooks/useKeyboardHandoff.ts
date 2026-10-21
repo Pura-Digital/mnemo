@@ -429,7 +429,7 @@ export function useKeyboardHandoff() {
         const startedAt = startedAtRef.current;
         if (!startedAt || Date.now() - startedAt < HANDOFF_THROTTLE_MS) {
           // A job is mid-flight; don't preempt it — but don't strand the user
-          // in OpenWhispr either. Bounce back so the keyboard shows the live
+          // in mnemo either. Bounce back so the keyboard shows the live
           // recording/transcribing state instead of a dead tap.
           if (!selfHosted) {
             AppGroupStorage.returnToPreviousApp();
@@ -476,7 +476,7 @@ export function useKeyboardHandoff() {
         setKeyboardStatus('error', 'start_native_recording_failed');
         cleanup({ resetStatus: false });
         // Return the user to the app they were dictating into — the keyboard
-        // surfaces the error state there. Leaving them in OpenWhispr with no
+        // surfaces the error state there. Leaving them in mnemo with no
         // visible failure is the worst outcome.
         if (!selfHosted) {
           AppGroupStorage.returnToPreviousApp();
@@ -542,7 +542,7 @@ export function useKeyboardHandoff() {
       const params = hostBundle
         ? `?source=keyboard-intent&hostBundle=${encodeURIComponent(hostBundle)}`
         : '?source=keyboard-intent';
-      handleUrl(`openwhispr://${KEYBOARD_DICTATION_ROUTE}${params}`);
+      handleUrl(`mnemo://${KEYBOARD_DICTATION_ROUTE}${params}`);
     };
 
     const stoppedSub = addRecordingStoppedListener(

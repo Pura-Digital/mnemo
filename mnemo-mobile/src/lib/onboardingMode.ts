@@ -3,6 +3,7 @@ import { useConfigStore } from '@/store/useConfigStore';
 import { useOnboardingStore } from '@/store/useOnboardingStore';
 import { useProcessingModeStore } from '@/store/useProcessingModeStore';
 import type { ProcessingMode, UserConfig } from '@/types';
+import { isMnemoStandaloneProduct } from '@/config/mnemoProduct';
 import { OnboardingError } from './onboardingErrors';
 
 // updateConfig reports persistence errors in its store instead of rejecting.
@@ -17,6 +18,9 @@ export async function chooseOnboardingMode(
   mode: ProcessingMode,
   from: 'privacy-mode' | 'private-download',
 ): Promise<void> {
+  if (isMnemoStandaloneProduct() && mode === 'cloud') {
+    throw new OnboardingError('Cloud transcription is not available in mnemo.');
+  }
   if (useOnboardingStore.getState().currentStep !== from) return;
   const auth = useAuthStore.getState();
   // Guests can't open a session during setup. On the download step Cloud is their only way past a

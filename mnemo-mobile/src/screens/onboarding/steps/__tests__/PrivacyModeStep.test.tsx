@@ -20,7 +20,7 @@ jest.mock('@/hooks/useOnboardingStep', () => ({
 jest.mock('react-native-safe-area-context', () => ({ SafeAreaView: require('react-native').View }));
 jest.mock('@/components/ui/Text', () => ({ Text: require('react-native').Text }));
 jest.mock('@/components/ui/SystemIcon', () => ({ SystemIcon: () => null }));
-jest.mock('@/components/ui/OpenWhisprMark', () => ({ OpenWhisprMark: () => null }));
+jest.mock('@/components/ui/MnemoMark', () => ({ MnemoMark: () => null }));
 
 beforeEach(() => {
   jest.clearAllMocks();

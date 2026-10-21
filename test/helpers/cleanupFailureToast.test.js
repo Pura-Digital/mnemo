@@ -19,7 +19,7 @@ test("cleanup toast localizes AWS recovery guidance and keeps fallback status qu
   installBrowserGlobals(t);
   const container = installHookDom(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-cleanup-failure-toast-",
+    cachePrefix: "mnemo-cleanup-failure-toast-",
     mockModules: {
       "/ui/useToast": `
         export const useToast = () => ({
@@ -46,7 +46,7 @@ test("cleanup toast localizes AWS recovery guidance and keeps fallback status qu
 
   const failure = {
     message:
-      "AWS Bedrock is temporarily unavailable due to high demand. This is an AWS service issue, not an OpenWhispr outage. Please try again in a few minutes.",
+      "AWS Bedrock is temporarily unavailable due to high demand. This is an AWS service issue, not an Mnemo outage. Please try again in a few minutes.",
     messageKey: "reasoning.enterprise.errors.bedrock.serviceUnavailable",
     action: "Run the command below in your terminal to re-authenticate:",
     actionKey: "reasoning.enterprise.errors.bedrock.actions.reauthenticate",
@@ -63,7 +63,7 @@ test("cleanup toast localizes AWS recovery guidance and keeps fallback status qu
   assert.equal(globalThis.__cleanupFailureToasts.length, 1);
   assert.deepEqual(globalThis.__cleanupFailureToasts[0], {
     title:
-      "AWS Bedrock no está disponible temporalmente debido a una alta demanda. Este es un problema del servicio de AWS, no una interrupción de OpenWhispr. Vuelve a intentarlo en unos minutos.",
+      "AWS Bedrock no está disponible temporalmente debido a una alta demanda. Este es un problema del servicio de AWS, no una interrupción de Mnemo. Vuelve a intentarlo en unos minutos.",
     description: "Ejecuta el siguiente comando en tu terminal para volver a autenticarte:",
     secondaryDescription: "Tu dictado se pegó sin limpieza con IA.",
     copyCommand: "aws sso login --profile company-sso",
@@ -76,7 +76,7 @@ test("cleanup toast localizes AWS recovery guidance and keeps fallback status qu
 test("technical AWS details use the selected UI language", async (t) => {
   installBrowserGlobals(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-technical-error-details-",
+    cachePrefix: "mnemo-technical-error-details-",
   });
   const { TechnicalErrorDetails } = await vite.ssrLoadModule(
     "/components/ui/TechnicalErrorDetails.tsx"

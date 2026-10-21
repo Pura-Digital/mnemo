@@ -15,7 +15,13 @@ function readInitialSession(): OnboardingSession {
   if (typeof window === "undefined") return createOnboardingSession();
 
   const stored = parseOnboardingSession(localStorage.getItem(ONBOARDING_SESSION_KEY));
-  if (stored) return stored;
+  if (stored) {
+    // Old installations could be parked on mandatory auth before choosing a provider.
+    if (stored.currentStepId === "auth" && stored.setupMode !== "cloud") {
+      return { ...stored, currentStepId: "permissions", authPath: "guest", history: [] };
+    }
+    return stored;
+  }
 
   const session = createOnboardingSession();
   session.currentStepId = migrateLegacyOnboardingStep(
@@ -23,7 +29,7 @@ function readInitialSession(): OnboardingSession {
   );
   if (localStorage.getItem("authenticationSkipped") === "true") {
     session.authPath = "guest";
-  } else if (session.currentStepId !== "auth") {
+  } else if (session.currentStepId !== "permissions") {
     // A legacy save mid-flow means the auth step was already behind the user.
     // Left null, getOnboardingRoute returns ["auth"] and the reconcile clamp
     // overwrites the migrated step before anything can restore it — the one

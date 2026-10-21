@@ -32,13 +32,13 @@ describe('getAccountDisplay', () => {
       getAccountDisplay(
         {
           id: 'anon',
-          email: 'temp-1@anon.openwhispr.invalid',
+          email: 'temp-1@anon.mnemo.invalid',
           name: 'Anonymous',
           emailVerified: false,
           isAnonymous: true,
         },
         false,
       ),
-    ).toEqual({ initials: '?', name: 'OpenWhispr User', subtitle: 'No account yet' });
+    ).toEqual({ initials: '?', name: 'mnemo User', subtitle: 'No account yet' });
   });
 });

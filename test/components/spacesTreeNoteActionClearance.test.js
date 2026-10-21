@@ -20,7 +20,7 @@ async function renderTree(t, direction) {
     interpolation: { escapeValue: false },
   });
   const vite = await createRendererServer(t, {
-    cachePrefix: `openwhispr-spaces-tree-note-clearance-${direction}-`,
+    cachePrefix: `mnemo-spaces-tree-note-clearance-${direction}-`,
     mockModules: {
       "/stores/noteStore": `
         const spaces = [

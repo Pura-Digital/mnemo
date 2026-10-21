@@ -33,7 +33,7 @@ function managedBedrockConfig() {
         mode: "managed_required",
         allowManualSetup: false,
         config: {
-          roleArn: "arn:aws:iam::123456789012:role/OpenWhispr",
+          roleArn: "arn:aws:iam::123456789012:role/Mnemo",
           region: "us-east-1",
           allowedModels: [MANAGED_MODEL],
           scopeDefaults: Object.fromEntries(SCOPES.map((scope) => [scope, MANAGED_MODEL])),
@@ -71,7 +71,7 @@ function buildPolicy({ llmModes, llmEnterpriseProviders = [] }) {
 test("managed enterprise access outranks a leftover self-hosted route", async (t) => {
   installBrowserGlobals(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-managed-routing-test-",
+    cachePrefix: "mnemo-managed-routing-test-",
   });
 
   const reasoningService = (await vite.ssrLoadModule("/services/ReasoningService.ts")).default;
@@ -146,7 +146,7 @@ test("managed enterprise access outranks a leftover self-hosted route", async (t
 test("enterprise call settings cannot omit or bypass a resolved managed route", async (t) => {
   installBrowserGlobals(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-managed-call-settings-test-",
+    cachePrefix: "mnemo-managed-call-settings-test-",
   });
   const { getEnterpriseCallSettings } = await vite.ssrLoadModule(
     "/services/ai/enterpriseSettings.ts"
@@ -194,7 +194,7 @@ test("enterprise call settings cannot omit or bypass a resolved managed route", 
 test("required managed access fails closed when workspace policy forbids it", async (t) => {
   installBrowserGlobals(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-managed-policy-gate-test-",
+    cachePrefix: "mnemo-managed-policy-gate-test-",
   });
 
   const { usePolicyStore } = await vite.ssrLoadModule("/stores/policyStore.ts");

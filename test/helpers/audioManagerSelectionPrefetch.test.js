@@ -49,7 +49,7 @@ function countingCapture(window) {
 
 test("a prefetched selection is reused instead of read again", async (t) => {
   const { window, createManager } = await loadAudioManager(t, {
-    cachePrefix: "openwhispr-sel-prefetch-test-",
+    cachePrefix: "mnemo-sel-prefetch-test-",
     settingsKey: "__selPrefetchSettings",
   });
   const calls = countingCapture(window);
@@ -65,7 +65,7 @@ test("a prefetched selection is reused instead of read again", async (t) => {
 
 test("the caret probe request mirrors the auto-paste setting", async (t) => {
   const { window, createManager } = await loadAudioManager(t, {
-    cachePrefix: "openwhispr-sel-probe-flag-test-",
+    cachePrefix: "mnemo-sel-probe-flag-test-",
     settingsKey: "__selProbeFlagSettings",
   });
   const calls = countingCapture(window);
@@ -83,7 +83,7 @@ test("the caret probe request mirrors the auto-paste setting", async (t) => {
 
 test("consuming without a prefetch falls back to reading on demand", async (t) => {
   const { window, createManager } = await loadAudioManager(t, {
-    cachePrefix: "openwhispr-sel-ondemand-test-",
+    cachePrefix: "mnemo-sel-ondemand-test-",
     settingsKey: "__selOnDemandSettings",
   });
   const calls = countingCapture(window);
@@ -96,7 +96,7 @@ test("consuming without a prefetch falls back to reading on demand", async (t) =
 
 test("a prefetch is single-use", async (t) => {
   const { window, createManager } = await loadAudioManager(t, {
-    cachePrefix: "openwhispr-sel-singleuse-test-",
+    cachePrefix: "mnemo-sel-singleuse-test-",
     settingsKey: "__selSingleUseSettings",
   });
   const calls = countingCapture(window);
@@ -114,7 +114,7 @@ test("a prefetch is single-use", async (t) => {
 // earlier app would otherwise be edited in place by the next command.
 test("starting a recording discards a capture left over from the previous one", async (t) => {
   const { window, createManager } = await loadAudioManager(t, {
-    cachePrefix: "openwhispr-sel-stale-test-",
+    cachePrefix: "mnemo-sel-stale-test-",
     settingsKey: "__selStaleSettings",
   });
   const calls = countingCapture(window);
@@ -133,7 +133,7 @@ test("starting a recording discards a capture left over from the previous one", 
 
 test("an agent command consumes the prefetch rather than re-reading the selection", async (t) => {
   const { window, createManager } = await loadAudioManager(t, {
-    cachePrefix: "openwhispr-sel-command-test-",
+    cachePrefix: "mnemo-sel-command-test-",
     settingsKey: "__selCommandSettings",
   });
   const calls = countingCapture(window);
@@ -158,7 +158,7 @@ test("an agent command consumes the prefetch rather than re-reading the selectio
 
 test("a rejected prefetch still surfaces its error to the awaiting command", async (t) => {
   const { window, createManager } = await loadAudioManager(t, {
-    cachePrefix: "openwhispr-sel-reject-test-",
+    cachePrefix: "mnemo-sel-reject-test-",
     settingsKey: "__selRejectSettings",
   });
   window.electronAPI.captureSelectedText = async () => {

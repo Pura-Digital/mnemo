@@ -80,6 +80,7 @@ Module._load = function loadWindowManagerWithStubs(request, parent, isMain) {
   if (request === "electron") {
     return {
       app: { on: () => undefined },
+      nativeTheme: { shouldUseDarkColors: false, on: () => undefined },
       screen: { getPrimaryDisplay: () => ({}), on: () => undefined },
       BrowserWindow: FakeBrowserWindow,
       shell: {},
@@ -624,6 +625,98 @@ test("manual meeting starts fail closed like the meeting hotkey", async () => {
   manager.hotkeyManager.isInListeningMode = () => false;
   await manager.startManualMeeting();
   assert.equal(starts, 1);
+});
+
+function createPillWindow({ visible = true } = {}) {
+  const pill = {
+    visible,
+    messages: [],
+    contentProtection: [],
+    hideCount: 0,
+    isDestroyed: () => false,
+    isMinimized: () => false,
+    isVisible: () => pill.visible,
+    showInactive: () => {
+      pill.visible = true;
+    },
+    hide: () => {
+      pill.visible = false;
+      pill.hideCount += 1;
+    },
+    setContentProtection: (enabled) => pill.contentProtection.push(enabled),
+    webContents: {
+      isLoading: () => false,
+      send: (channel, payload) => pill.messages.push({ channel, payload }),
+    },
+  };
+  return pill;
+}
+
+test("a meeting prompt morphs the dictation pill instead of opening the overlay", async () => {
+  const manager = createNormalWindowManager();
+  const pill = createPillWindow();
+  manager.mainWindow = pill;
+  const windowsBefore = createdWindows.length;
+  const notification = { detectionId: "audio:sustained-audio", source: "audio" };
+
+  assert.equal(await manager.showMeetingNotification(notification, { autoDismiss: false }), true);
+
+  assert.equal(createdWindows.length, windowsBefore, "no overlay window is created");
+  assert.deepEqual(pill.messages, [
+    { channel: "meeting-notification-data", payload: { ...notification, pillDurationMs: 10_000 } },
+  ]);
+  assert.equal(pill.contentProtection.at(-1), true, "the prompt never shows in a screen share");
+
+  manager.dismissMeetingNotification({ notifyEngine: false });
+  assert.deepEqual(pill.messages.at(-1), {
+    channel: "meeting-notification-dismissed",
+    payload: "audio:sustained-audio",
+  });
+  assert.equal(pill.contentProtection.at(-1), false);
+  assert.equal(manager._pendingNotificationData, null);
+});
+
+test("a pill surfaced for a prompt hides again once the prompt settles", async () => {
+  const timers = installFakeTimers();
+  const manager = createNormalWindowManager();
+  const pill = createPillWindow({ visible: false });
+  manager.mainWindow = pill;
+  manager._repositionToActiveDisplay = async () => ({ applied: false });
+
+  try {
+    await manager.showMeetingNotification(
+      { detectionId: "audio:sustained-audio", source: "audio" },
+      { autoDismiss: false }
+    );
+    assert.equal(pill.visible, true);
+
+    manager.dismissMeetingNotification({ notifyEngine: false });
+    timers.runAll();
+    assert.equal(pill.hideCount, 1);
+  } finally {
+    timers.restore();
+  }
+});
+
+test("the overlay window still hosts prompts while the assistant panel owns the pill", async () => {
+  const manager = createNormalWindowManager();
+  const pill = createPillWindow();
+  manager.mainWindow = pill;
+  manager._assistantPanelOpen = true;
+  const windowsBefore = createdWindows.length;
+
+  const showPromise = manager.showMeetingNotification(
+    { detectionId: "calendar:next", source: "calendar" },
+    { autoDismiss: false }
+  );
+  try {
+    assert.equal(createdWindows.length, windowsBefore + 1);
+    assert.deepEqual(pill.messages, []);
+    createdWindows.at(-1).loadDeferred.resolve();
+    await showPromise;
+  } finally {
+    manager.dismissMeetingNotification();
+  }
 });
 
 // Only the renderer can open the assistant panel, and it owns the policy and

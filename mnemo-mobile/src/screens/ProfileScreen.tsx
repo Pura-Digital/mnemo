@@ -11,8 +11,10 @@ import { useUsageStore } from '@/store/useUsageStore';
 import { confirmAccountDeletion, confirmDestructive } from '@/lib/alerts';
 import { safeHaptics } from '@/lib/utils';
 import { getAccountDisplay } from '@/lib/accountDisplay';
+import { isMnemoStandaloneProduct } from '@/config/mnemoProduct';
 
 export default function ProfileScreen() {
+  const standaloneProduct = isMnemoStandaloneProduct();
   const { user, isGuest, signOut, deleteAccount } = useAuthStore();
   // See AccountScreen: an anonymous session gets Create Account, not Sign Out
   // (which would revoke it) or Delete Account (which the API refuses).
@@ -62,7 +64,7 @@ export default function ProfileScreen() {
           <Text className="shrink text-[22px] font-semibold text-label tracking-tight">
             {displayName}
           </Text>
-          {user ? <PlanBadge usage={usage} /> : null}
+          {user && !standaloneProduct ? <PlanBadge usage={usage} /> : null}
         </View>
         {email ? (
           <Text className="mt-1 text-[15px] text-secondaryLabel">{email}</Text>
@@ -73,7 +75,7 @@ export default function ProfileScreen() {
         )}
       </View>
 
-      {user ? (
+      {user && !standaloneProduct ? (
         <SettingsSection>
           <SettingsRow
             iconStyle="line"
@@ -85,41 +87,45 @@ export default function ProfileScreen() {
         </SettingsSection>
       ) : null}
 
-      <SettingsSection>
-        {isAnonymous ? (
-          <SettingsRow
-            iconStyle="line"
-            icon="person.crop.circle.badge.plus"
-            mdIcon="UserPlus"
-            title="Create Account"
-            onPress={() => router.push('/auth')}
-            showChevron={false}
-          />
-        ) : (
-          <SettingsRow
-            iconStyle="line"
-            icon={user ? 'rectangle.portrait.and.arrow.right' : 'person.crop.circle.badge.plus'}
-            mdIcon={user ? 'LogOut' : 'UserPlus'}
-            title={user ? 'Sign Out' : 'Sign In'}
-            destructive={!!user}
-            onPress={handleSignOut}
-            showChevron={false}
-          />
-        )}
-      </SettingsSection>
+      {!standaloneProduct ? (
+        <>
+          <SettingsSection>
+            {isAnonymous ? (
+              <SettingsRow
+                iconStyle="line"
+                icon="person.crop.circle.badge.plus"
+                mdIcon="UserPlus"
+                title="Create Account"
+                onPress={() => router.push('/auth')}
+                showChevron={false}
+              />
+            ) : (
+              <SettingsRow
+                iconStyle="line"
+                icon={user ? 'rectangle.portrait.and.arrow.right' : 'person.crop.circle.badge.plus'}
+                mdIcon={user ? 'LogOut' : 'UserPlus'}
+                title={user ? 'Sign Out' : 'Sign In'}
+                destructive={!!user}
+                onPress={handleSignOut}
+                showChevron={false}
+              />
+            )}
+          </SettingsSection>
 
-      {user && !isAnonymous ? (
-        <SettingsSection>
-          <SettingsRow
-            iconStyle="line"
-            icon="trash"
-            mdIcon="Trash2"
-            title="Delete Account"
-            destructive
-            onPress={handleDeleteAccount}
-            showChevron={false}
-          />
-        </SettingsSection>
+          {user && !isAnonymous ? (
+            <SettingsSection>
+              <SettingsRow
+                iconStyle="line"
+                icon="trash"
+                mdIcon="Trash2"
+                title="Delete Account"
+                destructive
+                onPress={handleDeleteAccount}
+                showChevron={false}
+              />
+            </SettingsSection>
+          ) : null}
+        </>
       ) : null}
     </SettingsScreen>
   );

@@ -529,7 +529,7 @@ export default function GoogleCalendarIntegrationScreen() {
       <SettingsScreen>
         <Notice
           title="Sign in required"
-          message="Google Calendar can be connected from an OpenWhispr account."
+          message="Google Calendar can be connected from an mnemo account."
         />
         <View className="mx-4">
           <ActionButton

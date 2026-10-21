@@ -8,6 +8,7 @@ import { useUsageStore, type UsageLoadResult } from '@/store/useUsageStore';
 import type { UsageInfo } from '@/data/remote/usageApi';
 import { reconcileStoreBilling } from '@/lib/billingReconciliation';
 import { formatResetLabel } from '@/components/ui/UsageMeter';
+import { isMnemoStandaloneProduct } from '@/config/mnemoProduct';
 
 const BILLING_REFRESH_DELAYS_MS = [0, 1_000, 2_000, 4_000, 8_000, 15_000] as const;
 
@@ -18,6 +19,14 @@ function hasCloudAccess(usage: UsageInfo | null): boolean {
 }
 
 function showUsageLimitFallback(): void {
+  if (isMnemoStandaloneProduct()) {
+    Alert.alert(
+      'On-Device Only',
+      'mnemo transcribes on your device. If recording fails, check that your local model is downloaded in Settings.',
+      [{ text: 'OK', style: 'cancel' }],
+    );
+    return;
+  }
   const usage = useUsageStore.getState().usage;
   const words =
     usage && usage.limit > 0

@@ -7,7 +7,7 @@ const { loadAudioManager } = require("./harness/audioManager");
 
 async function loadManagerClass(t, mockModules) {
   const { AudioManager } = await loadAudioManager(t, {
-    cachePrefix: "openwhispr-streaming-finalization-test-",
+    cachePrefix: "mnemo-streaming-finalization-test-",
     settingsKey: "__streamingFinalizationSettings",
     settings: {
       useLocalWhisper: false,
@@ -469,7 +469,7 @@ test("a stream without a final falls back to batch for every provider, tagged on
   const AudioManager = await loadManagerClass(t);
   globalThis.__streamingFinalizationSettings = {
     ...globalThis.__streamingFinalizationSettings,
-    cloudTranscriptionMode: "openwhispr",
+    cloudTranscriptionMode: "mnemo",
     isSignedIn: true,
   };
   const uploads = [];
@@ -478,7 +478,7 @@ test("a stream without a final falls back to batch for every provider, tagged on
     manager.recordingStartTime = Date.now() - 5000;
     manager.mergeRecordedSegments = async () => new Blob([new Uint8Array(100)]);
     manager.getStreamingProviderName = () => providerName;
-    manager.processWithOpenWhisprCloud = async (_blob, metadata) => {
+    manager.processWithMnemoCloud = async (_blob, metadata) => {
       uploads.push([providerName, metadata.streamingFallbackReason]);
       return { text: "" };
     };
@@ -496,7 +496,7 @@ test("a no-final stream whose Cloud upload finds no speech keeps the recording q
   const AudioManager = await loadManagerClass(t);
   globalThis.__streamingFinalizationSettings = {
     ...globalThis.__streamingFinalizationSettings,
-    cloudTranscriptionMode: "openwhispr",
+    cloudTranscriptionMode: "mnemo",
     isSignedIn: true,
   };
   const { manager } = createFinalizingManager(AudioManager);
@@ -508,7 +508,7 @@ test("a no-final stream whose Cloud upload finds no speech keeps the recording q
   manager.saveFailedTranscription = (message, code) => saved.push({ message, code });
   manager.onError = (error) => errors.push(error);
   manager.onTranscriptionComplete = (result) => completions.push(result);
-  manager.processWithOpenWhisprCloud = async () => {
+  manager.processWithMnemoCloud = async () => {
     throw Object.assign(new Error("No speech detected in audio"), { code: "NO_SPEECH_DETECTED" });
   };
 
@@ -565,7 +565,7 @@ test("missing Orukeet capture flush never commits a partial recording", async (t
 function useManagedOrukeetSettings() {
   globalThis.__streamingFinalizationSettings = {
     ...globalThis.__streamingFinalizationSettings,
-    cloudTranscriptionMode: "openwhispr",
+    cloudTranscriptionMode: "mnemo",
     isSignedIn: true,
   };
 }
@@ -664,7 +664,7 @@ function createStartingManager(AudioManager, { providerName, provider }) {
     _markCaptureStreamReleased() {},
     onStateChange() {},
     startRecording: async () => assert.fail("the microphone must not be reopened"),
-    processWithOpenWhisprCloud: async (blob, metadata) => {
+    processWithMnemoCloud: async (blob, metadata) => {
       uploads.push({ audio: await blob.text(), reason: metadata.streamingFallbackReason });
       return { text: "" };
     },
@@ -976,8 +976,8 @@ test("a capacity-refused managed commit closes and uploads the whole short captu
     providerName: "orukeet",
     provider,
   });
-  const upload = manager.processWithOpenWhisprCloud;
-  manager.processWithOpenWhisprCloud = async (...args) => {
+  const upload = manager.processWithMnemoCloud;
+  manager.processWithMnemoCloud = async (...args) => {
     assert.equal(adapter.intentionalClose, true);
     assert.equal(adapter.retryTimer, undefined);
     assert.match(adapter.failure.message, /capacity/);
@@ -1031,7 +1031,7 @@ test("a failed-over upload error is reported and kept for retry, not shown as si
   });
   const saved = [];
   manager.saveFailedTranscription = async (message, code) => saved.push([message, code]);
-  manager.processWithOpenWhisprCloud = async () => {
+  manager.processWithMnemoCloud = async () => {
     const error = new Error("You're offline.");
     error.code = "OFFLINE";
     throw error;
@@ -1063,7 +1063,7 @@ test("cancelling a failed-over upload does not keep it as a failed transcription
     uploadStarted = resolve;
   });
   globalThis.window.electronAPI.cancelCloudTranscription = () => cancelUpload();
-  manager.processWithOpenWhisprCloud = () =>
+  manager.processWithMnemoCloud = () =>
     new Promise((_resolve, reject) => {
       cancelUpload = () =>
         reject(Object.assign(new Error("Cancelled"), { code: "TRANSCRIPTION_CANCELLED" }));
@@ -1090,7 +1090,7 @@ test("a failed-over upload that echoes the dictionary reads as silence and keeps
   });
   const saved = [];
   manager.saveFailedTranscription = async (message, code) => saved.push([message, code]);
-  manager.processWithOpenWhisprCloud = async () => {
+  manager.processWithMnemoCloud = async () => {
     throw Object.assign(new Error("No audio detected"), { code: "DICTIONARY_ECHO" });
   };
 
@@ -1158,9 +1158,9 @@ test("a failed-over upload that reaches the word limit carries it to the upgrade
     provider: refusedStartProvider(),
   });
   globalThis.window.dispatchEvent = () => true;
-  manager.processWithOpenWhisprCloud = async () => ({
+  manager.processWithMnemoCloud = async () => ({
     text: "Last words of the day.",
-    source: "openwhispr",
+    source: "mnemo",
     limitReached: true,
     wordsUsed: 2000,
     wordsRemaining: 0,
@@ -1204,7 +1204,7 @@ test("a failed-over selection edit that fails is reported as a selection edit fa
     provider: refusedStartProvider(),
   });
   manager.saveFailedTranscription = async () => {};
-  manager.processWithOpenWhisprCloud = async () => {
+  manager.processWithMnemoCloud = async () => {
     throw Object.assign(new Error("Selection edit could not safely read the selection: gone"), {
       code: "SELECTION_EDIT_CAPTURE_FAILED",
       messageKey: "hooks.audioRecording.selectionEditing.unavailable",
@@ -1286,7 +1286,7 @@ async function stopManagedDictation(
 ) {
   globalThis.__streamingFinalizationSettings = {
     ...globalThis.__streamingFinalizationSettings,
-    cloudTranscriptionMode: "openwhispr",
+    cloudTranscriptionMode: "mnemo",
     isSignedIn: true,
     ...settings,
   };
@@ -1299,7 +1299,7 @@ async function stopManagedDictation(
   Object.assign(manager, overrides);
   const uploads = [];
   if (upload) {
-    manager.processWithOpenWhisprCloud = async (_blob, metadata) => {
+    manager.processWithMnemoCloud = async (_blob, metadata) => {
       uploads.push(metadata);
       return upload(manager);
     };
@@ -1371,7 +1371,7 @@ test("language re-transcription skips streaming cleanup", async (t) => {
   };
   const { reasonCalls, usage, published } = await stopManagedDictation(AudioManager, {
     final: JA_FINAL,
-    settings: { useCleanupModel: true, cleanupCloudMode: "openwhispr", customPrompts: {} },
+    settings: { useCleanupModel: true, cleanupCloudMode: "mnemo", customPrompts: {} },
     overrides: {
       isDictionaryEcho: () => false,
       getWhisperPrompt: () => null,
@@ -1526,19 +1526,19 @@ test("a re-transcription that reaches the word limit opens the upgrade prompt", 
     upload: async () => ({
       text: "明日の会議",
       rawText: "明日の会議",
-      source: "openwhispr",
+      source: "mnemo",
       limitReached: true,
       wordsUsed: 2000,
       wordsRemaining: 0,
     }),
   });
-  assert.equal(published[0].source, "openwhispr");
+  assert.equal(published[0].source, "mnemo");
   assert.equal(published[0].limitReached, true);
   assert.equal(published[0].wordsUsed, 2000);
   assert.equal(published[0].wordsRemaining, 0);
 });
 
-test("only a signed-in OpenWhispr Cloud recording is re-transcribed", async (t) => {
+test("only a signed-in Mnemo Cloud recording is re-transcribed", async (t) => {
   const AudioManager = await loadManagerClass(t);
   for (const settings of [{ cloudTranscriptionMode: "byok" }, { isSignedIn: false }]) {
     const { uploads, published } = await stopManagedDictation(AudioManager, {
@@ -1571,7 +1571,7 @@ test("kept Orukeet text carries the estimate into streaming cleanup and translat
     `,
     "/dictationTranslationInference": `
       export const resolveDictationTranslationInference = () => ({
-        reachable: true, model: "translation-model", config: { provider: "openwhispr" }
+        reachable: true, model: "translation-model", config: { provider: "mnemo" }
       });
     `,
   });
@@ -1581,7 +1581,7 @@ test("kept Orukeet text carries the estimate into streaming cleanup and translat
       upload: async () => assert.fail("must not re-transcribe"),
       settings: {
         useCleanupModel: true,
-        cleanupCloudMode: "openwhispr",
+        cleanupCloudMode: "mnemo",
         customPrompts: {},
         translationSourceLanguage: "en",
         translationTargetLanguage: "es",

@@ -2,9 +2,9 @@
 
 ## Reporting a Vulnerability
 
-If you have discovered a security vulnerability in OpenWhispr Mobile, please report it privately. **Do not open a public GitHub issue.**
+If you have discovered a security vulnerability in Mnemo Mobile, please report it privately. **Do not open a public GitHub issue.**
 
-Email: **security@openwhispr.com**
+Email: **security@mnemo.com**
 
 Include as much of the following as you can:
 
@@ -21,13 +21,13 @@ We will acknowledge your report within **5 business days** and follow up with a 
 
 In scope:
 
-- The OpenWhispr Mobile app source in this repository
+- The Mnemo Mobile app source in this repository
 - The iOS keyboard extension (`plugins/keyboard-extension/`)
 - The native modules under `modules/`
 
 Out of scope:
 
 - Third-party dependencies (please report those upstream)
-- Vulnerabilities in the OpenWhispr backend (report those to the same address with a clear note)
+- Vulnerabilities in the Mnemo backend (report those to the same address with a clear note)
 
 We appreciate responsible disclosure and will not pursue legal action against researchers who follow this policy in good faith.

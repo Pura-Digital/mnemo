@@ -1,6 +1,7 @@
 import { NativeTabs } from 'expo-router/unstable-native-tabs';
 import { useSegments } from 'expo-router';
 import { useHandoffStore } from '@/store/useHandoffStore';
+import { isMnemoStandaloneProduct } from '@/config/mnemoProduct';
 
 // Static routes inside the (notes) stack — anything else under (notes) is the
 // dynamic [id] editor route.
@@ -35,10 +36,12 @@ export default function TabsLayout() {
         <NativeTabs.Trigger.Label>Dictionary</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon sf="text.book.closed.fill" />
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="(referral)">
-        <NativeTabs.Trigger.Label>Referral</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon sf="gift.fill" />
-      </NativeTabs.Trigger>
+      {!isMnemoStandaloneProduct() ? (
+        <NativeTabs.Trigger name="(referral)">
+          <NativeTabs.Trigger.Label>Referral</NativeTabs.Trigger.Label>
+          <NativeTabs.Trigger.Icon sf="gift.fill" />
+        </NativeTabs.Trigger>
+      ) : null}
     </NativeTabs>
   );
 }

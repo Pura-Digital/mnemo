@@ -77,16 +77,16 @@ async function fixture(t, fetchImpl) {
   const options = {
     streaming,
     tokenStore,
-    getApiUrl: () => "https://api.openwhispr.test",
+    getApiUrl: () => "https://api.mnemo.test",
     withPolicyHeaders: (headers) => withPolicyRequestHeaders(headers, "1.8.1"),
     proxyFetch:
       fetchImpl ||
       (async (url, options) => {
-        assert.equal(url, "https://api.openwhispr.test/api/stt/orukeet/session");
+        assert.equal(url, "https://api.mnemo.test/api/stt/orukeet/session");
         assert.equal(options.headers.Authorization, "Bearer account-a");
-        assert.equal(options.headers["x-openwhispr-policy-version"], "1");
+        assert.equal(options.headers["x-mnemo-policy-version"], "1");
         // The server mints only for builds that declare they can run Orukeet.
-        assert.equal(options.headers["x-openwhispr-capabilities"], "orukeet");
+        assert.equal(options.headers["x-mnemo-capabilities"], "orukeet");
         assert.equal(options.useSessionCookies, false);
         assert.equal(options.redirect, "error");
         return Response.json(session());

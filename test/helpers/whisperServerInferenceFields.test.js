@@ -57,7 +57,7 @@ test("sends the decoder threshold fields alongside the existing inference fields
   const manager = createManager(port);
   const result = await manager.transcribe(Buffer.from("audio"), {
     language: "auto",
-    initialPrompt: "OpenWhispr",
+    initialPrompt: "Mnemo",
   });
   assert.equal(result.text, "ok");
 
@@ -66,7 +66,7 @@ test("sends the decoder threshold fields alongside the existing inference fields
     assert.equal(fieldValue(body, name), value, `expected ${name}=${value} in the request body`);
   }
   assert.equal(fieldValue(body, "language"), "auto");
-  assert.equal(fieldValue(body, "prompt"), "OpenWhispr");
+  assert.equal(fieldValue(body, "prompt"), "Mnemo");
   assert.equal(fieldValue(body, "response_format"), "json");
 
   // Field order: file, language, decoder thresholds, prompt, response_format, closing boundary.

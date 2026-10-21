@@ -86,7 +86,7 @@ jest.mock('../../../modules/app-group-storage/src', () => ({
 import KeyboardFullAccessScreen from '../KeyboardFullAccessScreen';
 import { useKeyboardRecoveryStore } from '@/store/useKeyboardRecoveryStore';
 
-// Onboarding's list has five steps and starts with "Enable OpenWhispr". A user
+// Onboarding's list has five steps and starts with "Enable mnemo". A user
 // who reaches recovery has already done that, so this screen must show three.
 const RECOVERY_STEPS = ['Tap Keyboards', 'Allow Full Access', 'Tap Allow on the popup'];
 
@@ -135,7 +135,7 @@ describe('KeyboardFullAccessScreen', () => {
     for (const step of RECOVERY_STEPS) {
       expect(screen.getByText(step)).toBeTruthy();
     }
-    expect(screen.queryByText('Enable OpenWhispr')).toBeNull();
+    expect(screen.queryByText('Enable mnemo')).toBeNull();
     expect(screen.queryByText('Come back into the app')).toBeNull();
   });
 

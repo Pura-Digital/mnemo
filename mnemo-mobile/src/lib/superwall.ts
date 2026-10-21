@@ -48,7 +48,7 @@ type BuildSuperwallAttributesInput = {
 };
 
 type ExpoExtra = {
-  openWhispr?: {
+  mnemo?: {
     appEnvironment?: string;
   };
 };
@@ -112,7 +112,7 @@ export function buildSuperwallAttributes({
 export function getSuperwallAppInfo(): AppInfo {
   const extra = Constants.expoConfig?.extra as ExpoExtra | undefined;
   return {
-    appEnvironment: extra?.openWhispr?.appEnvironment ?? (__DEV__ ? 'development' : 'production'),
+    appEnvironment: extra?.mnemo?.appEnvironment ?? (__DEV__ ? 'development' : 'production'),
     appVersion: Constants.expoConfig?.version ?? 'unknown',
   };
 }

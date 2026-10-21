@@ -12,10 +12,10 @@ import ActivityKit
 @available(iOS 17.0, *)
 struct ToggleDictationModeIntent: LiveActivityIntent {
   static var title: LocalizedStringResource = "Turn off Dictation mode"
-  static var description = IntentDescription("Turns OpenWhispr dictation mode off.")
+  static var description = IntentDescription("Turns Mnemo dictation mode off.")
 
   func perform() async throws -> some IntentResult {
-    let bundleId = Bundle.main.bundleIdentifier ?? "com.gizmolabs.openwhispr"
+    let bundleId = Bundle.main.bundleIdentifier ?? "com.pura.mnemo"
     UserDefaults(suiteName: "group.\(bundleId)")?.set("0", forKey: "dictation_mode_enabled")
 
     let name = "\(bundleId).dictationModeChanged" as CFString

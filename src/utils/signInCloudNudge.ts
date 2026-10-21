@@ -30,6 +30,6 @@ export function decideSignInCloudNudge({
   if (!isSignedIn || (policy.status !== "managed" && policy.status !== "unmanaged")) {
     return "wait";
   }
-  if (transcriptionMode === "openwhispr") return "skip";
-  return isModeAllowedByPolicy(policy, "transcription", "openwhispr") ? "nudge" : "skip";
+  if (transcriptionMode === "pura") return "skip";
+  return isModeAllowedByPolicy(policy, "transcription", "mnemo") ? "nudge" : "skip";
 }

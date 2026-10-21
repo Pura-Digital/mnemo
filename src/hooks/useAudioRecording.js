@@ -208,7 +208,7 @@ export const useAudioRecording = (toast, options = {}) => {
         // Retry STT config fetch if it wasn't loaded on mount (e.g. auth wasn't ready),
         // and refresh a copy older than its TTL so a server-side rollout change
         // reaches a long-running app. Await it only when it can change the start
-        // decision (no config yet, signed-in OpenWhispr-cloud streaming); for
+        // decision (no config yet, signed-in Mnemo-cloud streaming); for
         // local STT or a signed-out session the fetch stalls on auth resolution
         // and would delay the mic open (#1673). A stale-but-present copy is
         // refreshed in the background and this recording keeps the old decision.
@@ -805,7 +805,7 @@ export const useAudioRecording = (toast, options = {}) => {
           }
 
           // Cloud usage: limit reached after this transcription
-          if (result.source === "openwhispr" && result.limitReached) {
+          if (result.source === "mnemo" && result.limitReached) {
             // Notify control panel to show UpgradePrompt dialog
             window.electronAPI?.notifyLimitReached?.({
               wordsUsed: result.wordsUsed,

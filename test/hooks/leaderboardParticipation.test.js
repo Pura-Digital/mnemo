@@ -40,7 +40,7 @@ test("leaderboard participation is account-scoped across auth changes", async (t
   installBrowserGlobals(t);
   const container = installHookDom(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-leaderboard-participation-hook-",
+    cachePrefix: "mnemo-leaderboard-participation-hook-",
     mockModules: {
       "./useAuth": `
         export const useAuth = () => ({

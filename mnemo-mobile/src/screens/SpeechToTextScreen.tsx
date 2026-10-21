@@ -10,6 +10,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { accountRequiredForCloud, showAccountRequiredAlert } from '@/lib/accountAccess';
 import { getPrivateModeReadiness, getPrivateModeUnavailableMessage } from '@/lib/privateMode';
 import { safeHaptics } from '@/lib/utils';
+import { isMnemoStandaloneProduct } from '@/config/mnemoProduct';
 import { type InferenceMode, inferenceToProcessingMode, processingToInferenceMode } from '@/types';
 
 export default function SpeechToTextScreen() {
@@ -26,8 +27,11 @@ export default function SpeechToTextScreen() {
       safeHaptics('light');
       const nextProcessing = inferenceToProcessingMode(mode);
 
-      if (nextProcessing === 'cloud' && accountRequiredForCloud(user)) {
-        showAccountRequiredAlert('cloud transcription');
+      if (
+        nextProcessing === 'cloud' &&
+        (isMnemoStandaloneProduct() || accountRequiredForCloud(user))
+      ) {
+        if (!isMnemoStandaloneProduct()) showAccountRequiredAlert('cloud transcription');
         return;
       }
 

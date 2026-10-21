@@ -22,7 +22,7 @@ test("batch uploads retain diarization warnings separately from transcription wa
   });
 
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-batch-diarization-warning-test-",
+    cachePrefix: "mnemo-batch-diarization-warning-test-",
     mockModules: {
       "/services/fileTranscription": `
         export async function transcribeFileWithSpeakers() {
@@ -59,7 +59,7 @@ test("batch uploads retain diarization warnings separately from transcription wa
         whisperModel: "base",
         parakeetModel: "parakeet-tdt-0.6b-v3",
         cohereModel: "command-a-transcribe",
-        isOpenWhisprCloud: false,
+        isMnemoCloud: false,
         getApiKey: () => "",
         cloudTranscriptionProvider: "openai",
         cloudTranscriptionBaseUrl: "",

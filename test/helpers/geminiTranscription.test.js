@@ -63,14 +63,14 @@ test("language and keyterms land in transcription_config", async () => {
   const { fetchImpl, calls } = makeFetch({ status: "completed", output_text: "ok" });
 
   await transcribeWithGemini(
-    { audioBuffer: AUDIO, language: "de", keyterms: ["OpenWhispr", "Gizmo"], apiKey: "k" },
+    { audioBuffer: AUDIO, language: "de", keyterms: ["Mnemo", "Gizmo"], apiKey: "k" },
     fetchImpl
   );
 
   assert.deepEqual(requestBody(calls).generation_config, {
     transcription_config: {
       language_codes: ["de"],
-      custom_vocabulary: ["OpenWhispr", "Gizmo"],
+      custom_vocabulary: ["Mnemo", "Gizmo"],
     },
   });
 });

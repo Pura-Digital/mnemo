@@ -5,7 +5,7 @@ updates:
     schedule:
       interval: "weekly"
   - package-ecosystem: "npm"
-    directory: "/openwhispr-mobile"
+    directory: "/mnemo-mobile"
     schedule:
       interval: "weekly"
   - package-ecosystem: "github-actions"

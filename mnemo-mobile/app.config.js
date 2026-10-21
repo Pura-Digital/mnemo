@@ -1,5 +1,5 @@
 const baseConfig = require('./app.base.json');
-const { resolveOpenWhisprEnvironment } = require('./config/openwhispr-environments');
+const { resolveMnemoEnvironment } = require('./config/mnemo-environments');
 
 function unique(values) {
   return [...new Set(values.filter(Boolean))];
@@ -61,14 +61,14 @@ function createEasExtensionConfig(existingExtra, environment) {
           ...(existingExtra?.eas?.build?.experimental?.ios ?? {}),
           appExtensions: [
             {
-              targetName: 'OpenWhisprKeyboard',
+              targetName: 'MnemoKeyboard',
               bundleIdentifier: environment.keyboardBundleIdentifier,
               entitlements: {
                 'com.apple.security.application-groups': [environment.appGroupId],
               },
             },
             {
-              targetName: 'OpenWhisprActivity',
+              targetName: 'MnemoActivity',
               bundleIdentifier: `${environment.iosBundleIdentifier}.activity`,
               entitlements: {
                 'com.apple.security.application-groups': [environment.appGroupId],
@@ -93,7 +93,7 @@ function createGoogleCalendarConfig(environment) {
 }
 
 module.exports = () => {
-  const environment = resolveOpenWhisprEnvironment();
+  const environment = resolveMnemoEnvironment();
   const expo = clone(baseConfig.expo);
   const iosInfoPlist = expo.ios?.infoPlist ?? {};
   const iosQueries = iosInfoPlist.LSApplicationQueriesSchemes ?? [];
@@ -127,7 +127,7 @@ module.exports = () => {
     },
     extra: {
       ...expo.extra,
-      openWhispr: {
+      mnemo: {
         ...environment,
         googleCalendar,
       },

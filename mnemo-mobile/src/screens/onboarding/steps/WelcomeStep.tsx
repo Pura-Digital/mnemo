@@ -47,7 +47,7 @@ export function WelcomeStep() {
 
   return (
     <OnboardingShell
-      title="Let's set up OpenWhispr"
+      title="Let's set up mnemo"
       titleAccent="set up"
       subtitle="Dictate naturally anywhere on iPhone. Emails, messages, notes and AI chats."
       ctaLabel="Set up"

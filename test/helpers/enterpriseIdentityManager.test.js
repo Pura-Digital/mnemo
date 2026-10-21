@@ -61,7 +61,7 @@ function request(overrides = {}) {
     accountId,
     workspaceId,
     expectedAuthGeneration: 4,
-    authHeaders: { Authorization: "Bearer openwhispr-session" },
+    authHeaders: { Authorization: "Bearer mnemo-session" },
     inferenceScope: "dictationCleanup",
     setupMode: "auto",
     ...overrides,
@@ -69,13 +69,13 @@ function request(overrides = {}) {
 }
 
 test("deduplicates config and Azure token refreshes while keeping cloud tokens out of config", async (t) => {
-  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "openwhispr-enterprise-"));
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "mnemo-enterprise-"));
   t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
   const calls = { config: 0, assertion: 0, azure: 0 };
   const proxyFetch = async (url) => {
     if (url.includes("/enterprise-providers/azure/assertion")) {
       calls.assertion += 1;
-      return jsonResponse({ data: { assertion: "signed-openwhispr-assertion" } });
+      return jsonResponse({ data: { assertion: "signed-mnemo-assertion" } });
     }
     if (url.startsWith("https://login.microsoftonline.com/")) {
       calls.azure += 1;
@@ -84,7 +84,7 @@ test("deduplicates config and Azure token refreshes while keeping cloud tokens o
     calls.config += 1;
     return jsonResponse({ data: managedConfig() });
   };
-  const tokenState = { token: "openwhispr-session", generation: 4 };
+  const tokenState = { token: "mnemo-session", generation: 4 };
   const manager = createEnterpriseIdentityManager({
     cachePath: path.join(tempDir, "config.json"),
     getApiUrl: () => "https://api.example.com",
@@ -101,7 +101,7 @@ test("deduplicates config and Azure token refreshes while keeping cloud tokens o
   assert.equal(right.success, true);
   assert.equal(calls.config, 1);
   assert.equal(JSON.stringify(left).includes("azure-bearer-token"), false);
-  assert.equal(JSON.stringify(left).includes("signed-openwhispr-assertion"), false);
+  assert.equal(JSON.stringify(left).includes("signed-mnemo-assertion"), false);
 
   const runtime = await manager.resolveProvider(request());
   assert.equal(runtime.managed, true);
@@ -113,7 +113,7 @@ test("deduplicates config and Azure token refreshes while keeping cloud tokens o
 });
 
 test("authorization failures evict cached config while server failures use it transiently", async (t) => {
-  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "openwhispr-enterprise-"));
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "mnemo-enterprise-"));
   t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
   const cachePath = path.join(tempDir, "config.json");
   const enforcedConfig = managedConfig();
@@ -141,7 +141,7 @@ test("authorization failures evict cached config while server failures use it tr
 });
 
 test("an Enterprise-plan downgrade clears prior managed enforcement", async (t) => {
-  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "openwhispr-enterprise-"));
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "mnemo-enterprise-"));
   t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
   const enforcedConfig = managedConfig();
   enforcedConfig.providers[0].mode = "managed_required";
@@ -170,7 +170,7 @@ test("an Enterprise-plan downgrade clears prior managed enforcement", async (t) 
 });
 
 test("a malformed successful config response fails closed instead of using disk cache", async (t) => {
-  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "openwhispr-enterprise-"));
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "mnemo-enterprise-"));
   t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
   const enforcedConfig = managedConfig();
   enforcedConfig.providers[0].mode = "managed_required";
@@ -195,7 +195,7 @@ test("a malformed successful config response fails closed instead of using disk 
 });
 
 test("a first transient failure does not claim that enforcement is disabled", async (t) => {
-  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "openwhispr-enterprise-"));
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "mnemo-enterprise-"));
   t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
   const manager = createEnterpriseIdentityManager({
     cachePath: path.join(tempDir, "config.json"),
@@ -213,7 +213,7 @@ test("a first transient failure does not claim that enforcement is disabled", as
 });
 
 test("a generation change discards old cloud credentials and broadcasts the new envelope", async (t) => {
-  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "openwhispr-enterprise-"));
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "mnemo-enterprise-"));
   t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
   let generation = 1;
   let tokenCalls = 0;
@@ -252,7 +252,7 @@ test("a generation change discards old cloud credentials and broadcasts the new 
 });
 
 test("rejects stale auth generations before making a request", async (t) => {
-  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "openwhispr-enterprise-"));
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "mnemo-enterprise-"));
   t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
   let called = false;
   const manager = createEnterpriseIdentityManager({
@@ -273,7 +273,7 @@ test("rejects stale auth generations before making a request", async (t) => {
 });
 
 test("Bedrock exchanges the workspace assertion for short-lived web identity credentials", async (t) => {
-  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "openwhispr-enterprise-"));
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "mnemo-enterprise-"));
   t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
   const config = managedConfig();
   config.providers = [
@@ -282,7 +282,7 @@ test("Bedrock exchanges the workspace assertion for short-lived web identity cre
       mode: "managed_required",
       allowManualSetup: false,
       config: {
-        roleArn: "arn:aws:iam::123456789012:role/OpenWhispr",
+        roleArn: "arn:aws:iam::123456789012:role/Mnemo",
         region: "us-west-2",
         allowedModels: ["model-a"],
         scopeDefaults: Object.fromEntries(
@@ -304,7 +304,7 @@ test("Bedrock exchanges the workspace assertion for short-lived web identity cre
         ? jsonResponse({ data: { assertion: "workspace-assertion" } })
         : jsonResponse({ data: config }),
     tokenStore: {
-      getState: () => ({ token: "openwhispr-session", generation: 4 }),
+      getState: () => ({ token: "mnemo-session", generation: 4 }),
     },
     createAwsWebIdentityProvider: (init) => {
       providerInit = init;
@@ -327,8 +327,8 @@ test("Bedrock exchanges the workspace assertion for short-lived web identity cre
   assert.equal(second.accessKeyId, "temporary-access-key");
   assert.equal(providerCalls, 1);
   assert.deepEqual(providerInit, {
-    roleArn: "arn:aws:iam::123456789012:role/OpenWhispr",
-    roleSessionName: `openwhispr-${workspaceId.slice(0, 8)}`,
+    roleArn: "arn:aws:iam::123456789012:role/Mnemo",
+    roleSessionName: `mnemo-${workspaceId.slice(0, 8)}`,
     webIdentityToken: "workspace-assertion",
     durationSeconds: 900,
     clientConfig: { region: "us-west-2" },
@@ -336,7 +336,7 @@ test("Bedrock exchanges the workspace assertion for short-lived web identity cre
 });
 
 test("assertion requests carry the inference scope being exercised", async (t) => {
-  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "openwhispr-enterprise-scope-"));
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "mnemo-enterprise-scope-"));
   t.after(() => fs.rmSync(tempDir, { recursive: true, force: true }));
   const bodies = [];
   const config = managedConfig();
@@ -359,7 +359,7 @@ test("assertion requests carry the inference scope being exercised", async (t) =
     getApiUrl: () => "https://api.example.com",
     getAppVersion: () => "1.10.0",
     proxyFetch,
-    tokenStore: { getState: () => ({ generation: 4, token: "openwhispr-session" }) },
+    tokenStore: { getState: () => ({ generation: 4, token: "mnemo-session" }) },
   });
   const resolved = await manager.resolveProvider(request({ inferenceScope: "transcription" }));
   assert.equal(resolved.managed, true);

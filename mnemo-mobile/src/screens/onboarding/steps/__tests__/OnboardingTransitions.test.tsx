@@ -70,7 +70,7 @@ jest.mock('@/utils/expoAudio', () => ({
     },
   }),
 }));
-jest.mock('@/components/ui/OpenWhisprMark', () => ({ OpenWhisprMark: () => null }));
+jest.mock('@/components/ui/MnemoMark', () => ({ MnemoMark: () => null }));
 jest.mock('../../../../../modules/app-group-storage/src', () => ({
   AppGroupStorage: { armWarmMic: jest.fn() },
 }));
@@ -251,7 +251,7 @@ it('lets the keyboard cover the switch step’s button, with help to get unstuck
   const dismiss = jest.spyOn(Keyboard, 'dismiss');
   fireEvent.press(screen.getByLabelText('Help'));
   expect(dismiss).toHaveBeenCalled();
-  expect(screen.getByText('Can’t switch to OpenWhispr?')).toBeTruthy();
+  expect(screen.getByText('Can’t switch to mnemo?')).toBeTruthy();
   expect(screen.queryByText('Continue anyway')).toBeNull();
 });
 

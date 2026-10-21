@@ -10,7 +10,7 @@ import { UPGRADE_REQUIRED_MESSAGE } from '@/lib/policyMessages';
 export { UPGRADE_REQUIRED_MESSAGE };
 
 export const POLICY_MODE_BLOCKED_TRANSCRIPTION_MESSAGE =
-  "Your organization's policy doesn't allow OpenWhispr cloud transcription.";
+  "Your organization's policy doesn't allow Pura LLM transcription.";
 
 function errorCodeFromBody(body: string): string | undefined {
   try {

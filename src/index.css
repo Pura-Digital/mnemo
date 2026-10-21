@@ -5,36 +5,36 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  /* OpenWhispr Theme — registers color tokens with Tailwind v4.
+  /* mnemo Theme — registers color tokens with Tailwind v4.
      These are the light-mode defaults; .dark overrides them below. */
-  /* Midpoint of the brand glass gradient (#5588F0 → #3466E2) so tints, rings and links match it. */
-  --color-primary: #4577e9;
+  /* Crimson ink for readable links and actions, paired with the coral ribbon mark. */
+  --color-primary: #c81038;
   --color-primary-foreground: #ffffff;
   --color-secondary: #f5f5f5;
   --color-secondary-foreground: #171717;
   --color-muted: #f5f5f5;
   --color-muted-foreground: #525252;
-  --color-accent: oklch(0.55 0.22 285);
+  --color-accent: #c81038;
   --color-accent-foreground: #ffffff;
   /* Agent Mode identity, sourced from the supplied sparkle/leaf mark. */
-  --color-agent-brand: #8787ff;
+  --color-agent-brand: #fb7185;
   --color-destructive: #dc2626;
   --color-destructive-foreground: #ffffff;
   --color-border: #e5e5e5;
   --color-input: #f9f6f1;
-  --color-ring: #4577e9;
+  --color-ring: #c81038;
   --color-background: #ffffff;
   --color-foreground: #171717;
   --color-card: #ffffff;
   --color-card-foreground: #171717;
   --color-popover: #ffffff;
   --color-popover-foreground: #171717;
-  --color-link: #4577e9;
+  --color-link: #c81038;
   --color-success: #16a34a;
   --color-success-foreground: #ffffff;
   --color-warning: #d97706;
   --color-warning-foreground: #ffffff;
-  --color-info: #4577e9;
+  --color-info: #c81038;
   --color-info-foreground: #ffffff;
 
   /* Surface hierarchy — light mode equivalents */
@@ -49,7 +49,7 @@
   /* Border states — light mode equivalents */
   --color-border-subtle: #e5e5e5;
   --color-border-hover: #d4d4d4;
-  --color-border-active: #4577e9;
+  --color-border-active: #c81038;
 }
 
 :root {
@@ -102,15 +102,20 @@
   --shadow-glass:
     inset 0 1px 0 rgba(255, 255, 255, 0.7), inset 0 0 0 1px rgba(255, 255, 255, 0.45),
     0 2px 10px rgba(15, 23, 42, 0.06);
-  /* Same rim on brand-blue surfaces (mic/send buttons, today header): the app
+  /* Same rim on brand-red surfaces (mic/send buttons, today header): the app
      icon's glass. Softer than --shadow-glass because it sits on colour. */
   --shadow-brand-glass:
     inset 0 1px 0 rgba(255, 255, 255, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.16),
     inset 0 -1px 1px rgba(0, 0, 0, 0.12);
   /* The fill under that rim: Button default, mic/send circles, the onboarding brand tile. */
-  --gradient-brand-glass: linear-gradient(180deg, #5588f0 0%, #3466e2 100%);
+  --gradient-brand-glass: linear-gradient(180deg, #df103c 0%, #bb0730 100%);
   /* The brand tile floats over the onboarding hero, so it adds a soft coloured lift. */
-  --shadow-brand-tile: var(--shadow-brand-glass), 0 10px 24px -8px rgb(52 102 226 / 0.45);
+  --shadow-brand-tile: var(--shadow-brand-glass), 0 10px 24px -8px rgb(200 16 56 / 0.35);
+
+  /* Native OS glass — semi-transparent chrome; blur comes from the compositor. */
+  --glass-chrome: rgb(255 255 255 / 0.28);
+  --glass-panel: rgb(255 255 255 / 0.4);
+  --glass-chrome-border: rgb(0 0 0 / 0.05);
 }
 
 .dark {
@@ -123,19 +128,19 @@
   --color-card-foreground: oklch(0.93 0 0);
   --color-popover: oklch(0.29 0.009 260);
   --color-popover-foreground: oklch(0.93 0 0);
-  --color-primary: oklch(0.65 0.2 260);
-  --color-primary-foreground: oklch(0.99 0 0);
+  --color-primary: #fb7185;
+  --color-primary-foreground: #300813;
   --color-secondary: oklch(0.28 0.007 260);
   --color-secondary-foreground: oklch(0.9 0 0);
   --color-muted: oklch(0.24 0.006 260);
   --color-muted-foreground: oklch(0.65 0 0);
-  --color-accent: oklch(0.68 0.18 285);
-  --color-accent-foreground: oklch(0.99 0 0);
+  --color-accent: #fb7185;
+  --color-accent-foreground: #300813;
   --color-destructive: oklch(0.62 0.22 25);
   --color-destructive-foreground: oklch(0.99 0 0);
   --color-border: oklch(0.35 0.007 260);
   --color-input: oklch(0.19 0.005 260);
-  --color-ring: oklch(0.65 0.2 260);
+  --color-ring: #fb7185;
   --color-success: oklch(0.7 0.18 145);
   --color-success-foreground: oklch(0.99 0 0);
   --color-warning: oklch(0.75 0.15 70);
@@ -154,8 +159,8 @@
   /* Border states */
   --color-border-subtle: oklch(0.33 0.006 260);
   --color-border-hover: oklch(0.42 0.01 260);
-  --color-border-active: oklch(0.5 0.15 260);
-  --color-link: oklch(0.67 0.1 250);
+  --color-border-active: #e11d48;
+  --color-link: #fda4af;
 
   /* Card depth shadows — softer for charcoal, with top highlight for premium depth */
   --shadow-card: 0 1px 3px oklch(0 0 0 / 0.2), inset 0 1px 0 oklch(1 0 0 / 0.03);
@@ -166,7 +171,7 @@
   /* Premium effects */
   --shadow-metallic-dark: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 2px 8px rgba(0, 0, 0, 0.2);
   --shadow-selected-glow:
-    inset 0 0 0 1px oklch(0.65 0.2 260 / 0.2), 0 0 16px -4px oklch(0.65 0.2 260 / 0.2);
+    inset 0 0 0 1px rgb(251 113 133 / 0.2), 0 0 16px -4px rgb(251 113 133 / 0.2);
   --shadow-card-hover-subtle: 0 2px 8px -2px rgba(0, 0, 0, 0.12);
 
   /* Liquid-glass edge — faint rim on charcoal, deeper lift */
@@ -174,6 +179,22 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.1), inset 0 0 0 1px rgba(255, 255, 255, 0.05),
     0 2px 12px rgba(0, 0, 0, 0.35);
   --shadow-brand-tile: var(--shadow-brand-glass), 0 10px 24px -8px rgb(0 0 0 / 0.6);
+
+  --glass-chrome: rgb(22 22 28 / 0.32);
+  --glass-panel: rgb(28 28 34 / 0.42);
+  --glass-chrome-border: rgb(255 255 255 / 0.07);
+}
+
+html[data-native-glass="true"] .glass-chrome-surface {
+  background-color: var(--glass-chrome);
+}
+
+html[data-native-glass="true"] .glass-panel-surface {
+  background-color: var(--glass-panel);
+}
+
+html[data-native-glass="true"] .loading-fallback-shell {
+  background: transparent;
 }
 
 @layer base {
@@ -224,11 +245,29 @@
     background: transparent;
   }
 
+  /* Transparent overlay windows must not use 100vh — in Electron it maps to the
+     display, not the BrowserWindow, and the page backing grows huge behind the pill. */
+  html:has(.dictation-window),
+  html:has(.meeting-notification-window),
+  body:has(.dictation-window),
+  body:has(.meeting-notification-window),
+  body:has(.dictation-window) #root,
+  body:has(.meeting-notification-window) #root {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+
   /* The control panel window is transparent (windowConfig.js), so the page backing
      is cleared here rather than filled. The compact frame owns the complete
      480x576 surface, including its rounded corners. */
   body:has(.onboarding-canvas.compact),
   body:has(.onboarding-canvas.compact) #root {
+    background: transparent;
+  }
+
+  html[data-native-glass="true"] body,
+  html[data-native-glass="true"] #root {
     background: transparent;
   }
 
@@ -435,6 +474,93 @@ body.dark:has(.onboarding-canvas) {
 .dark .onboarding-canvas,
 .dark.onboarding-canvas {
   background-image: var(--onboarding-background-dark);
+}
+
+/* Note-centric control panel: product light palette (white shell), not onboarding greys. */
+.app-canvas,
+body:has(.app-canvas) {
+  --font-family-sans:
+    "Yowza", "Inter Variable", "Noto Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-family-sans);
+  font-optical-sizing: auto;
+  --onboarding-accent: var(--color-primary);
+  --onboarding-accent-foreground: #ffffff;
+  --onboarding-accent-hover: color-mix(in srgb, var(--onboarding-accent) 88%, black);
+  --onboarding-text-primary: #171717;
+  --onboarding-text-secondary: #525252;
+  --onboarding-text-tertiary: #737373;
+  --onboarding-control-border: #e5e5e5;
+  --onboarding-surface: #ffffff;
+  --onboarding-surface-secondary: #ffffff;
+  --onboarding-surface-tertiary: #f5f5f5;
+  --onboarding-surface-hover: #fafafa;
+  --onboarding-surface-tertiary-hover: #ebebeb;
+  --onboarding-row-hover: #f5f5f5;
+  --onboarding-inverse-surface: #0a0a0a;
+  --onboarding-inverse-surface-secondary: #262626;
+  --onboarding-inverse-text: #ffffff;
+  --onboarding-link: var(--color-link);
+  --onboarding-danger: #ef4444;
+  --onboarding-success: #22c55e;
+  --onboarding-keycap-top: #eeeeee;
+  --onboarding-keycap-bottom: #dddddd;
+  --onboarding-keycap-bevel: #f8f8f8;
+  --onboarding-keycap-shadow: #0a0a0a;
+  --onboarding-mark-monochrome: grayscale(1) brightness(0);
+  --onboarding-scrim: rgb(0 0 0 / 0.2);
+  /* Main window + sidebar chrome: match the white workspace, not surface-window grey. */
+  --color-surface-window: #ffffff;
+  --color-surface-0: #ffffff;
+  --color-surface-1: #fafafa;
+  --color-surface-2: #ffffff;
+  --color-surface-3: #f5f5f5;
+}
+
+.dark .app-canvas,
+.dark:has(.app-canvas),
+body.dark:has(.app-canvas) {
+  --onboarding-accent-foreground: #ffffff;
+  --onboarding-accent-hover: color-mix(in srgb, var(--onboarding-accent) 88%, white);
+  --onboarding-text-primary: #f5f5f5;
+  --onboarding-text-secondary: #a1a1a1;
+  --onboarding-text-tertiary: #7c7c7c;
+  --onboarding-control-border: #2e2e2e;
+  --onboarding-surface: #141414;
+  --onboarding-surface-secondary: #1c1c1c;
+  --onboarding-surface-tertiary: #292929;
+  --onboarding-surface-hover: #202020;
+  --onboarding-surface-tertiary-hover: #363636;
+  --onboarding-row-hover: #202020;
+  --onboarding-inverse-surface: #f5f5f5;
+  --onboarding-inverse-surface-secondary: #d4d4d4;
+  --onboarding-inverse-text: #0a0a0a;
+  --onboarding-danger: #f87171;
+  --onboarding-success: #4ade80;
+  --onboarding-keycap-top: #3a3a3a;
+  --onboarding-keycap-bottom: #262626;
+  --onboarding-keycap-bevel: #4d4d4d;
+  --onboarding-keycap-shadow: #000000;
+  --onboarding-mark-monochrome: grayscale(1) brightness(0) invert(1);
+  --onboarding-scrim: rgb(0 0 0 / 0.55);
+}
+
+.app-canvas {
+  --color-background: var(--onboarding-surface);
+  --color-foreground: var(--onboarding-text-primary);
+  --color-card: var(--onboarding-surface);
+  --color-card-foreground: var(--onboarding-text-primary);
+  --color-muted: #fafafa;
+  --color-muted-foreground: var(--onboarding-text-secondary);
+  --color-border: var(--onboarding-control-border);
+  --color-ring: var(--onboarding-accent);
+  background-color: var(--onboarding-surface);
+  color: var(--onboarding-text-primary);
+}
+
+.app-canvas.control-panel-window.bg-surface-window,
+.app-canvas.control-panel-window.glass-chrome-surface {
+  background-color: #ffffff;
 }
 
 /* Nested list surface + rows, per Figma "Onboarding / Frame 37".
@@ -719,7 +845,7 @@ body.dark:has(.onboarding-canvas) {
   background-image: none;
 }
 
-/* Compact-frame hero: a brand-blue band that dithers into the page surface.
+/* Compact-frame hero: a brand-red band that dithers into the page surface.
    Drawn from --color-primary so it follows the theme; the dot layer fades in
    as the solid fades out. */
 .onboarding-compact-hero {
@@ -794,7 +920,7 @@ body:has(.onboarding-canvas) kbd {
     0 12px 20px color-mix(in oklch, var(--onboarding-keycap-shadow) 8%, transparent);
 }
 
-/* OpenWhispr Brand Typography */
+/* mnemo Brand Typography */
 .brand-heading {
   font-family: var(--font-family-display);
   font-weight: 600;
@@ -1341,7 +1467,7 @@ a:hover {
 .referral-mesh-bg::before {
   width: 300px;
   height: 300px;
-  background: oklch(0.65 0.2 260);
+  background: #fb7185;
   opacity: 0.04;
   top: -80px;
   right: -60px;
@@ -1411,11 +1537,11 @@ a:hover {
   border-radius: inherit;
   background: conic-gradient(
     from 180deg at 50% 50%,
-    oklch(0.65 0.2 260 / 0.2),
+    rgb(251 113 133 / 0.2),
     oklch(0.55 0.2 320 / 0.1),
     oklch(0.6 0.18 180 / 0.15),
     oklch(0.55 0.2 100 / 0.1),
-    oklch(0.65 0.2 260 / 0.2)
+    rgb(251 113 133 / 0.2)
   );
   z-index: -1;
   opacity: 0;

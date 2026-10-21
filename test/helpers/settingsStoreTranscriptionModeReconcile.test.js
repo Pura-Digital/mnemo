@@ -16,7 +16,7 @@ const COPIES_DONE = { meetingFollowsTranscription: "false", uploadTranscriptionM
 test("startup repairs transcription routing that disagrees with the selected mode", async (t) => {
   const { storage } = installBrowserGlobals(t);
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-transcription-mode-reconcile-test-",
+    cachePrefix: "mnemo-transcription-mode-reconcile-test-",
   });
 
   // Migrations run once per module evaluation, so every case re-evaluates the store.
@@ -56,7 +56,7 @@ test("startup repairs transcription routing that disagrees with the selected mod
           ...COPIES_DONE,
           transcriptionMode: mode,
           useLocalWhisper: "false",
-          cloudTranscriptionMode: "openwhispr",
+          cloudTranscriptionMode: "mnemo",
         });
         assert.equal(state.cloudTranscriptionMode, "byok");
         assert.equal(storage.getItem("cloudTranscriptionMode"), "byok");
@@ -72,17 +72,17 @@ test("startup repairs transcription routing that disagrees with the selected mod
       ...COPIES_DONE,
       uploadTranscriptionMode: "providers",
       uploadUseLocalWhisper: "false",
-      uploadCloudTranscriptionMode: "openwhispr",
+      uploadCloudTranscriptionMode: "mnemo",
     });
     assert.equal(state.uploadCloudTranscriptionMode, "byok");
     assert.equal(storage.getItem("uploadCloudTranscriptionMode"), "byok");
   });
 
-  await t.test("an OpenWhispr Cloud mode never claims a BYOK credential", async () => {
+  await t.test("an Mnemo Cloud mode never claims a BYOK credential", async () => {
     const state = await load({
       ...MIGRATED,
       ...COPIES_DONE,
-      transcriptionMode: "openwhispr",
+      transcriptionMode: "mnemo",
       useLocalWhisper: "false",
       cloudTranscriptionMode: "byok",
     });
@@ -90,7 +90,7 @@ test("startup repairs transcription routing that disagrees with the selected mod
     assert.equal(storage.getItem("cloudTranscriptionMode"), "byok");
   });
 
-  for (const mode of ["openwhispr", "providers", "self-hosted", "enterprise", "nonsense"]) {
+  for (const mode of ["mnemo", "providers", "self-hosted", "enterprise", "nonsense"]) {
     await t.test(`a stale "${mode}" mode never flips a local user to the cloud`, async () => {
       const state = await load({
         ...MIGRATED,
@@ -150,22 +150,22 @@ test("startup repairs transcription routing that disagrees with the selected mod
       ...COPIES_DONE,
       transcriptionMode: "local",
       useLocalWhisper: "false",
-      cloudTranscriptionMode: "openwhispr",
+      cloudTranscriptionMode: "mnemo",
     });
     assert.equal(storage.getItem("useLocalWhisper"), "true", "repaired");
-    assert.equal(storage.getItem("cloudTranscriptionMode"), "openwhispr", "untouched");
+    assert.equal(storage.getItem("cloudTranscriptionMode"), "mnemo", "untouched");
   });
 
-  for (const mode of ["openwhispr", "enterprise", "nonsense"]) {
+  for (const mode of ["mnemo", "enterprise", "nonsense"]) {
     await t.test(`a "${mode}" mode never triggers the cloud rule`, async () => {
       await load({
         ...MIGRATED,
         ...COPIES_DONE,
         transcriptionMode: mode,
         useLocalWhisper: "false",
-        cloudTranscriptionMode: "openwhispr",
+        cloudTranscriptionMode: "mnemo",
       });
-      assert.equal(storage.getItem("cloudTranscriptionMode"), "openwhispr");
+      assert.equal(storage.getItem("cloudTranscriptionMode"), "mnemo");
     });
   }
 
@@ -177,7 +177,7 @@ test("startup repairs transcription routing that disagrees with the selected mod
       useLocalWhisper: "false",
       uploadTranscriptionMode: "providers",
       uploadUseLocalWhisper: "false",
-      uploadCloudTranscriptionMode: "openwhispr",
+      uploadCloudTranscriptionMode: "mnemo",
     });
     assert.equal(state.useLocalWhisper, true, "dictation repaired toward local");
     assert.equal(state.uploadCloudTranscriptionMode, "byok", "upload repaired toward BYOK");

@@ -105,13 +105,13 @@ function sync({ loaded, signedIn = false, policySettled = true, ...scopes }) {
     {
       useLocalWhisper: false,
       useCleanupModel: true,
-      cleanupMode: "openwhispr",
+      cleanupMode: "mnemo",
       useDictationAgent: true,
-      dictationAgentMode: "openwhispr",
-      noteFormattingMode: "openwhispr",
-      chatAgentMode: "openwhispr",
+      dictationAgentMode: "mnemo",
+      noteFormattingMode: "mnemo",
+      chatAgentMode: "mnemo",
       useDictationTranslation: false,
-      translationMode: "openwhispr",
+      translationMode: "mnemo",
       policySettled,
       ...scopes,
     }

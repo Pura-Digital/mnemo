@@ -46,7 +46,7 @@ function stubMacosVersion(t, version) {
 test("Parakeet reports its packaged runtime as unsupported on macOS below 15.5", async (t) => {
   stubMacosVersion(t, "12.7.6");
   const manager = new ParakeetManager();
-  manager.serverManager.getBinaryPath = () => "/Applications/OpenWhispr.app/parakeet";
+  manager.serverManager.getBinaryPath = () => "/Applications/Mnemo.app/parakeet";
 
   const result = await manager.checkInstallation();
 
@@ -148,7 +148,7 @@ test("Parakeet refuses transcription before touching the sidecar on unsupported 
 
 test("Parakeet skips startup prewarming on unsupported macOS", async (t) => {
   stubMacosVersion(t, "12.7.6");
-  const modelsDir = await fs.mkdtemp(path.join(os.tmpdir(), "openwhispr-parakeet-capability-"));
+  const modelsDir = await fs.mkdtemp(path.join(os.tmpdir(), "mnemo-parakeet-capability-"));
   t.after(() => fs.rm(modelsDir, { recursive: true, force: true }));
   const manager = new ParakeetManager();
   const model = Object.keys(modelRegistryData.parakeetModels)[0];
@@ -205,7 +205,7 @@ test("Parakeet rejects a duplicate download without replacing the active request
 });
 
 test("listWhisperModels surfaces active download state", async (t) => {
-  const modelsDir = await fs.mkdtemp(path.join(os.tmpdir(), "openwhispr-whisper-status-"));
+  const modelsDir = await fs.mkdtemp(path.join(os.tmpdir(), "mnemo-whisper-status-"));
   t.after(() => fs.rm(modelsDir, { recursive: true, force: true }));
 
   const manager = new WhisperManager();
@@ -224,7 +224,7 @@ test("listWhisperModels surfaces active download state", async (t) => {
 });
 
 test("Whisper rejects a duplicate download without replacing the active request", async (t) => {
-  const modelsDir = await fs.mkdtemp(path.join(os.tmpdir(), "openwhispr-whisper-guard-"));
+  const modelsDir = await fs.mkdtemp(path.join(os.tmpdir(), "mnemo-whisper-guard-"));
   t.after(() => fs.rm(modelsDir, { recursive: true, force: true }));
 
   const manager = new WhisperManager();
@@ -241,7 +241,7 @@ test("Whisper rejects a duplicate download without replacing the active request"
 });
 
 test("Whisper emits a complete event after validating the downloaded model", async (t) => {
-  const modelsDir = await fs.mkdtemp(path.join(os.tmpdir(), "openwhispr-whisper-complete-"));
+  const modelsDir = await fs.mkdtemp(path.join(os.tmpdir(), "mnemo-whisper-complete-"));
   t.after(() => fs.rm(modelsDir, { recursive: true, force: true }));
 
   const originalLoad = Module._load;
@@ -321,7 +321,7 @@ test("Parakeet refuses cancellation after installation starts", async () => {
 });
 
 test("an Orukeet directory without the sherpa ONNX files is not downloaded", async (t) => {
-  const directory = await fs.mkdtemp(path.join(os.tmpdir(), "openwhispr-orukeet-layout-"));
+  const directory = await fs.mkdtemp(path.join(os.tmpdir(), "mnemo-orukeet-layout-"));
   t.after(() => fs.rm(directory, { recursive: true, force: true }));
   const modelName = "orukeet-v0.1.0";
   const modelDirectory = path.join(directory, modelName);

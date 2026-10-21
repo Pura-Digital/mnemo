@@ -35,7 +35,7 @@ export function AnimatedKeyboardPreview() {
           Settings → Keyboards
         </Text>
       </View>
-      <KeyboardRow label="OpenWhispr" toggle={keyboardOn} divider />
+      <KeyboardRow label="mnemo" toggle={keyboardOn} divider />
       <KeyboardRow label="Allow Full Access" toggle={fullAccessOn} />
     </View>
   );

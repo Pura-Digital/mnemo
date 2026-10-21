@@ -9,7 +9,7 @@ const { loadAudioManager } = require("./harness/audioManager");
 
 async function loadManager(t) {
   const { createManager } = await loadAudioManager(t, {
-    cachePrefix: "openwhispr-batch-route-guard-test-",
+    cachePrefix: "mnemo-batch-route-guard-test-",
     settingsKey: "__batchRouteGuardSettings",
   });
   return createManager();

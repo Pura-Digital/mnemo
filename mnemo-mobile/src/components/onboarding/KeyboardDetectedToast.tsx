@@ -10,7 +10,7 @@ interface KeyboardDetectedToastProps {
 }
 
 /**
- * Floating confirmation that the OpenWhispr keyboard was seen. Rendered only once
+ * Floating confirmation that the mnemo keyboard was seen. Rendered only once
  * detection fires, so mounting is the moment worth announcing: the callers dismiss
  * themselves shortly after, and a VoiceOver user would otherwise get a haptic and
  * then find themselves somewhere else with no explanation.

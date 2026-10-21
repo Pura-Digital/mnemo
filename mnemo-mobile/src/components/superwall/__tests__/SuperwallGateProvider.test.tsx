@@ -982,7 +982,7 @@ describe('SuperwallGateProvider', () => {
     useAuthStore.setState({
       user: {
         id: 'anon-user',
-        email: 'temp-1@anon.openwhispr.invalid',
+        email: 'temp-1@anon.mnemo.invalid',
         emailVerified: false,
         isAnonymous: true,
       },

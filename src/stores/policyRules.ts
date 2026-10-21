@@ -469,9 +469,10 @@ export function canChangeCloudBackupPreference(
 export function isControlPanelViewAllowed(
   view: string,
   agentAllowed: boolean,
-  policyActionsAllowed: boolean
+  policyActionsAllowed: boolean,
+  conversationalAgentEnabled = true
 ): boolean {
-  if (view === "chat") return agentAllowed;
+  if (view === "chat") return conversationalAgentEnabled && agentAllowed;
   if (view === "upload") return policyActionsAllowed;
   return true;
 }

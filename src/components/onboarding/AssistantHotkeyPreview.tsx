@@ -1,21 +1,6 @@
-import assistantPreview from "../../assets/onboarding-assistant-preview.webp";
+import assistantPreview from "../../assets/onboarding-assistant-preview.svg";
 
-/**
- * The OpenWhispr Assistant illustration on the assistant-hotkey step.
- *
- * A single exported image rather than a DOM composition: the artwork (grass
- * backdrop, prompt bubble, mail window, dictation pill) ships as one 2x export,
- * so it matches Figma exactly and cannot drift.
- *
- * Tradeoff, deliberately accepted: the copy inside the mock-up is pixels now, so
- * it stays English in every locale. It is illustrative chrome, not UI the user
- * reads for meaning.
- *
- * This stays above the shortcut controls and outside the shrinking flex pool.
- * The frame is a fixed band rather than the export's 16:9 (at full height the
- * step scrolled) and crops a lightly enlarged image biased toward the top, so
- * the spoken request and mail window stay in view with no export edge showing.
- */
+/** Vector preview using the shared mnemo mark and coral palette. */
 export default function AssistantHotkeyPreview() {
   return (
     <div className="mx-auto mt-3 h-56 w-full max-w-[30rem] shrink-0 overflow-hidden rounded-2xl">

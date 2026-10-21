@@ -192,7 +192,7 @@ async function setup(t) {
   globalThis.document.hasFocus = () => true;
 
   const vite = await createRendererServer(t, {
-    cachePrefix: "openwhispr-meeting-view-switch-test-",
+    cachePrefix: "mnemo-meeting-view-switch-test-",
     mockModules: MOCKS,
   });
   const { default: Mount } = await vite.ssrLoadModule("/components/MeetingRecordingMount.tsx");

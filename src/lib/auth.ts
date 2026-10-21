@@ -10,14 +10,14 @@ import {
   prepareAuthRequest,
 } from "./authRequestContext";
 
-export const AUTH_URL = import.meta.env.VITE_AUTH_URL || "https://auth.openwhispr.com";
+export const AUTH_URL = import.meta.env.VITE_AUTH_URL || "https://auth.mnemo.com";
 export const authClient = createAuthClient({
   baseURL: AUTH_URL,
   plugins: [ssoClient()],
   fetchOptions: {
     credentials: "omit",
     customFetchImpl: authContextFetch,
-    headers: { "x-openwhispr-source": "desktop" },
+    headers: { "x-mnemo-source": "desktop" },
     onRequest: prepareAuthRequest,
     onResponse: handleAuthRequestResponse,
     onSuccess: handleAuthRequestSuccess,
@@ -40,7 +40,7 @@ window.electronAPI?.onAuthTokenStateChanged?.((state) => {
 
 export type SocialProvider = "google" | "microsoft" | "apple";
 
-const LAST_SIGN_IN_STORAGE_KEY = "openwhispr:lastSignInTime";
+const LAST_SIGN_IN_STORAGE_KEY = "mnemo:lastSignInTime";
 const GRACE_PERIOD_MS = 60_000;
 const GRACE_RETRY_COUNT = 6;
 const INITIAL_GRACE_RETRY_DELAY_MS = 500;
@@ -175,7 +175,7 @@ export async function withSessionRefresh<T>(operation: () => Promise<T>): Promis
   }
 }
 
-const DESKTOP_OAUTH_CALLBACK_URL = "https://openwhispr.com/auth/desktop-callback";
+const DESKTOP_OAUTH_CALLBACK_URL = "https://mnemo.com/auth/desktop-callback";
 
 export async function signInWithSocial(provider: SocialProvider): Promise<{ error?: Error }> {
   try {
@@ -186,7 +186,7 @@ export async function signInWithSocial(provider: SocialProvider): Promise<{ erro
       // the state cookie Better Auth sets has to land in the same cookie jar
       // that handles the /api/auth/callback/* round-trip. The shim endpoint
       // does the POST server-side and 302s with the cookies attached.
-      const protocol = (await window.electronAPI?.getOAuthProtocol?.()) || "openwhispr";
+      const protocol = (await window.electronAPI?.getOAuthProtocol?.()) || "mnemo";
       const url = new URL(`${AUTH_URL}/api/desktop-signin/${provider}`);
       url.searchParams.set("callbackURL", `${DESKTOP_OAUTH_CALLBACK_URL}?protocol=${protocol}`);
       openExternalLink(url.toString());
@@ -209,7 +209,7 @@ export async function signInWithSSO(email: string): Promise<{ error?: Error }> {
       // Same browser-handoff rationale as signInWithSocial: the SSO state cookie
       // must land in the browser's cookie jar. The /sso shim routes by work-email
       // domain and 302s to the workspace's IdP with the cookies attached.
-      const protocol = (await window.electronAPI?.getOAuthProtocol?.()) || "openwhispr";
+      const protocol = (await window.electronAPI?.getOAuthProtocol?.()) || "mnemo";
       const url = new URL(`${AUTH_URL}/api/desktop-signin/sso`);
       url.searchParams.set("email", email);
       url.searchParams.set("callbackURL", `${DESKTOP_OAUTH_CALLBACK_URL}?protocol=${protocol}`);
@@ -229,7 +229,7 @@ export async function requestPasswordReset(email: string): Promise<{ error?: Err
   try {
     const { error } = await authClient.requestPasswordReset({
       email: email.trim(),
-      redirectTo: "https://openwhispr.com/reset-password",
+      redirectTo: "https://mnemo.com/reset-password",
     });
     if (error) {
       return { error: toAuthActionError(error, "Failed to send reset email") };
@@ -283,7 +283,7 @@ export async function changePassword(params: {
   }
 }
 
-export const ADMIN_URL = import.meta.env.VITE_ADMIN_URL || "https://admin.openwhispr.com";
+export const ADMIN_URL = import.meta.env.VITE_ADMIN_URL || "https://admin.mnemo.com";
 
 /**
  * Open the enterprise admin console signed in: the desktop session lives in

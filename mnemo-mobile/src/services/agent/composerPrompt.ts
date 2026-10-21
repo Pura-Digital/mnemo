@@ -1,6 +1,6 @@
 import type { KeyboardTone } from '@/types';
 
-// Tone sentences ported verbatim from openwhispr-api/lib/prompts.ts (TONE_INSTRUCTIONS).
+// Tone sentences ported verbatim from mnemo-api/lib/prompts.ts (TONE_INSTRUCTIONS).
 // Any change here must stay in sync with the server-side source.
 const TONE_INSTRUCTIONS: Partial<Record<KeyboardTone, string>> = {
   formal:

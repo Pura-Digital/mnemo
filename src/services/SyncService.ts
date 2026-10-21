@@ -131,7 +131,7 @@ const TEAM_SPACES_RETRY_MS = 10_000;
 const TEAM_SPACES_MAX_RETRY_MS = AUTO_SYNC_INTERVAL_MS;
 // Web Lock name serializing syncAll() across windows (each renderer has its
 // own SyncService instance, but localStorage and the local DB are shared).
-const SYNC_ALL_LOCK = "openwhispr-sync-all";
+const SYNC_ALL_LOCK = "mnemo-sync-all";
 // localStorage keys gating what a pass may sync; a change in another window
 // means sync may have just become possible (sign-in, subscription, backup
 // enabled, Insights opt-in).
@@ -157,7 +157,7 @@ const PURGED_SPACE_GUARD_TTL_MS = 15 * 60 * 1000;
 // Serializes the guard's read-modify-write across windows: a prune inside a
 // sync pass racing a delete in another window must not drop the just-written
 // entry.
-const PURGED_SPACE_GUARD_LOCK = "openwhispr-purged-spaces";
+const PURGED_SPACE_GUARD_LOCK = "mnemo-purged-spaces";
 // Per-row count of consecutive passes whose update PATCH 404'd without the pull
 // disambiguating it (see recordUpdate404), keyed by client id. Read-modify-
 // written only inside the SYNC_ALL_LOCK pass, so it needs no lock of its own.

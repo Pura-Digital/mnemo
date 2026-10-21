@@ -2,7 +2,8 @@ import { useState, useRef, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { cn } from "../lib/utils";
 import { SendIcon } from "../ui/SendIcon";
-import { GLASS_SURFACE } from "../ui/glass";
+import { resolveGlassSurface } from "../ui/glass";
+import { useNativeGlass } from "../../hooks/useNativeGlass";
 
 // While recording, the bar sits over the live streaming transcript, and every
 // partial would force backdrop-blur to re-blur the strip; the capsule trades
@@ -30,6 +31,7 @@ export default function NoteBottomBar({
   callout,
   hideInput,
 }: NoteBottomBarProps) {
+  const nativeGlass = useNativeGlass();
   const { t } = useTranslation();
   const [inputText, setInputText] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
@@ -94,7 +96,7 @@ export default function NoteBottomBar({
           aria-hidden={hideInput}
           className={cn(
             "flex-1 min-w-0 flex items-center h-11 gap-2 rounded-full",
-            isRecording ? RECORDING_SURFACE : GLASS_SURFACE,
+            isRecording ? RECORDING_SURFACE : resolveGlassSurface(nativeGlass),
             "border",
             // Named properties, not transition-all: the surface swap below must
             // land instantly, or every recording start/stop tweens

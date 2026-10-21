@@ -23,11 +23,11 @@ The video is shown floating in a rounded rectangle while the user is in another 
 Suggested composition for `keyboard-install.mp4`:
 
 - Solid dark fill (`#1C1C1E`, matches the existing in-app `InstructionOverlay`)
-- A small "OpenWhispr setup" title at top
+- A small "Mnemo setup" title at top
 - The 5 numbered steps from `KeyboardSetupStep`:
   1. Tap Keyboards
-  2. Turn on OpenWhispr
-  3. Tap OpenWhispr → enable Allow Full Access
+  2. Turn on Mnemo
+  3. Tap Mnemo → enable Allow Full Access
   4. Tap Allow on the popup
   5. Come back here
 - Generous padding on all sides — PiP scales aggressively at small sizes

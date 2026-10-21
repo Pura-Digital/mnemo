@@ -123,7 +123,7 @@ jest.mock('@/lib/transcriptAudio', () => ({
   retainTranscriptAudio: (...args: unknown[]) => mockRetainTranscriptAudio(...args),
 }));
 jest.mock('@/lib/permissions', () => ({ isNoSpeechError: () => false }));
-jest.mock('expo-application', () => ({ applicationId: 'com.gizmolabs.openwhispr' }));
+jest.mock('expo-application', () => ({ applicationId: 'com.pura.mnemo' }));
 jest.mock('expo-clipboard', () => ({ setStringAsync: jest.fn() }));
 
 import { AppGroupStorage } from '../../../modules/app-group-storage/src';
@@ -172,10 +172,10 @@ afterEach(() => {
 
 describe('useKeyboardHandoff — keyboard-full-access route', () => {
   // The recovery deep link belongs to expo-router. It reaches this hook like any
-  // other openwhispr:// URL, and must fall straight through: a keyboard with no
+  // other mnemo:// URL, and must fall straight through: a keyboard with no
   // Full Access has nothing to record with.
   it('starts no recording and writes no handoff state', async () => {
-    mountWithInitialUrl('openwhispr://keyboard-full-access?source=keyboard');
+    mountWithInitialUrl('mnemo://keyboard-full-access?source=keyboard');
 
     await waitFor(() => expect(mockHandoffStoreState.setCheckingInitialUrl).toHaveBeenCalled());
 
@@ -189,7 +189,7 @@ describe('useKeyboardHandoff — keyboard-full-access route', () => {
   // The one side effect this route does own. Without it a concurrent warm resume
   // replaces the recovery screen with Home before the user ever sees it.
   it('stamps the recovery store so the warm resume cannot bounce the screen', async () => {
-    mountWithInitialUrl('openwhispr://keyboard-full-access?source=keyboard');
+    mountWithInitialUrl('mnemo://keyboard-full-access?source=keyboard');
 
     await waitFor(() => expect(mockMarkRecoveryDeepLink).toHaveBeenCalled());
   });
@@ -197,7 +197,7 @@ describe('useKeyboardHandoff — keyboard-full-access route', () => {
   // Control: the same harness on the dictation route does start a job, so the
   // assertions above are about the route and not about broken mocks.
   it('still starts a recording for the dictation route', async () => {
-    mountWithInitialUrl('openwhispr://keyboard-dictation?source=keyboard');
+    mountWithInitialUrl('mnemo://keyboard-dictation?source=keyboard');
 
     await waitFor(() => expect(storage.startNativeRecording).toHaveBeenCalled());
     expect(storage.setKeyboardStatus).toHaveBeenCalledWith('recording', null);
@@ -214,7 +214,7 @@ describe('useKeyboardHandoff — orphaned keyboard transcript', () => {
       return null;
     });
 
-    mountWithInitialUrl('openwhispr://ignored');
+    mountWithInitialUrl('mnemo://ignored');
 
     await waitFor(() => expect(mockAddTranscript).toHaveBeenCalled());
     expect(mockAddTranscript).toHaveBeenCalledWith({
@@ -237,7 +237,7 @@ describe('useKeyboardHandoff — orphaned keyboard transcript', () => {
       return null;
     });
 
-    mountWithInitialUrl('openwhispr://ignored');
+    mountWithInitialUrl('mnemo://ignored');
     await waitFor(() => expect(mockCleanupTranscript).toHaveBeenCalled());
 
     cancelRequested = true;
@@ -258,7 +258,7 @@ describe('useKeyboardHandoff — cancelled keyboard transcription', () => {
       if (key === 'keyboard_recording_job_id') return '100-job';
       return null;
     });
-    mountWithInitialUrl('openwhispr://ignored');
+    mountWithInitialUrl('mnemo://ignored');
 
     await act(async () => {
       await mockRecordingStoppedListener?.({

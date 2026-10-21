@@ -70,6 +70,7 @@ import EmptyStateCard from "../ui/EmptyStateCard";
 import { Button } from "../ui/button";
 import EmbeddedChat, { type EmbeddedChatMode } from "./EmbeddedChat";
 import { useEmbeddedChat } from "../../hooks/useEmbeddedChat";
+import { isConversationalAgentEnabled } from "../../config/mnemoProduct";
 import { formatNoteDate, formatRelativeTime, formatShortDate } from "../../utils/dateFormatting";
 import { collectKnownPeople } from "../../utils/llmTranscript";
 import { parseTranscriptSegments } from "../../utils/parseTranscriptSegments";
@@ -191,6 +192,7 @@ interface NoteEditorProps {
   onStartRecording: () => void;
   onStopRecording: () => void;
   onExportNote?: (format: "md" | "txt") => void;
+  onSendToArchivEye?: () => void;
   onExportTranscript?: (format: "txt" | "srt" | "json" | "md") => void;
   enhancement?: Enhancement;
   actionPicker?: React.ReactNode;
@@ -227,6 +229,7 @@ export default function NoteEditor({
   onStartRecording,
   onStopRecording,
   onExportNote,
+  onSendToArchivEye,
   onExportTranscript,
   enhancement,
   actionPicker,
@@ -257,6 +260,7 @@ export default function NoteEditor({
   // rendering, and a tab that no longer renders can never be the current one.
   const viewMode: MeetingViewMode =
     selectedViewMode === "enhanced" && !enhancement ? "raw" : selectedViewMode;
+  const noteChatEnabled = isConversationalAgentEnabled();
   const [chatMode, setChatMode] = useState<EmbeddedChatMode>("hidden");
   const [folderSearch, setFolderSearch] = useState("");
   const [isCreatingFolder, setIsCreatingFolder] = useState(false);
@@ -833,13 +837,26 @@ export default function NoteEditor({
         onSelect: () => onExportTranscript(format),
       }));
     }
-    if (!onExportNote) return [];
-    return (["md", "txt"] as const).map((format) => ({
-      id: format,
-      label: t(NOTE_EXPORT_LABEL_KEYS[format]),
-      onSelect: () => onExportNote(format),
-    }));
-  }, [viewMode, onExportTranscript, onExportNote, t]);
+    if (!onExportNote && !onSendToArchivEye) return [];
+    const options: NoteExportOption[] = [];
+    if (onExportNote) {
+      for (const format of ["md", "txt"] as const) {
+        options.push({
+          id: format,
+          label: t(NOTE_EXPORT_LABEL_KEYS[format]),
+          onSelect: () => onExportNote(format),
+        });
+      }
+    }
+    if (onSendToArchivEye) {
+      options.push({
+        id: "archiveye",
+        label: t("integrations.archiveye.sendNote"),
+        onSelect: () => onSendToArchivEye(),
+      });
+    }
+    return options;
+  }, [viewMode, onExportTranscript, onExportNote, onSendToArchivEye, t]);
 
   return (
     <div className="flex h-full min-h-0">
@@ -1270,9 +1287,9 @@ export default function NoteEditor({
                 </Button>
               )
             }
-            hideInput={chatMode !== "hidden"}
+            hideInput={!noteChatEnabled || chatMode !== "hidden"}
           />
-          {chatMode === "floating" && (
+          {noteChatEnabled && chatMode === "floating" && (
             <EmbeddedChat
               mode="floating"
               floatingPanelRef={floatingChatPanelRef}
@@ -1289,7 +1306,7 @@ export default function NoteEditor({
           )}
         </div>
       </div>
-      {chatMode === "sidebar" && (
+      {noteChatEnabled && chatMode === "sidebar" && (
         <EmbeddedChat
           mode="sidebar"
           onModeChange={setChatMode}

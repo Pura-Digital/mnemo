@@ -2,7 +2,7 @@ import { fetch } from 'expo/fetch';
 import { ApiError, getClientVersionHeader } from '@/lib/apiClient';
 import { parseApiErrorBody } from '@/lib/apiErrorBody';
 
-const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://api.openwhispr.com';
+const API_URL = process.env.EXPO_PUBLIC_API_URL?.trim() || '';
 
 export interface ReferralStats {
   referralCode: string;

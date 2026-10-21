@@ -8,7 +8,7 @@ import { canManageSystemAudioInApp } from "../../utils/systemAudioAccess";
 import googleCalendarIcon from "../../assets/icons/google-calendar.svg";
 import microsoftCalendarIcon from "../../assets/icons/microsoft-calendar.webp";
 import appleCalendarIcon from "../../assets/icons/apple-calendar.webp";
-import meetingDetectedPanel from "../../assets/onboarding-notes-meeting-detected.webp";
+import meetingDetectedPanel from "../../assets/onboarding-notes-meeting-detected.svg";
 
 type ProviderId = "google" | "microsoft" | "apple";
 

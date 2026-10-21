@@ -1,7 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { ChevronLeft, PanelLeftClose, Search } from "./icons";
-import { Button } from "./ui/button";
 import WindowControls from "./WindowControls";
 import { cn } from "./lib/utils";
 import { getCachedPlatform } from "../utils/platform";
@@ -26,6 +25,9 @@ interface ControlPanelTopBarProps {
   onExitSidePanel: () => void;
   /** Global actions, right of the search bar; hidden with it in the side-panel layout. */
   actions?: React.ReactNode;
+  /** Note-centric shell: no global nav sidebar toggle. */
+  hideSidebarToggle?: boolean;
+  backLabel?: string;
 }
 
 export default function ControlPanelTopBar({
@@ -38,11 +40,53 @@ export default function ControlPanelTopBar({
   isSidePanelLayout,
   onExitSidePanel,
   actions,
+  hideSidebarToggle = false,
+  backLabel,
 }: ControlPanelTopBarProps) {
   const { t } = useTranslation();
+  const resolvedBackLabel = backLabel ?? t("controlPanel.backToNotes");
   // With the sidebar out of the way the container's start edge sits under the
   // macOS traffic lights, so the leading controls shift past them.
-  const clearTrafficLights = platform === "darwin" && (sidebarCollapsed || isSidePanelLayout);
+  const clearTrafficLights =
+    platform === "darwin" && (hideSidebarToggle || sidebarCollapsed || isSidePanelLayout);
+  const macTitleBarInset = isSidePanelLayout && platform === "darwin" ? "ltr:ps-[88px]" : "ltr:ps-[76px]";
+
+  const backButton = (
+    <button
+      type="button"
+      onClick={onExitSidePanel}
+      data-no-window-drag=""
+      style={noDragStyle}
+      className={cn(
+        "inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-3 text-[13px] font-medium",
+        "border-[var(--onboarding-control-border,var(--color-border))]",
+        "bg-[var(--onboarding-surface-secondary,var(--color-muted))]/40",
+        "text-[var(--onboarding-text-primary,var(--color-foreground))]",
+        "transition-colors hover:bg-[var(--onboarding-row-hover,var(--color-muted))]",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+      )}
+    >
+      <ChevronLeft size={14} strokeWidth={1.8} className="rtl:rotate-180" aria-hidden="true" />
+      {resolvedBackLabel}
+    </button>
+  );
+
+  if (isSidePanelLayout) {
+    return (
+      <header
+        className={cn(
+          "flex h-12 shrink-0 items-center gap-3 border-b border-border px-4 dark:border-white/10",
+          "transition-[padding] duration-300 ease-out",
+          clearTrafficLights && macTitleBarInset,
+          clearTrafficLights && "rtl:pe-[88px] rtl:ps-4"
+        )}
+        style={{ WebkitAppRegion: "drag" } as React.CSSProperties}
+      >
+        {backButton}
+        {title ? <span className="sr-only">{title}</span> : null}
+      </header>
+    );
+  }
 
   return (
     <header
@@ -52,70 +96,55 @@ export default function ControlPanelTopBar({
         // Eased with the sidebar spacer so the toggle glides instead of jumping when the
         // clearance switches; a jump would drag it back under the cursor and re-trigger peek.
         "transition-[padding] duration-300 ease-out",
-        clearTrafficLights && "ltr:ps-[76px]"
+        clearTrafficLights && macTitleBarInset
       )}
       style={{ WebkitAppRegion: "drag" } as React.CSSProperties}
     >
       <div className="flex min-w-0 items-center gap-2.5">
-        {isSidePanelLayout ? (
-          <Button
-            variant="outline-flat"
-            size="sm"
-            onClick={onExitSidePanel}
-            className="h-7 gap-1 px-2.5 ps-1.5"
+        {!hideSidebarToggle && (
+          <button
+            type="button"
+            onClick={onToggleSidebar}
+            onMouseEnter={onToggleMouseEnter}
+            onMouseLeave={onToggleMouseLeave}
+            aria-label={sidebarCollapsed ? t("sidebar.expand") : t("sidebar.collapse")}
             data-no-window-drag=""
             style={noDragStyle}
+            // z-40 keeps the toggle above the peeking sidebar (z-30) so the panel slides in
+            // underneath it and the button stays clickable while collapsed.
+            className="group relative z-40 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg outline-none transition-colors duration-150 hover:bg-foreground/5 focus-visible:ring-1 focus-visible:ring-primary/30 dark:hover:bg-white/5"
           >
-            <ChevronLeft size={14} strokeWidth={1.8} className="rtl:rotate-180" />
-            {t("controlPanel.backToNotes")}
-          </Button>
-        ) : (
-          <>
-            <button
-              type="button"
-              onClick={onToggleSidebar}
-              onMouseEnter={onToggleMouseEnter}
-              onMouseLeave={onToggleMouseLeave}
-              aria-label={sidebarCollapsed ? t("sidebar.expand") : t("sidebar.collapse")}
-              data-no-window-drag=""
-              style={noDragStyle}
-              // z-40 keeps the toggle above the peeking sidebar (z-30) so the panel slides in
-              // underneath it and the button stays clickable while collapsed.
-              className="group relative z-40 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg outline-none transition-colors duration-150 hover:bg-foreground/5 focus-visible:ring-1 focus-visible:ring-primary/30 dark:hover:bg-white/5"
-            >
-              <PanelLeftClose size={16} className={toggleIconClass} />
-            </button>
-            {/* Global h1 styles are display-sized; this is chrome, so pin it down. */}
-            <h1 className="truncate text-sm! font-medium! leading-none! tracking-normal! text-foreground">
-              {title}
-            </h1>
-          </>
+            <PanelLeftClose size={16} className={toggleIconClass} />
+          </button>
         )}
+        {title ? (
+          <h1 className="truncate text-sm! font-medium! leading-none! tracking-normal! text-foreground">
+            {title}
+          </h1>
+        ) : null}
       </div>
 
-      {!isSidePanelLayout && (
-        <button
-          type="button"
-          onClick={onOpenSearch}
-          data-no-window-drag=""
-          style={noDragStyle}
-          className="flex h-8 w-full items-center gap-2.5 rounded-full border border-border bg-foreground/4 px-4 text-start outline-none transition-colors duration-150 hover:bg-foreground/6 focus-visible:ring-1 focus-visible:ring-primary/30 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/8"
+      <button
+        type="button"
+        onClick={onOpenSearch}
+        data-no-window-drag=""
+        style={noDragStyle}
+        className="flex h-8 w-full items-center gap-2.5 rounded-full border border-border bg-foreground/4 px-4 text-start outline-none transition-colors duration-150 hover:bg-foreground/6 focus-visible:ring-1 focus-visible:ring-primary/30 dark:border-white/10 dark:bg-white/5 dark:hover:bg-white/8"
+      >
+        <Search size={14} className="shrink-0 text-muted-foreground/70" />
+        <span className="flex-1 truncate text-[13px] text-muted-foreground/70">
+          {t("commandSearch.placeholder")}
+        </span>
+        <kbd
+          dir="ltr"
+          className="shrink-0 rounded-full bg-foreground/6 px-1.5 py-px font-sans text-[10px] font-medium text-muted-foreground/70 dark:bg-white/8"
         >
-          <Search size={14} className="shrink-0 text-muted-foreground/70" />
-          <span className="flex-1 truncate text-[13px] text-muted-foreground/70">
-            {t("commandSearch.placeholder")}
-          </span>
-          <kbd
-            dir="ltr"
-            className="shrink-0 rounded-full bg-foreground/6 px-1.5 py-px font-sans text-[10px] font-medium text-muted-foreground/70 dark:bg-white/8"
-          >
-            {platform === "darwin" ? "⌘ + K" : "Ctrl + K"}
-          </kbd>
-        </button>
-      )}
+          {platform === "darwin" ? "⌘ + K" : "Ctrl + K"}
+        </kbd>
+      </button>
 
       <div className="col-start-3 flex items-center gap-2">
-        {!isSidePanelLayout && actions && (
+        {actions && (
           <div
             data-no-window-drag=""
             style={noDragStyle}

@@ -9,7 +9,7 @@ import { UPGRADE_REQUIRED_MESSAGE } from './policyMessages';
 // canonical definition lives in policyMessages.ts (see that file for why).
 export { UPGRADE_REQUIRED_MESSAGE };
 
-export const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://api.openwhispr.com';
+export const BASE_URL = process.env.EXPO_PUBLIC_API_URL?.trim() || '';
 
 /** Returns auth headers for authenticated requests, or an empty object when no session exists. */
 export function getAuthHeaders(): Record<string, string> {
@@ -20,7 +20,7 @@ export function getAuthHeaders(): Record<string, string> {
 // Org-policy enforcement (POLICY_CLOUD_BACKUP_BLOCKED on sync writes) is
 // header-gated server-side: only clients sending this header get the block.
 // Fixed at "1" — there is no negotiation, just an opt-in signal.
-const POLICY_VERSION_HEADER = 'x-openwhispr-policy-version';
+const POLICY_VERSION_HEADER = 'x-mnemo-policy-version';
 const POLICY_VERSION = '1';
 
 /**
@@ -31,8 +31,8 @@ const POLICY_VERSION = '1';
 export function getClientVersionHeader(): Record<string, string> {
   const version = Constants.expoConfig?.version;
   return {
-    ...(version ? { 'x-openwhispr-version': version } : {}),
-    'x-openwhispr-platform': 'mobile',
+    ...(version ? { 'x-mnemo-version': version } : {}),
+    'x-mnemo-platform': 'mobile',
     [POLICY_VERSION_HEADER]: POLICY_VERSION,
   };
 }

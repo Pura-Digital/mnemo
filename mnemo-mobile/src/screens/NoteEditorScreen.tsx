@@ -40,6 +40,12 @@ import { GradientGlassSurface } from '@/components/ui/GradientGlassSurface';
 import { GlassBackButton } from '@/components/ui/GlassBackButton';
 import { TabScreenHeader } from '@/components/ui/TabScreenHeader';
 import { buildNoteShareContent, exportNote } from '@/lib/noteExport';
+import {
+  isArchiveyeIntegrationEnabled,
+  isConversationalAgentEnabled,
+} from '@/config/mnemoProduct';
+import { useArchiveyeStore } from '@/store/useArchiveyeStore';
+import { uploadNoteToArchivEye } from '@/services/archiveye/archiveyeApi';
 import { SpaceGrotesk } from '@/lib/fonts';
 import { makeContentHash, safeHaptics } from '@/lib/utils';
 import { parseNoteTimestamp } from '@/lib/parseNoteTimestamp';
@@ -128,6 +134,13 @@ export default function NoteEditorScreen() {
     [getConflictedNote, noteId, note?.conflictServerNote],
   );
   const user = useAuthStore((s) => s.user);
+  const archiveyeConnected = useArchiveyeStore((s) => s.connected);
+  const hydrateArchiveye = useArchiveyeStore((s) => s.hydrate);
+
+  useEffect(() => {
+    if (!isArchiveyeIntegrationEnabled()) return;
+    hydrateArchiveye().catch(() => {});
+  }, [hydrateArchiveye]);
   const activeMode = useProcessingModeStore((s) => s.activeMode);
   const { register: registerSuperwallGate } = useSuperwallGate();
   const { handleUsageLimitReached, isRecoveringUsageLimit } = useUsageLimitRecovery();
@@ -482,6 +495,30 @@ export default function NoteEditorScreen() {
       // Hook's onError → handleDictationError already surfaced this to the user.
     }
   }, [activeMode, isRecording, registerSuperwallGate, startRecording, stopRecording, user]);
+
+  const handleSendToArchivEye = useCallback(async () => {
+    if (!note) return;
+    if (!archiveyeConnected) {
+      Alert.alert('Connect ArchivEye', 'Sign in under Settings → Integrations → ArchivEye first.');
+      return;
+    }
+    try {
+      safeHaptics('light');
+      await uploadNoteToArchivEye(note.id, titleRef.current, {
+        viewMode: viewMode === 'enhanced' && note.enhancedContent ? 'enhanced' : 'original',
+        enhancedContent: note.enhancedContent ?? null,
+        usesSegmentTranscript,
+        transcript: formatTranscriptForExport({ blocks: transcriptBlocks }),
+        content: contentRef.current,
+      });
+      Alert.alert('Sent to ArchivEye', 'Your note was added to your knowledge base.');
+    } catch (error) {
+      Alert.alert(
+        'Upload failed',
+        error instanceof Error ? error.message : 'Could not send this note to ArchivEye.',
+      );
+    }
+  }, [archiveyeConnected, note, viewMode]);
 
   const handleExport = useCallback(() => {
     safeHaptics('light');
@@ -865,6 +902,11 @@ export default function NoteEditorScreen() {
             onCopyGeneratedNote={note?.enhancedContent ? handleCopyGeneratedNote : undefined}
             onCopyTranscript={usesSegmentTranscript ? handleCopyTranscript : undefined}
             onShare={handleExport}
+            onSendToArchivEye={
+              isArchiveyeIntegrationEnabled() && archiveyeConnected
+                ? handleSendToArchivEye
+                : undefined
+            }
             onDelete={handleDelete}
           />
         }
@@ -1086,19 +1128,21 @@ export default function NoteEditorScreen() {
           />
         </Pressable>
       ) : null}
-      <NoteChatSheet
-        visible={chatVisible}
-        messages={chatMessages}
-        draft={chatDraft}
-        isProcessing={isChatProcessing}
-        error={chatError}
-        canSend={!contentEmpty}
-        onDraftChange={setChatDraft}
-        onSend={handleSendChat}
-        onRetry={handleRetryChat}
-        onClear={handleClearChat}
-        onClose={handleCloseChat}
-      />
+      {isConversationalAgentEnabled() ? (
+        <NoteChatSheet
+          visible={chatVisible}
+          messages={chatMessages}
+          draft={chatDraft}
+          isProcessing={isChatProcessing}
+          error={chatError}
+          canSend={!contentEmpty}
+          onDraftChange={setChatDraft}
+          onSend={handleSendChat}
+          onRetry={handleRetryChat}
+          onClear={handleClearChat}
+          onClose={handleCloseChat}
+        />
+      ) : null}
       <SpeakerRenameSheet
         visible={renameSheetVisible}
         initialName={activeSpeakerName}

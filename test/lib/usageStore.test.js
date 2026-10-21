@@ -117,7 +117,7 @@ test("relaunching the same account keeps the persisted flag", (t) => {
 
   // A restart starts from a null in-memory account with both markers persisted;
   // clearing here would strand an offline session with sync disabled.
-  localStorage.setItem("openwhispr:usageAccountId", "user-a");
+  localStorage.setItem("mnemo:usageAccountId", "user-a");
   localStorage.setItem("isSubscribed", "true");
 
   setUsageAccount("user-a");

@@ -14,8 +14,8 @@ const SCHEME_WITHOUT_STOREKIT = `<?xml version="1.0" encoding="UTF-8"?>
 `;
 const CANONICAL_REFERENCE = '../../Products.storekit';
 const CANONICAL_PRODUCTS = {
-  monthly: 'com.openwhispr.pro.monthly',
-  annual: 'com.openwhispr.pro.annual',
+  monthly: 'com.pura.mnemo.pro.monthly',
+  annual: 'com.pura.mnemo.pro.annual',
 };
 
 function createStoreKitConfiguration(productIds: string[]): object {
@@ -68,7 +68,7 @@ describe('withStoreKitConfiguration helpers', () => {
   it('rejects mismatched StoreKit product IDs', () => {
     const storeKitConfiguration = createStoreKitConfiguration([
       CANONICAL_PRODUCTS.monthly,
-      'com.openwhispr.pro.yearly',
+      'com.pura.mnemo.pro.yearly',
     ]);
 
     expect(() => validateStoreKitProductIds(storeKitConfiguration, CANONICAL_PRODUCTS)).toThrow(
@@ -91,8 +91,8 @@ describe('withStoreKitConfiguration helpers', () => {
     ]);
 
     expect(getCanonicalProductIds(CANONICAL_PRODUCTS)).toEqual([
-      'com.openwhispr.pro.monthly',
-      'com.openwhispr.pro.annual',
+      'com.pura.mnemo.pro.monthly',
+      'com.pura.mnemo.pro.annual',
     ]);
     expect(() =>
       validateStoreKitProductIds(storeKitConfiguration, CANONICAL_PRODUCTS),

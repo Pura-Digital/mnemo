@@ -11,7 +11,7 @@ type MockAuthState = {
   signOut: jest.Mock;
 };
 let mockAuthState: MockAuthState = {
-  user: { id: 'anon-user', email: 'temp-1@anon.openwhispr.invalid', isAnonymous: true },
+  user: { id: 'anon-user', email: 'temp-1@anon.mnemo.invalid', isAnonymous: true },
   sessionCookie: 'session=anon',
   signOut: mockSignOut,
 };
@@ -54,7 +54,7 @@ import ReferralScreen from '@/screens/ReferralScreen';
 beforeEach(() => {
   jest.clearAllMocks();
   mockAuthState = {
-    user: { id: 'anon-user', email: 'temp-1@anon.openwhispr.invalid', isAnonymous: true },
+    user: { id: 'anon-user', email: 'temp-1@anon.mnemo.invalid', isAnonymous: true },
     sessionCookie: 'session=anon',
     signOut: mockSignOut,
   };

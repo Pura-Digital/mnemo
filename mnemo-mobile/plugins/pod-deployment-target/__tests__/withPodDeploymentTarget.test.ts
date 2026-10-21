@@ -2,7 +2,7 @@ const { addPodDeploymentTargetFloor } = require('../withPodDeploymentTarget');
 
 const EXPO_TEMPLATE_PODFILE = `platform :ios, podfile_properties['ios.deploymentTarget'] || '15.1'
 
-target 'OpenWhispr' do
+target 'Mnemo' do
   use_expo_modules!
   config = use_native_modules!(config_command)
 

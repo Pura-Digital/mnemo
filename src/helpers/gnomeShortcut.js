@@ -2,27 +2,27 @@ const { execFileSync } = require("child_process");
 const debugLogger = require("./debugLogger");
 const GnomeGlobalShortcutsPortal = require("./gnomeGlobalShortcutsPortal");
 
-const DBUS_SERVICE_NAME = "com.openwhispr.App";
-const DBUS_OBJECT_PATH = "/com/openwhispr/App";
-const DBUS_INTERFACE = "com.openwhispr.App";
+const DBUS_SERVICE_NAME = "com.mnemo.App";
+const DBUS_OBJECT_PATH = "/com/mnemo/App";
+const DBUS_INTERFACE = "com.mnemo.App";
 
 // Per-slot gsettings paths and display names
 const SLOT_CONFIG = {
   dictation: {
-    path: "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/openwhispr/",
-    name: "OpenWhispr Toggle",
+    path: "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/mnemo/",
+    name: "Mnemo Toggle",
   },
   meeting: {
-    path: "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/openwhispr-meeting/",
-    name: "OpenWhispr Meeting",
+    path: "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/mnemo-meeting/",
+    name: "Mnemo Meeting",
   },
   voiceAgent: {
-    path: "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/openwhispr-voice-agent/",
-    name: "OpenWhispr Voice Assistant",
+    path: "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/mnemo-voice-agent/",
+    name: "Mnemo Voice Assistant",
   },
   translation: {
-    path: "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/openwhispr-translation/",
-    name: "OpenWhispr Translation",
+    path: "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/mnemo-translation/",
+    name: "Mnemo Translation",
   },
 };
 
@@ -176,7 +176,7 @@ class GnomeShortcutManager {
   // so the entry errors silently forever and squats its key. Prune it once.
   removeRetiredAgentKeybinding() {
     const retiredPath =
-      "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/openwhispr-agent/";
+      "/org/gnome/settings-daemon/plugins/media-keys/custom-keybindings/mnemo-agent/";
     try {
       const existing = this.getExistingKeybindings();
       if (!existing.includes(retiredPath)) return;

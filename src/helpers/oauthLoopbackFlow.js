@@ -3,12 +3,12 @@ const crypto = require("crypto");
 const { openExternalUrl } = require("./externalUrlOpener");
 
 const OAUTH_TIMEOUT_MS = 120000;
-const DEFAULT_DESKTOP_CALLBACK_URL = "https://openwhispr.com/auth/desktop-callback";
+const DEFAULT_DESKTOP_CALLBACK_URL = "https://mnemo.com/auth/desktop-callback";
 
 const PROTOCOL_BY_CHANNEL = {
-  development: "openwhispr-dev",
-  staging: "openwhispr-staging",
-  production: "openwhispr",
+  development: "mnemo-dev",
+  staging: "mnemo-staging",
+  production: "mnemo",
 };
 
 // Thrown by handleCallback to control the error code shown on the hosted
@@ -21,11 +21,11 @@ class OAuthFlowError extends Error {
 }
 
 function getDesktopCallbackUrl() {
-  return process.env.VITE_OPENWHISPR_OAUTH_CALLBACK_URL || DEFAULT_DESKTOP_CALLBACK_URL;
+  return process.env.VITE_MNEMO_OAUTH_CALLBACK_URL || DEFAULT_DESKTOP_CALLBACK_URL;
 }
 
 function getProtocol() {
-  const channel = process.env.OPENWHISPR_CHANNEL || "production";
+  const channel = process.env.MNEMO_CHANNEL || "production";
   return PROTOCOL_BY_CHANNEL[channel] || PROTOCOL_BY_CHANNEL.production;
 }
 
